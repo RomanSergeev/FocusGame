@@ -1,0 +1,8 @@
+[
+{
+  "directory": "G:/Git/FocusGame/build",
+  "command": "E:\\Programs\\CLang\\bin\\clang++.exe -g -o CMakeFiles\\FocusGame.dir\\main.cpp.obj -c G:\\Git\\FocusGame\\main.cpp",
+  "file": "G:\\Git\\FocusGame\\main.cpp",
+  "output": "CMakeFiles\\FocusGame.dir\\main.cpp.obj"
+}
+]

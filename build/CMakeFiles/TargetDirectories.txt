@@ -1,0 +1,3 @@
+G:/Git/FocusGame/build/CMakeFiles/FocusGame.dir
+G:/Git/FocusGame/build/CMakeFiles/edit_cache.dir
+G:/Git/FocusGame/build/CMakeFiles/rebuild_cache.dir
