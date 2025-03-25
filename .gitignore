@@ -1,4 +1,3 @@
-# add these folders for the first commit to not lose these settings I was configuring for 10 days
-#build
-#.vscode
+build
+.vscode
 CMakeLists.txt
