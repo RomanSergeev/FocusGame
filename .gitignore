@@ -1,4 +1,5 @@
-build
-.vscode
+build/
+lib/
+.vscode/
 OLD
-#CMakeLists.txt
+CMakeLists.txt
