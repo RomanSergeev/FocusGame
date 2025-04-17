@@ -36,6 +36,6 @@ int initWindow(GLFWwindow* &window, int width, int height, const char* title) {
     }
 
     glEnable(GL_DEPTH_TEST);
-    glClearColor(0.2f, 0.3f, 0.3f, 1.0f); // Set a dark greenish background
+    //glClearColor(0.2f, 0.3f, 0.3f, 1.0f); // Set a dark greenish background
     return 0;
 }
