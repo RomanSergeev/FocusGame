@@ -1,7 +1,8 @@
 #include <iostream>
-#include "OpenGLhub.h"
-#include "Cuboid.h"
-#include "Triangle.h"
+#include "GLWindowFunctions.h"
+#include "shapes/GLShapeService.h"
+#include "shapes/Cuboid.h"
+#include "shapes/Triangle.h"
 
 int main() {
     GLFWwindow* window;
@@ -13,7 +14,8 @@ int main() {
     // Generate and bind Vertex Array Object
     // Step 4: Generate vertex array
     GLuint VAO;
-    setupBuffer(VAO, verticesTriangle, 3);
+    const OpenGLShape* shape = new Triangle();
+    setupBuffer(VAO, *shape);
 
     /*glm::mat4 projection = glm::perspective(glm::radians(45.0f), 800.0f / 600, 0.1f, 100.0f);
     glm::mat4 view = glm::lookAt(
@@ -22,7 +24,7 @@ int main() {
         glm::vec3(0.0f, 1.0f, 0.0f)  // Up vector
     );*/
 
-    GLuint shaderProgram = createShaderProgram(vertexShaderTriangle, fragmentShaderTriangle);
+    GLuint shaderProgram = createShaderProgram(*shape);
 
     while (!glfwWindowShouldClose(window)) {
         glUseProgram(shaderProgram);
@@ -42,6 +44,7 @@ int main() {
         glfwPollEvents();
     }
 
+    delete shape;
     glfwDestroyWindow(window);
     glfwTerminate();
     return 0;
