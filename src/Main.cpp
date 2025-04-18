@@ -12,7 +12,7 @@ int main() {
     GLFWwindow* window;
     if (initWindow(window, WIDTH, HEIGHT, "OpenGL Window") != 0) return -1;
 
-    glDisable(GL_CULL_FACE);
+    //glDisable(GL_CULL_FACE);
 
     // Create simple cuboid:
     // Generate and bind Vertex Array Object
@@ -30,20 +30,23 @@ int main() {
 
     GLuint shaderProgram = createShaderProgram(*shape);
 
-    while (!glfwWindowShouldClose(window)) {
-        glUseProgram(shaderProgram);
+    glUseProgram(shaderProgram);
 
+    glUniform3f(glGetUniformLocation(shaderProgram, "lightDir"), -0.2f, -1.0f, -0.3f);
+    glUniform3f(glGetUniformLocation(shaderProgram, "baseColor"), 1.0f, 0.6f, 0.2f);
+
+    // defining locs inside the main loop for non-fixed camera
+    GLuint modelLoc = glGetUniformLocation(shaderProgram, "model");
+    GLuint viewLoc = glGetUniformLocation(shaderProgram, "view");
+    GLuint projLoc = glGetUniformLocation(shaderProgram, "projection");
+
+    while (!glfwWindowShouldClose(window)) {
         float time = glfwGetTime();
         glm::mat4 model = glm::rotate(glm::mat4(1.0f), time, glm::vec3(0.3f, 1.0f, 0.0f));
 
-        // defining locs inside the main loop for non-fixed camera
-        GLuint modelLoc = glGetUniformLocation(shaderProgram, "model");
-        GLuint viewLoc = glGetUniformLocation(shaderProgram, "view");
-        GLuint projLoc = glGetUniformLocation(shaderProgram, "projection");
-        
-        GL_CHECK(glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model)));
-        GL_CHECK(glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view)));
-        GL_CHECK(glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(projection)));
+        GL_CHECK(glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model     )));
+        GL_CHECK(glUniformMatrix4fv(viewLoc , 1, GL_FALSE, glm::value_ptr(view      )));
+        GL_CHECK(glUniformMatrix4fv(projLoc , 1, GL_FALSE, glm::value_ptr(projection)));
 
         GL_CHECK(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
         glBindVertexArray(VAO);
