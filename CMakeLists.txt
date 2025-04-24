@@ -3,6 +3,9 @@ cmake_minimum_required(VERSION 3.20)
 # Project name and language settings
 project(FocusGame LANGUAGES CXX)
 
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
 # Force Clang to use lld.exe instead of lld-link.exe
 set(CMAKE_LINKER "E:/Programs/CLang/bin/lld.exe" CACHE STRING "Force use of lld.exe" FORCE)
 
@@ -48,6 +51,7 @@ add_executable(FocusGame ${SRC_FILES})
 target_include_directories(FocusGame
     PRIVATE
         ${CMAKE_SOURCE_DIR}/src
+        ${CMAKE_SOURCE_DIR}/include
 )
 
 target_link_libraries(

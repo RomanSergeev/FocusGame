@@ -1,31 +1,17 @@
 #include "Tetrahedron.h"
 
-constexpr float SQ3 = 0.577350269f;
-
 Tetrahedron::Tetrahedron() : OpenGLShape(6) {
     pointsPerAttribute = {3, 3};
 
-    vertices = {
-        // Face 1 (front)     // normal vector (normalized)
-         1.0f,  1.0f,  1.0f, -SQ3,  SQ3,  SQ3, // A
-        -1.0f, -1.0f,  1.0f, -SQ3,  SQ3,  SQ3, // B
-        -1.0f,  1.0f, -1.0f, -SQ3,  SQ3,  SQ3, // C
+    glm::vec3 A( 1.0f,  1.0f,  1.0f);
+    glm::vec3 B(-1.0f, -1.0f,  1.0f);
+    glm::vec3 C(-1.0f,  1.0f, -1.0f);
+    glm::vec3 D( 1.0f, -1.0f, -1.0f);
 
-        // Face 2 (right)
-         1.0f,  1.0f,  1.0f,  SQ3,  SQ3, -SQ3, // A
-        -1.0f,  1.0f, -1.0f,  SQ3,  SQ3, -SQ3, // C
-         1.0f, -1.0f, -1.0f,  SQ3,  SQ3, -SQ3, // D
-
-        // Face 3 (left)
-         1.0f,  1.0f,  1.0f, -SQ3,  SQ3, -SQ3, // A
-         1.0f, -1.0f, -1.0f, -SQ3,  SQ3, -SQ3, // D
-        -1.0f, -1.0f,  1.0f, -SQ3,  SQ3, -SQ3, // B
-
-        // Face 4 (bottom)
-        -1.0f, -1.0f,  1.0f,  SQ3,  SQ3,  SQ3, // B
-         1.0f, -1.0f, -1.0f,  SQ3,  SQ3,  SQ3, // D
-        -1.0f,  1.0f, -1.0f,  SQ3,  SQ3,  SQ3  // C
-    };
+    addFace(A, C, B);
+    addFace(A, D, C);
+    addFace(A, D, B);
+    addFace(B, D, C);
 
     shaderVertices = R"(
         #version 330 core
@@ -54,11 +40,11 @@ Tetrahedron::Tetrahedron() : OpenGLShape(6) {
         in vec3 Normal;
 
         uniform vec3 lightDir;
-        uniform vec3 baseColor;
+        uniform vec3 tetraColor;
 
         void main() {
             float brightness = max(dot(normalize(Normal), normalize(-lightDir)), 0.0);
-            vec3 color = baseColor * brightness;
+            vec3 color = tetraColor * brightness;
             FragColor = vec4(color, 1.0);
         }
     )";

@@ -54,25 +54,3 @@ GLuint createShaderProgram(const OpenGLShape& shape) {
     
     return shaderProgram;
 }
-
-void setupBuffer(GLuint& VAO, const OpenGLShape& shape) {
-    GLuint VBO; // Vertex Buffer Object
-    glGenVertexArrays(1, &VAO);
-    glGenBuffers(1, &VBO);
-    glBindVertexArray(VAO);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-
-    const std::vector<float>& vertices = shape.getVertices();
-    unsigned int floatsPerAttribute = shape.getFPA();
-    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), vertices.data(), GL_STATIC_DRAW);
-
-    // Define vertex attributes
-    const std::vector<int>& pointsPerAttribute = shape.getPPA();
-    int totalShift = 0;
-    for (int i = 0; i < pointsPerAttribute.size(); ++i) {
-        int ppa = pointsPerAttribute[i];
-        glVertexAttribPointer(i, pointsPerAttribute[i], GL_FLOAT, GL_FALSE, floatsPerAttribute * sizeof(float), (void*)(totalShift * sizeof(float)));
-        glEnableVertexAttribArray(i);
-        totalShift += ppa;
-    }
-}

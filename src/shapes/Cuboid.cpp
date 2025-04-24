@@ -2,65 +2,46 @@
 
 /********** External constants **********/
 
-Cuboid::Cuboid() : OpenGLShape(8) {
-    vertices = {
-        // Positions          // Colors           // Texture Coords
-        // Front face
-        -0.5f, -0.5f,  0.5f,   1.0f, 0.0f, 0.0f,   0.0f, 0.0f,  // Bottom-left
-        0.5f, -0.5f,  0.5f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f,  // Bottom-right
-        0.5f,  0.5f,  0.5f,   0.0f, 0.0f, 1.0f,   1.0f, 1.0f,  // Top-right
-        0.5f,  0.5f,  0.5f,   0.0f, 0.0f, 1.0f,   1.0f, 1.0f,  // Top-right
-        -0.5f,  0.5f,  0.5f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f,  // Top-left
-        -0.5f, -0.5f,  0.5f,   1.0f, 0.0f, 0.0f,   0.0f, 0.0f,  // Bottom-left
+Cuboid::Cuboid() : OpenGLShape(6) {
+    pointsPerAttribute = {3, 3};
 
-        // Back face
-        -0.5f, -0.5f, -0.5f,   1.0f, 0.0f, 0.0f,   0.0f, 0.0f,  
-        -0.5f,  0.5f, -0.5f,   0.0f, 1.0f, 0.0f,   0.0f, 1.0f,  
-        0.5f,  0.5f, -0.5f,   0.0f, 0.0f, 1.0f,   1.0f, 1.0f,  
-        0.5f,  0.5f, -0.5f,   0.0f, 0.0f, 1.0f,   1.0f, 1.0f,  
-        0.5f, -0.5f, -0.5f,   1.0f, 1.0f, 0.0f,   1.0f, 0.0f,  
-        -0.5f, -0.5f, -0.5f,   1.0f, 0.0f, 0.0f,   0.0f, 0.0f,  
+    glm::vec3 A( 1.0f,  1.0f,  1.0f);
+    glm::vec3 B( 1.0f,  1.0f, -1.0f);
+    glm::vec3 C( 1.0f, -1.0f, -1.0f);
+    glm::vec3 D( 1.0f, -1.0f,  1.0f);
+    glm::vec3 E(-1.0f,  1.0f,  1.0f);
+    glm::vec3 F(-1.0f,  1.0f, -1.0f);
+    glm::vec3 G(-1.0f, -1.0f, -1.0f);
+    glm::vec3 H(-1.0f, -1.0f,  1.0f);
 
-        // Left face
-        -0.5f,  0.5f,  0.5f,   1.0f, 0.0f, 0.0f,   1.0f, 0.0f,  
-        -0.5f,  0.5f, -0.5f,   0.0f, 1.0f, 0.0f,   1.0f, 1.0f,  
-        -0.5f, -0.5f, -0.5f,   0.0f, 0.0f, 1.0f,   0.0f, 1.0f,  
-        -0.5f, -0.5f, -0.5f,   0.0f, 0.0f, 1.0f,   0.0f, 1.0f,  
-        -0.5f, -0.5f,  0.5f,   1.0f, 1.0f, 0.0f,   0.0f, 0.0f,  
-        -0.5f,  0.5f,  0.5f,   1.0f, 0.0f, 0.0f,   1.0f, 0.0f,  
-
-        // Right face
-        0.5f,  0.5f,  0.5f,   1.0f, 0.0f, 0.0f,   1.0f, 0.0f,  
-        0.5f, -0.5f, -0.5f,   0.0f, 1.0f, 0.0f,   0.0f, 1.0f,  
-        0.5f,  0.5f, -0.5f,   0.0f, 0.0f, 1.0f,   1.0f, 1.0f,  
-        0.5f, -0.5f, -0.5f,   0.0f, 1.0f, 0.0f,   0.0f, 1.0f,  
-        0.5f,  0.5f,  0.5f,   1.0f, 0.0f, 0.0f,   1.0f, 0.0f,  
-        0.5f, -0.5f,  0.5f,   1.0f, 1.0f, 0.0f,   0.0f, 0.0f,  
-
-        // Bottom face
-        -0.5f, -0.5f, -0.5f,   1.0f, 0.0f, 0.0f,   0.0f, 0.0f,  
-        0.5f, -0.5f, -0.5f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f,  
-        0.5f, -0.5f,  0.5f,   0.0f, 0.0f, 1.0f,   1.0f, 1.0f,  
-        0.5f, -0.5f,  0.5f,   0.0f, 0.0f, 1.0f,   1.0f, 1.0f,  
-        -0.5f, -0.5f,  0.5f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f,  
-        -0.5f, -0.5f, -0.5f,   1.0f, 0.0f, 0.0f,   0.0f, 0.0f,  
-
-        // Top face
-        -0.5f,  0.5f, -0.5f,   1.0f, 0.0f, 0.0f,   0.0f, 0.0f,  
-        0.5f,  0.5f, -0.5f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f,  
-        0.5f,  0.5f,  0.5f,   0.0f, 0.0f, 1.0f,   1.0f, 1.0f,  
-        0.5f,  0.5f,  0.5f,   0.0f, 0.0f, 1.0f,   1.0f, 1.0f,  
-        -0.5f,  0.5f,  0.5f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f,  
-        -0.5f,  0.5f, -0.5f,   1.0f, 0.0f, 0.0f,   0.0f, 0.0f
-    };
+    addFace(A, C, B);
+    addFace(A, D, C);
+    addFace(E, G, F);
+    addFace(E, H, G);
+    addFace(A, E, D);
+    addFace(D, E, H);
+    addFace(B, F, C);
+    addFace(C, F, G);
+    addFace(A, B, E);
+    addFace(B, F, E);
+    addFace(D, C, H);
+    addFace(C, G, H);
 
     shaderVertices = R"(
         #version 330 core
         layout (location = 0) in vec3 aPos;
+        layout (location = 1) in vec3 aNormal;
+        
+        out vec3 FragPos;
+        out vec3 Normal;
+
         uniform mat4 model;
         uniform mat4 view;
         uniform mat4 projection;
+
         void main() {
+            FragPos = vec3(model * vec4(aPos, 1.0)); // world space position
+            Normal = mat3(transpose(inverse(model))) * aNormal; // normal in world space
             gl_Position = projection * view * model * vec4(aPos, 1.0);
         }
     )";
@@ -68,8 +49,17 @@ Cuboid::Cuboid() : OpenGLShape(8) {
     shaderFragments = R"(
         #version 330 core
         out vec4 FragColor;
+
+        in vec3 FragPos;
+        in vec3 Normal;
+
+        uniform vec3 lightDir;
+        uniform vec3 cubeColor;
+        
         void main() {
-            FragColor = vec4(1.0, 0.5, 0.2, 1.0); // Orange color
+            float brightness = max(dot(normalize(Normal), normalize(-lightDir)), 0.0);
+            vec3 color = cubeColor * brightness;
+            FragColor = vec4(cubeColor, 1.0); // Green color
         }
     )";
 }
