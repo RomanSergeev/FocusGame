@@ -4,4 +4,5 @@
 class Tetrahedron : public OpenGLShape {
     public:
         Tetrahedron();
+        ShapeType getType() const override { return ShapeType::Tetrahedron; }
 };

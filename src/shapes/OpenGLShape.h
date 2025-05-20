@@ -1,12 +1,13 @@
 #pragma once
 #include <vector>
+#include "ShapeEnums.h"
 #include "glm/glm.hpp"
 #include "glew/glew.h"
 
 class OpenGLShape {
     protected:
         std::vector<float> vertices; // list of all shape's points
-        std::vector<int> pointsPerAttribute; // how many attributes there are and how many floats does each attribute take (position, normale, color)
+        std::vector<std::pair<AttributeType, int>> pointsPerAttribute; // how many attributes there are and how many floats does each attribute take (position, normale, color)
         unsigned int floatsPerAttribute; // how many floats does each (x, y, z) point carry (3 is minimal)
         GLuint VAO; // Vertex Array Object
 
@@ -15,11 +16,11 @@ class OpenGLShape {
 
         void addFace(const glm::vec3& A, const glm::vec3& B, const glm::vec3& C);
     public:
-        OpenGLShape(unsigned int fpa) : floatsPerAttribute(fpa), pointsPerAttribute(1, fpa), vertices() {}
+        OpenGLShape(unsigned int fpa) : floatsPerAttribute(fpa), pointsPerAttribute(1, { AttributeType::Position, fpa }), vertices() {}
         virtual ~OpenGLShape() = 0;
 
         inline const std::vector<float>& getVertices() const { return vertices; }
-        inline const std::vector<int>& getPPA() const { return pointsPerAttribute; }
+        inline const std::vector<std::pair<AttributeType, int>>& getPPA() const { return pointsPerAttribute; }
         inline const char* getShaderVertices() const { return shaderVertices; }
         inline const char* getShaderFragments() const { return shaderFragments; }
         inline unsigned int getFPA() const { return floatsPerAttribute; }
@@ -30,6 +31,7 @@ class OpenGLShape {
             return vertices.size() / fpa;
         }
         inline unsigned int getTrianglesCount() const { return getVerticeCount() / 3; }
+        virtual ShapeType getType() const = 0;
 
         void setupBuffer();
         void draw(GLuint modelLocation, glm::mat4 model) const;

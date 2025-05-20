@@ -1,7 +1,10 @@
 #include "Tetrahedron.h"
 
 Tetrahedron::Tetrahedron() : OpenGLShape(6) {
-    pointsPerAttribute = {3, 3};
+    pointsPerAttribute = {
+        { AttributeType::Position, 3 },
+        { AttributeType::Normal  , 3 }
+    };
 
     glm::vec3 A( 1.0f,  1.0f,  1.0f);
     glm::vec3 B(-1.0f, -1.0f,  1.0f);
@@ -43,8 +46,9 @@ Tetrahedron::Tetrahedron() : OpenGLShape(6) {
         uniform vec3 tetraColor;
 
         void main() {
+            float ambient = 0.1;
             float brightness = max(dot(normalize(Normal), normalize(-lightDir)), 0.0);
-            vec3 color = tetraColor * brightness;
+            vec3 color = tetraColor * (ambient + (1 - ambient) * brightness);
             FragColor = vec4(color, 1.0);
         }
     )";

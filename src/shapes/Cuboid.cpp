@@ -3,7 +3,10 @@
 /********** External constants **********/
 
 Cuboid::Cuboid() : OpenGLShape(6) {
-    pointsPerAttribute = {3, 3};
+    pointsPerAttribute = {
+        { AttributeType::Position, 3 },
+        { AttributeType::Normal  , 3 }
+    };
 
     glm::vec3 A( 1.0f,  1.0f,  1.0f);
     glm::vec3 B( 1.0f,  1.0f, -1.0f);
@@ -57,8 +60,9 @@ Cuboid::Cuboid() : OpenGLShape(6) {
         uniform vec3 cubeColor;
         
         void main() {
+            float ambient = 0.1;
             float brightness = max(dot(normalize(Normal), normalize(-lightDir)), 0.0);
-            vec3 color = cubeColor * brightness;
+            vec3 color = cubeColor * (ambient + (1 - ambient) * brightness);
             FragColor = vec4(cubeColor, 1.0); // Green color
         }
     )";

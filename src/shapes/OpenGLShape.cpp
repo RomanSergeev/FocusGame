@@ -23,8 +23,8 @@ void OpenGLShape::setupBuffer() {
     // Define vertex attributes
     int totalShift = 0;
     for (int i = 0; i < pointsPerAttribute.size(); ++i) {
-        int ppa = pointsPerAttribute[i];
-        glVertexAttribPointer(i, pointsPerAttribute[i], GL_FLOAT, GL_FALSE, floatsPerAttribute * sizeof(float), (void*)(totalShift * sizeof(float)));
+        int ppa = pointsPerAttribute[i].second;
+        glVertexAttribPointer(i, ppa, GL_FLOAT, GL_FALSE, floatsPerAttribute * sizeof(float), (void*)(totalShift * sizeof(float)));
         glEnableVertexAttribArray(i);
         totalShift += ppa;
     }
