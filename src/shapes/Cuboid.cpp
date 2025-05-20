@@ -57,13 +57,13 @@ Cuboid::Cuboid() : OpenGLShape(6) {
         in vec3 Normal;
 
         uniform vec3 lightDir;
-        uniform vec3 cubeColor;
+        uniform vec3 baseColor;
         
         void main() {
             float ambient = 0.1;
             float brightness = max(dot(normalize(Normal), normalize(-lightDir)), 0.0);
-            vec3 color = cubeColor * (ambient + (1 - ambient) * brightness);
-            FragColor = vec4(cubeColor, 1.0); // Green color
+            vec3 color = baseColor * (ambient + (1 - ambient) * brightness);
+            FragColor = vec4(color, 1.0); // Green color
         }
     )";
 }

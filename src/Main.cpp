@@ -37,9 +37,7 @@ int main() {
     GLuint shaderProgram = createShaderProgram(*shape1);
     glUseProgram(shaderProgram);
 
-    glUniform3f(glGetUniformLocation(shaderProgram, "lightDir"  ), -0.2f, -1.0f, -0.3f);
-    glUniform3f(glGetUniformLocation(shaderProgram, "tetraColor"), 1.0f, 0.6f, 0.2f);
-    glUniform3f(glGetUniformLocation(shaderProgram, "cubeColor" ), 0.2f, 1.0f, 0.6f);
+    glUniform3f(glGetUniformLocation(shaderProgram, "lightDir"), -0.2f, -1.0f, -0.3f);
 
     // define locs inside the main loop for non-fixed camera
     GLuint modelLoc = glGetUniformLocation(shaderProgram, "model"     );
@@ -65,7 +63,9 @@ int main() {
 
         GL_CHECK(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
 
+        glUniform3f(glGetUniformLocation(shaderProgram, "baseColor"), 1.0f, 0.6f, 0.2f);
         shape1->draw(modelLoc, modelTetra);
+        glUniform3f(glGetUniformLocation(shaderProgram, "baseColor"), 0.2f, 1.0f, 0.6f);
         shape2->draw(modelLoc, modelCube);
 
         glfwSwapBuffers(window);
