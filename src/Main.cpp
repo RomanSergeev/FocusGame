@@ -1,6 +1,6 @@
 #include <iostream>
 #include <memory>
-#include "GLWindowFunctions.h"
+#include "GLWindow.h"
 #include "shapes/GLShapeService.h"
 #include "shapes/Cuboid.h"
 #include "shapes/Triangle.h"
@@ -11,8 +11,14 @@ const int WIDTH = 800;
 const int HEIGHT = 600;
 
 int main() {
-    GLFWwindow* window;
-    if (initWindow(window, WIDTH, HEIGHT, "OpenGL Window") != 0) return -1;
+    std::unique_ptr<GLWindow> window;
+    try {
+        window = std::make_unique<GLWindow>(WIDTH, HEIGHT, "Focus Game");
+    }
+    catch (const std::exception& e) {
+        std::cerr << "Window initialization failed: " << e.what() << std::endl;
+        return -1;
+    }
 
     //glEnable(GL_CULL_FACE);
     //glCullFace(GL_BACK);
@@ -44,11 +50,12 @@ int main() {
     GLuint viewLoc  = glGetUniformLocation(shaderProgram, "view"      );
     GLuint projLoc  = glGetUniformLocation(shaderProgram, "projection");
 
-    CameraController controller(window, 10.0f);
+    CameraController controller(*window, 10.0f);
     controller.setSmoothRotation(true);
     controller.setSmoothZoom(true);
 
-    while (!glfwWindowShouldClose(window)) {
+    while (!window->shouldClose()) {
+        window->processInput();
         float time = glfwGetTime();
 
         glm::mat4 modelTetra = glm::mat4(1.0f);//glm::rotate(glm::mat4(1.0f), time, glm::vec3(0.3f, 1.0f, 0.0f));
@@ -68,11 +75,9 @@ int main() {
         glUniform3f(glGetUniformLocation(shaderProgram, "baseColor"), 0.2f, 1.0f, 0.6f);
         shape2->draw(modelLoc, modelCube);
 
-        glfwSwapBuffers(window);
-        glfwPollEvents();
+        window->swapBuffers();
+        window->pollEvents();
     }
 
-    glfwDestroyWindow(window);
-    glfwTerminate();
     return 0;
 }

@@ -1,4 +1,5 @@
 #include "OpenGLhub.h"
+#include "GLWindow.h"
 
 struct CameraSettings {
     float sensitivity = 0.005f;
@@ -37,7 +38,7 @@ class CameraController {
 
     void clampPitch();
 public:
-    CameraController(GLFWwindow* window, float radius = 5.0f);
+    CameraController(const GLWindow& window, float radius = 5.0f);
 
     void updateView();
     glm::mat4 getView() const;

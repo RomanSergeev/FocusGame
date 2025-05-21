@@ -3,11 +3,12 @@
 #include "CameraController.h"
 #include "shapes/ShapeEnums.h"
 
-CameraController::CameraController(GLFWwindow* window, float radius) : radius(radius), targetRadius(radius) {
-    glfwSetWindowUserPointer(window, this); // store user pointer
-    glfwSetMouseButtonCallback(window, CameraController::mouseButtonCallback);
-    glfwSetCursorPosCallback(window, CameraController::mousePositionCallback);
-    glfwSetScrollCallback(window, CameraController::mouseScrollCallback);
+CameraController::CameraController(const GLWindow& window, float radius) : radius(radius), targetRadius(radius) {
+    GLFWwindow* handle = window.getHandle();
+    glfwSetWindowUserPointer(handle, this); // store user pointer
+    glfwSetMouseButtonCallback(handle, CameraController::mouseButtonCallback);
+    glfwSetCursorPosCallback(handle, CameraController::mousePositionCallback);
+    glfwSetScrollCallback(handle, CameraController::mouseScrollCallback);
 }
 
 void CameraController::mouseButtonCallback(GLFWwindow* window, int button, int action, int mods) {
@@ -61,18 +62,18 @@ void CameraController::handleMouseScroll(double xOffset, double yOffset) {
 void CameraController::updateView() {
     if (smoothZoom) radius += (targetRadius - radius) * settings.zoomSmooth;
 
-    if (smoothRotation) {
-        yaw += yawVelocity;
-        pitch += pitchVelocity;
+    if (!smoothRotation) return;
 
-        yawVelocity   *= settings.rotateSlowdown;
-        pitchVelocity *= settings.rotateSlowdown;
+    yaw += yawVelocity;
+    pitch += pitchVelocity;
 
-        if (std::abs(yawVelocity  ) < settings.rotateEpsilon) yawVelocity   = 0;
-        if (std::abs(pitchVelocity) < settings.rotateEpsilon) pitchVelocity = 0;
+    yawVelocity   *= settings.rotateSlowdown;
+    pitchVelocity *= settings.rotateSlowdown;
 
-        clampPitch();
-    }
+    if (std::abs(yawVelocity  ) < settings.rotateEpsilon) yawVelocity   = 0;
+    if (std::abs(pitchVelocity) < settings.rotateEpsilon) pitchVelocity = 0;
+
+    clampPitch();
 }
 
 glm::mat4 CameraController::getView() const {
