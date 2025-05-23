@@ -1,5 +1,6 @@
 #include <iostream>
 #include <memory>
+#include <vector>
 #include "GLWindow.h"
 #include "graphics/Shader.h"
 #include "shapes/Cuboid.h"
@@ -24,48 +25,59 @@ int main() {
     //glCullFace(GL_BACK);
     //glFrontFace(GL_CCW);
 
-    // Create simple cuboid:
-    // Generate and bind Vertex Array Object
-    std::unique_ptr<OpenGLShape> ptr1 = std::make_unique<Tetrahedron>();
-    std::unique_ptr<OpenGLShape> ptr2 = std::make_unique<Cuboid>();
-    ptr1->setupBuffer();
-    ptr2->setupBuffer();
-    OpenGLShape* shape1 = ptr1.get();
-    OpenGLShape* shape2 = ptr2.get();
+    //---------- DEMO ----------//
+    const char CELLS_X = 8;
+    const char CELLS_Y = 8;
+    const float CUBE_W = 2.0f;
+    const float CUBE_D = 0.3f; // ratio
+    const float REMOVE = 2 * (CELLS_X / 2 - 1.5) * (CELLS_X / 2 - 1.5) + 2.5;
 
-    glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)WIDTH / HEIGHT, 0.1f, 100.0f);
+    std::vector<std::unique_ptr<OpenGLShape>> board;
+    for (int i = 0; i < CELLS_X; ++i) {
+        for (int j = 0; j < CELLS_Y; ++j) {
+            const float DISTANCE = (CELLS_X / 2 - 0.5 - i) * (CELLS_X / 2 - 0.5 - i) + (CELLS_Y / 2 - 0.5 - j) * (CELLS_Y / 2 - 0.5 - j);
+            if (DISTANCE >= REMOVE) continue;
+            std::unique_ptr<OpenGLShape> cell = std::make_unique<Cuboid>(CUBE_W, CUBE_W, CUBE_W * CUBE_D);
+            cell->setupBuffer();
+            bool even = (i + j) & 1;
+            float rgb = even ? 0.2 : 0.9;
+            cell->setColor(rgb, rgb, rgb);
+            float x = (i - CELLS_X / 2 + 0.5) * CUBE_W;
+            float y = (j - CELLS_Y / 2 + 0.5) * CUBE_W;
+            cell->position(x, y, 0);
+            board.push_back(std::move(cell));
+        }
+    }
+    //---------- DEMO ----------//
 
-    //GLuint shaderProgram = createShaderProgram(*shape1);
     Shader shader(shaderCodeVertices, shaderCodeFragments);
     shader.use();
+    shader.setVec3("lightDir", -0.3f, -0.2f, -0.7f);
+    
+    glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)WIDTH / HEIGHT, 0.1f, 100.0f);
+    shader.setMat4("projection", projection);
 
-    shader.setVec3("lightDir", -0.2f, -1.0f, -0.3f);
-    GL_CHECK(shader.setMat4("projection", projection));
-
-    // define locs inside the main loop for non-fixed camera
-    //GLuint modelLoc = glGetUniformLocation(shaderProgram, "model");
-
-    CameraController controller(*window, 10.0f);
+    CameraController controller(*window, 20.0f);
     controller.setSmoothRotation(true);
     controller.setSmoothZoom(true);
+    controller.setMinZoom(4.0f);
+    controller.setMaxZoom(30.0f);
 
     while (!window->shouldClose()) {
         window->processInput();
 
-        float time = glfwGetTime();
-        shape1->setModel(glm::rotate(shape1->getBaseModel(), time, glm::vec3(0.3f, 1.0f, 0.0f)));
-        shape2->setModel(glm::rotate(shape2->getBaseModel(), time, glm::vec3(0.3f, 1.0f, -0.4f)));
-
         controller.updateView();
         glm::mat4 view = controller.getView();
-        GL_CHECK(shader.setMat4("view", view));
+        shader.setMat4("view", view);
 
-        GL_CHECK(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
-
-        shape1->setUniforms(shader);
-        shape1->draw();
-        shape2->setUniforms(shader);
-        shape2->draw();
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        // rotation:
+        // float time = glfwGetTime();
+        // shape->setModel(glm::rotate(shape->getBaseModel(), time, glm::vec3(0.3f, 1.0f, 0.0f)));
+        for (const auto& shape : board) {
+            shape->setUniforms(shader);
+            shape->draw();
+        }
 
         window->swapBuffers();
         window->pollEvents();

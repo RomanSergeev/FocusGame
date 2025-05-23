@@ -21,6 +21,7 @@ class CameraController {
     // smooth rotation/zoom variables:
     bool smoothRotation = false;
     bool smoothZoom = false;
+    bool invertedHorizontalMouse = true;
     float targetRadius; // target distance (for smooth zoom)
     float yawVelocity = 0.0f;
     float pitchVelocity = 0.0f;
@@ -44,4 +45,7 @@ public:
     glm::mat4 getView() const;
     inline void setSmoothRotation(bool smooth) { smoothRotation = smooth; }
     inline void setSmoothZoom(bool smooth) { smoothZoom = smooth; }
+    inline void setInvertedHorizontalMouse(bool inverted) { invertedHorizontalMouse = inverted; }
+    void setMinZoom(float zoom);
+    void setMaxZoom(float zoom);
 };

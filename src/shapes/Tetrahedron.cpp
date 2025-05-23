@@ -15,11 +15,4 @@ Tetrahedron::Tetrahedron() : OpenGLShape(6) {
     addFace(A, D, C);
     addFace(A, D, B);
     addFace(B, D, C);
-
-    baseModel = glm::mat4(1.0f);
-}
-
-void Tetrahedron::setUniforms(const Shader& shader) const {
-    OpenGLShape::setUniforms(shader);
-    shader.setVec3("baseColor", 1.0f, 0.6f, 0.2f);
 }

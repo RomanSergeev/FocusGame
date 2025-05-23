@@ -13,6 +13,7 @@ class OpenGLShape {
         GLuint VAO; // Vertex Array Object
         glm::mat4 baseModel = glm::mat4(1.0f);
         glm::mat4 model = glm::mat4(1.0f);
+        glm::vec3 baseColor = glm::vec3(1.0f);
 
         void addFace(const glm::vec3& A, const glm::vec3& B, const glm::vec3& C);
     public:
@@ -24,8 +25,12 @@ class OpenGLShape {
         inline unsigned int getFPA() const { return floatsPerAttribute; }
         const glm::mat4& getBaseModel() const { return baseModel; }
         const glm::mat4& getModel() const { return model; }
-        void setModel(const glm::mat4& mat) { model = mat; }
+        const glm::vec3& getColor() const { return baseColor; }
+
         void setBaseModel(const glm::mat4& mat) { baseModel = mat; }
+        void setModel(const glm::mat4& mat) { model = mat; }
+        void setColor(const glm::vec3& color) { baseColor = color; }
+        inline void setColor(float r, float g, float b) { setColor(glm::vec3(r, g, b)); }
 
         inline unsigned int getVerticeCount() const {
             unsigned int fpa = floatsPerAttribute;
@@ -35,6 +40,8 @@ class OpenGLShape {
         inline unsigned int getTrianglesCount() const { return getVerticeCount() / 3; }
         virtual ShapeType getType() const = 0;
 
+        void position(const glm::vec3& center);
+        inline void position(float x, float y, float z) { position(glm::vec3(x, y, z)); }
         void setupBuffer();
         virtual void draw() const;
         virtual void setUniforms(const Shader& shader) const;

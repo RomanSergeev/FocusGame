@@ -11,6 +11,10 @@ void OpenGLShape::addFace(const glm::vec3& A, const glm::vec3& B, const glm::vec
     vertices.insert(vertices.end(), face.begin(), face.end());
 }
 
+void OpenGLShape::position(const glm::vec3& center) {
+    baseModel = glm::translate(glm::mat4(1.0f), center);
+}
+
 void OpenGLShape::setupBuffer() {
     GLuint VBO; // Vertex Buffer Object
     glGenVertexArrays(1, &VAO);
@@ -31,7 +35,8 @@ void OpenGLShape::setupBuffer() {
 }
 
 void OpenGLShape::setUniforms(const Shader& shader) const {
-    shader.setMat4("model", model);
+    shader.setMat4("model", baseModel * model);
+    shader.setVec3("baseColor", baseColor);
 }
 
 void OpenGLShape::draw() const {

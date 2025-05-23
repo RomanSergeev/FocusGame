@@ -38,12 +38,13 @@ void CameraController::handleMousePosition(double xpos, double ypos) {
         float sens = settings.sensitivity;
         float dx = xpos - lastX;
         float dy = ypos - lastY;
+        float invertedMult = invertedHorizontalMouse ? -1 : 1;
 
-        yawVelocity = dx * sens;
+        yawVelocity = invertedMult * dx * sens;
         pitchVelocity = -dy * sens;
 
         if (!smoothRotation) {
-            yaw   += dx * sens;
+            yaw   += invertedMult * dx * sens;
             pitch -= dy * sens;
         }
 
@@ -58,6 +59,10 @@ void CameraController::handleMouseScroll(double xOffset, double yOffset) {
     targetRadius -= yOffset * settings.zoomStep;
     targetRadius = std::clamp(targetRadius, settings.zoomMin, settings.zoomMax);
     if (!smoothZoom) radius = targetRadius;
+}
+
+void CameraController::clampPitch() {
+    pitch = std::clamp(pitch, -settings.pitchMax, settings.pitchMax);
 }
 
 void CameraController::updateView() {
@@ -93,6 +98,12 @@ glm::mat4 CameraController::getView() const {
     return view;
 }
 
-void CameraController::clampPitch() {
-    pitch = std::clamp(pitch, -settings.pitchMax, settings.pitchMax);
+void CameraController::setMinZoom(float zoom) {
+    if (zoom <= 0) return;
+    settings.zoomMin = zoom;
+}
+
+void CameraController::setMaxZoom(float zoom) {
+    if (zoom <= 0) return;
+    settings.zoomMax = zoom;
 }
