@@ -30,8 +30,11 @@ void OpenGLShape::setupBuffer() {
     }
 }
 
-void OpenGLShape::draw(GLuint modelLocation, glm::mat4 model) const {
+void OpenGLShape::setUniforms(const Shader& shader) const {
+    shader.setMat4("model", model);
+}
+
+void OpenGLShape::draw() const {
     glBindVertexArray(VAO);
-    glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(model));
     glDrawArrays(GL_TRIANGLES, 0, getVerticeCount());
 }

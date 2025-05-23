@@ -16,40 +16,10 @@ Tetrahedron::Tetrahedron() : OpenGLShape(6) {
     addFace(A, D, B);
     addFace(B, D, C);
 
-    shaderVertices = R"(
-        #version 330 core
-        layout (location = 0) in vec3 aPos;
-        layout (location = 1) in vec3 aNormal;
+    baseModel = glm::mat4(1.0f);
+}
 
-        out vec3 FragPos;
-        out vec3 Normal;
-
-        uniform mat4 model;
-        uniform mat4 view;
-        uniform mat4 projection;
-
-        void main() {
-            FragPos = vec3(model * vec4(aPos, 1.0)); // world space position
-            Normal = mat3(transpose(inverse(model))) * aNormal; // normal in world space
-            gl_Position = projection * view * vec4(FragPos, 1.0);
-        }
-    )";
-
-    shaderFragments = R"(
-        #version 330 core
-        out vec4 FragColor;
-
-        in vec3 FragPos;
-        in vec3 Normal;
-
-        uniform vec3 lightDir;
-        uniform vec3 baseColor;
-
-        void main() {
-            float ambient = 0.1;
-            float brightness = max(dot(normalize(Normal), normalize(-lightDir)), 0.0);
-            vec3 color = baseColor * (ambient + (1 - ambient) * brightness);
-            FragColor = vec4(color, 1.0);
-        }
-    )";
+void Tetrahedron::setUniforms(const Shader& shader) const {
+    OpenGLShape::setUniforms(shader);
+    shader.setVec3("baseColor", 1.0f, 0.6f, 0.2f);
 }

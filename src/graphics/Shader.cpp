@@ -1,6 +1,43 @@
 #include <iostream>
 #include "Shader.h"
 
+const char* shaderCodeVertices = R"(
+    #version 330 core
+    layout (location = 0) in vec3 aPos;
+    layout (location = 1) in vec3 aNormal;
+
+    out vec3 FragPos;
+    out vec3 Normal;
+
+    uniform mat4 model;
+    uniform mat4 view;
+    uniform mat4 projection;
+
+    void main() {
+        FragPos = vec3(model * vec4(aPos, 1.0)); // world space position
+        Normal = mat3(transpose(inverse(model))) * aNormal; // normal in world space
+        gl_Position = projection * view * vec4(FragPos, 1.0);
+    }
+)";
+
+const char* shaderCodeFragments = R"(
+    #version 330 core
+    out vec4 FragColor;
+
+    in vec3 FragPos;
+    in vec3 Normal;
+
+    uniform vec3 lightDir;
+    uniform vec3 baseColor;
+
+    void main() {
+        float ambient = 0.1;
+        float brightness = max(dot(normalize(Normal), normalize(-lightDir)), 0.0);
+        vec3 color = baseColor * (ambient + (1 - ambient) * brightness);
+        FragColor = vec4(color, 1.0);
+    }
+)";
+
 const int LOG_SIZE = 512;
 
 Shader::Shader(const char* vertexSrc, const char* fragmentSrc) {
@@ -70,6 +107,10 @@ void Shader::setFloat(const std::string& name, float value) const {
 
 void Shader::setVec3(const std::string& name, const glm::vec3& value) const {
     glUniform3fv(glGetUniformLocation(ID, name.c_str()), 1, &value[0]);
+}
+
+void Shader::setVec3(const std::string& name, float x, float y, float z) const {
+    glUniform3f(glGetUniformLocation(ID, name.c_str()), x, y, z);
 }
 
 void Shader::setMat4(const std::string& name, const glm::mat4& mat) const {

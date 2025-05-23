@@ -1,7 +1,7 @@
 #include <iostream>
 #include <memory>
 #include "GLWindow.h"
-#include "shapes/GLShapeService.h"
+#include "graphics/Shader.h"
 #include "shapes/Cuboid.h"
 #include "shapes/Triangle.h"
 #include "shapes/Tetrahedron.h"
@@ -30,25 +30,20 @@ int main() {
     std::unique_ptr<OpenGLShape> ptr2 = std::make_unique<Cuboid>();
     ptr1->setupBuffer();
     ptr2->setupBuffer();
-    const OpenGLShape* shape1 = ptr1.get();
-    const OpenGLShape* shape2 = ptr2.get();
+    OpenGLShape* shape1 = ptr1.get();
+    OpenGLShape* shape2 = ptr2.get();
 
-    /*glm::mat4 view = glm::lookAt(
-        glm::vec3(3.0f, 0.0f, 10.0f), // Camera position
-        glm::vec3(0.0f, 0.0f, 0.0f), // Look-at point
-        glm::vec3(0.0f, 1.0f, 0.0f)  // Up vector
-    );*/
     glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)WIDTH / HEIGHT, 0.1f, 100.0f);
 
-    GLuint shaderProgram = createShaderProgram(*shape1);
-    glUseProgram(shaderProgram);
+    //GLuint shaderProgram = createShaderProgram(*shape1);
+    Shader shader(shaderCodeVertices, shaderCodeFragments);
+    shader.use();
 
-    glUniform3f(glGetUniformLocation(shaderProgram, "lightDir"), -0.2f, -1.0f, -0.3f);
+    shader.setVec3("lightDir", -0.2f, -1.0f, -0.3f);
+    GL_CHECK(shader.setMat4("projection", projection));
 
     // define locs inside the main loop for non-fixed camera
-    GLuint modelLoc = glGetUniformLocation(shaderProgram, "model"     );
-    GLuint viewLoc  = glGetUniformLocation(shaderProgram, "view"      );
-    GLuint projLoc  = glGetUniformLocation(shaderProgram, "projection");
+    //GLuint modelLoc = glGetUniformLocation(shaderProgram, "model");
 
     CameraController controller(*window, 10.0f);
     controller.setSmoothRotation(true);
@@ -56,24 +51,21 @@ int main() {
 
     while (!window->shouldClose()) {
         window->processInput();
+
         float time = glfwGetTime();
-
-        glm::mat4 modelTetra = glm::mat4(1.0f);//glm::rotate(glm::mat4(1.0f), time, glm::vec3(0.3f, 1.0f, 0.0f));
-
-        glm::mat4 modelCube = glm::translate(glm::mat4(1.0f), glm::vec3(-3.0f, 0.0f, 0.0f));
-        modelCube = glm::rotate(modelCube, time, glm::vec3(0.3f, 1.0f, -0.4f));
+        shape1->setModel(glm::rotate(shape1->getBaseModel(), time, glm::vec3(0.3f, 1.0f, 0.0f)));
+        shape2->setModel(glm::rotate(shape2->getBaseModel(), time, glm::vec3(0.3f, 1.0f, -0.4f)));
 
         controller.updateView();
         glm::mat4 view = controller.getView();
-        GL_CHECK(glUniformMatrix4fv(viewLoc , 1, GL_FALSE, glm::value_ptr(view)));
-        GL_CHECK(glUniformMatrix4fv(projLoc , 1, GL_FALSE, glm::value_ptr(projection)));
+        GL_CHECK(shader.setMat4("view", view));
 
         GL_CHECK(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
 
-        glUniform3f(glGetUniformLocation(shaderProgram, "baseColor"), 1.0f, 0.6f, 0.2f);
-        shape1->draw(modelLoc, modelTetra);
-        glUniform3f(glGetUniformLocation(shaderProgram, "baseColor"), 0.2f, 1.0f, 0.6f);
-        shape2->draw(modelLoc, modelCube);
+        shape1->setUniforms(shader);
+        shape1->draw();
+        shape2->setUniforms(shader);
+        shape2->draw();
 
         window->swapBuffers();
         window->pollEvents();

@@ -11,6 +11,7 @@ CameraController::CameraController(const GLWindow& window, float radius) : radiu
     glfwSetScrollCallback(handle, CameraController::mouseScrollCallback);
 }
 
+// these identical callbacks cannot be generalized because of the way GLFW (in C) obtains function pointers
 void CameraController::mouseButtonCallback(GLFWwindow* window, int button, int action, int mods) {
     auto* controller = static_cast<CameraController*>(glfwGetWindowUserPointer(window));
     if (controller) controller->handleMouseButton(button, action, mods);
@@ -94,6 +95,4 @@ glm::mat4 CameraController::getView() const {
 
 void CameraController::clampPitch() {
     pitch = std::clamp(pitch, -settings.pitchMax, settings.pitchMax);
-    /*if (pitch > glm::radians(89.0f)) pitch = glm::radians(89.0f);
-    if (pitch < glm::radians(-89.0f)) pitch = glm::radians(-89.0f);*/
 }

@@ -3,6 +3,7 @@
 #include "ShapeEnums.h"
 #include "glm/glm.hpp"
 #include "glew/glew.h"
+#include "graphics/Shader.h"
 
 class OpenGLShape {
     protected:
@@ -10,9 +11,8 @@ class OpenGLShape {
         std::vector<std::pair<AttributeType, int>> pointsPerAttribute; // how many attributes there are and how many floats does each attribute take (position, normale, color)
         unsigned int floatsPerAttribute; // how many floats does each (x, y, z) point carry (3 is minimal)
         GLuint VAO; // Vertex Array Object
-
-        const char* shaderVertices;
-        const char* shaderFragments;
+        glm::mat4 baseModel = glm::mat4(1.0f);
+        glm::mat4 model = glm::mat4(1.0f);
 
         void addFace(const glm::vec3& A, const glm::vec3& B, const glm::vec3& C);
     public:
@@ -21,9 +21,11 @@ class OpenGLShape {
 
         inline const std::vector<float>& getVertices() const { return vertices; }
         inline const std::vector<std::pair<AttributeType, int>>& getPPA() const { return pointsPerAttribute; }
-        inline const char* getShaderVertices() const { return shaderVertices; }
-        inline const char* getShaderFragments() const { return shaderFragments; }
         inline unsigned int getFPA() const { return floatsPerAttribute; }
+        const glm::mat4& getBaseModel() const { return baseModel; }
+        const glm::mat4& getModel() const { return model; }
+        void setModel(const glm::mat4& mat) { model = mat; }
+        void setBaseModel(const glm::mat4& mat) { baseModel = mat; }
 
         inline unsigned int getVerticeCount() const {
             unsigned int fpa = floatsPerAttribute;
@@ -34,14 +36,8 @@ class OpenGLShape {
         virtual ShapeType getType() const = 0;
 
         void setupBuffer();
-        void draw(GLuint modelLocation, glm::mat4 model) const;
+        virtual void draw() const;
+        virtual void setUniforms(const Shader& shader) const;
 };
 
-inline OpenGLShape::~OpenGLShape() {
-    // lesson learned: don't delete const char* members,
-    // since they're guaranteed to have been instantiated in constructor
-    // as strings of fixed length.
-
-    //delete[] shaderVertices;
-    //delete[] shaderFragments;
-}
+inline OpenGLShape::~OpenGLShape() {}
