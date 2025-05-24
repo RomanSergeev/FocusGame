@@ -50,12 +50,12 @@ int main() {
     }
     //---------- DEMO ----------//
 
-    Shader shader(shaderCodeVertices, shaderCodeFragments);
+    Shader shader(shaderCodeVertices.c_str(), shaderCodeFragments.c_str());
     shader.use();
-    shader.setVec3("lightDir", -0.3f, -0.2f, -0.7f);
+    shader.setVec3(ShaderParams::LIGHT_DIR, -0.3f, -0.2f, -0.7f);
     
     glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)WIDTH / HEIGHT, 0.1f, 100.0f);
-    shader.setMat4("projection", projection);
+    shader.setMat4(ShaderParams::PROJECTION, projection);
 
     CameraController controller(*window, 20.0f);
     controller.setSmoothRotation(true);
@@ -68,7 +68,7 @@ int main() {
 
         controller.updateView();
         glm::mat4 view = controller.getView();
-        shader.setMat4("view", view);
+        shader.setMat4(ShaderParams::VIEW, view);
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         // rotation:

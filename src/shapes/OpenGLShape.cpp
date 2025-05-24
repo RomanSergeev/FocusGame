@@ -35,8 +35,8 @@ void OpenGLShape::setupBuffer() {
 }
 
 void OpenGLShape::setUniforms(const Shader& shader) const {
-    shader.setMat4("model", baseModel * model);
-    shader.setVec3("baseColor", baseColor);
+    shader.setMat4(ShaderParams::MODEL, baseModel * model);
+    shader.setVec3(ShaderParams::BASE_COLOR, baseColor);
 }
 
 void OpenGLShape::draw() const {

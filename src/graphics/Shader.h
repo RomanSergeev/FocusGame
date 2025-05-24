@@ -1,13 +1,19 @@
 #pragma once
+#include <map>
 #include <string>
 #include "glm/glm.hpp"
 #include "glew/glew.h"
 
-extern const char* shaderCodeVertices;
-extern const char* shaderCodeFragments;
+extern const std::string shaderCodeVertices;
+extern const std::string shaderCodeFragments;
 
 namespace ShaderParams {
+    inline constexpr const char* V_POS      = "aPos";
+    inline constexpr const char* V_NORMAL   = "aNormal";
+    inline constexpr const char* F_POS      = "FragPos";
+    inline constexpr const char* F_NORMAL   = "Normal";
     inline constexpr const char* BASE_COLOR = "baseColor";
+    inline constexpr const char* F_COLOR    = "FragColor";
     inline constexpr const char* LIGHT_DIR  = "lightDir";
     inline constexpr const char* MODEL      = "model";
     inline constexpr const char* VIEW       = "view";
