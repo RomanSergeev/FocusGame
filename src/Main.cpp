@@ -57,22 +57,27 @@ int main() {
     glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)WIDTH / HEIGHT, 0.1f, 100.0f);
     shader.setMat4(ShaderParams::PROJECTION, projection);
 
-    CameraController controller(*window, 20.0f);
-    controller.setSmoothRotation(true);
-    controller.setSmoothZoom(true);
-    controller.setMinZoom(4.0f);
-    controller.setMaxZoom(30.0f);
+    CameraController::CameraSettings settings;
+    settings.smoothRotation = true;
+    settings.smoothZoom = true;
+    settings.invertedHorizontalMouse = true;
+    settings.invertedVerticalMouse = true;
+    CameraController controller(*window, settings, 20.0f);
+    controller.setZoomLimits(4.0f, 30.0f);
 
+    float time = glfwGetTime();
     while (!window->shouldClose()) {
         window->processInput();
 
-        controller.updateView();
+        float timeDelta = time;
+        time = glfwGetTime();
+        timeDelta = time - timeDelta;
+        controller.updateView(timeDelta);
         glm::mat4 view = controller.getView();
         shader.setMat4(ShaderParams::VIEW, view);
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         // rotation:
-        // float time = glfwGetTime();
         // shape->setModel(glm::rotate(shape->getBaseModel(), time, glm::vec3(0.3f, 1.0f, 0.0f)));
         for (const auto& shape : board) {
             shape->setUniforms(shader);
