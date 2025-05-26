@@ -40,7 +40,6 @@ GLWindow::GLWindow(int width, int height, const std::string& title) {
 
     glEnable(GL_DEPTH_TEST);
 
-    glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
     monitor = glfwGetPrimaryMonitor();
     glfwGetWindowSize(window, &winW, &winH);
     glfwGetWindowPos(window, &winX, &winY);
@@ -91,8 +90,4 @@ void GLWindow::processInput() {
     }
     isFullscreen = !isFullscreen;
     toggledLastFrame = true;
-}
-
-void GLWindow::framebufferSizeCallback(GLFWwindow* window, int width, int height) {
-    glViewport(0, 0, width, height);
 }

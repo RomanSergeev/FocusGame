@@ -14,7 +14,9 @@ targetRadius(radius) {
     glfwSetMouseButtonCallback(handle, CameraController::mouseButtonCallback);
     glfwSetCursorPosCallback(handle, CameraController::mousePositionCallback);
     glfwSetScrollCallback(handle, CameraController::mouseScrollCallback);
+    glfwSetFramebufferSizeCallback(handle, CameraController::resizeCallback);
 
+    handleWindowResize(window.getWindowWidth(), window.getWindowHeight());
     clampRadius();
 }
 
@@ -26,12 +28,17 @@ void CameraController::mouseButtonCallback(GLFWwindow* window, int button, int a
 
 void CameraController::mousePositionCallback(GLFWwindow* window, double xpos, double ypos) {
     auto* controller = static_cast<CameraController*>(glfwGetWindowUserPointer(window));
-    if (controller) controller->handleMousePosition(xpos, ypos);
+    if (controller) controller->handleMousePosition(window, xpos, ypos);
 }
 
 void CameraController::mouseScrollCallback(GLFWwindow* window, double xOffset, double yOffset) {
     auto* controller = static_cast<CameraController*>(glfwGetWindowUserPointer(window));
     if (controller) controller->handleMouseScroll(xOffset, yOffset);
+}
+
+void CameraController::resizeCallback(GLFWwindow* window, int width, int height) {
+    auto* controller = static_cast<CameraController*>(glfwGetWindowUserPointer(window));
+    if (controller) controller->handleWindowResize(width, height);
 }
 
 void CameraController::handleMouseButton(int button, int action, int mods) {
@@ -40,20 +47,31 @@ void CameraController::handleMouseButton(int button, int action, int mods) {
     else if (action == GLFW_RELEASE) rotating = false;
 }
 
-void CameraController::handleMousePosition(double xpos, double ypos) {
+void CameraController::handleMousePosition(GLFWwindow* window, double xpos, double ypos) {
     if (rotating) {
         float sens = settings.sensitivity;
         float dx = xpos - lastX;
         float dy = ypos - lastY;
+        
+        const int DEFAULT_WIDTH = 800, DEFAULT_HEIGHT = 600;
+
+        int wWidth, wHeight;
+        glfwGetFramebufferSize(window, &wWidth, &wHeight);
+        if (wWidth <= 0 || wHeight <= 0) return; // causes a #DIV0 crash when alt-tabbing from fullscreen app
+        float scaleX = DEFAULT_WIDTH / (float)wWidth;
+        float scaleY = DEFAULT_HEIGHT / (float)wHeight;
         float invertedMultYaw = settings.invertedHorizontalMouse ? -1 : 1;
         float invertedMultPitch = settings.invertedVerticalMouse ? -1 : 1;
 
-        yawVelocity   = invertedMultYaw   * dx * sens;
-        pitchVelocity = invertedMultPitch * dy * sens;
+        float deltaX = invertedMultYaw   * dx * scaleX * sens;
+        float deltaY = invertedMultPitch * dy * scaleY * sens;
+
+        yawVelocity   = deltaX;
+        pitchVelocity = deltaY;
 
         if (!settings.smoothRotation) {
-            yaw   += invertedMultYaw   * dx * sens;
-            pitch += invertedMultPitch * dy * sens;
+            yaw   += deltaX;
+            pitch += deltaY;
         }
 
         if (settings.doClampYaw) clampYaw();
@@ -68,6 +86,13 @@ void CameraController::handleMouseScroll(double xOffset, double yOffset) {
     targetRadius -= yOffset * settings.zoomStep;
     targetRadius = std::clamp(targetRadius, settings.zoomMin, settings.zoomMax);
     if (!settings.smoothZoom) radius = targetRadius;
+}
+
+void CameraController::handleWindowResize(int width, int height) {
+    glViewport(0, 0, width, height);
+    if (width > 0 && height > 0) {
+        setAspectRatio((float)width / height);
+    }
 }
 
 void CameraController::clampYaw() {
@@ -134,4 +159,8 @@ void CameraController::setZoomLimits(float zoomMin, float zoomMax) {
     settings.zoomMin = zoomMin;
     settings.zoomMax = zoomMax;
     clampRadius();
+}
+
+void CameraController::setAspectRatio(float ratio) {
+    projectionMatrix = glm::perspective(glm::radians(45.0f), ratio, 0.1f, 100.0f);;
 }

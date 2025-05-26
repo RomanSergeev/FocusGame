@@ -23,7 +23,8 @@ public:
     bool shouldClose() const;
     GLFWwindow* getHandle() const;
     bool keyPressed(int keyCode) const;
+    inline int getWindowWidth() const { return winW; } 
+    inline int getWindowHeight() const { return winH; } 
 
     void processInput(); // handles fullscreen toggle
-    static void framebufferSizeCallback(GLFWwindow* window, int width, int height);
 };
