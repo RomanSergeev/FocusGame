@@ -3,6 +3,9 @@
 #include <memory>
 #include <stdexcept>
 #include "CameraController.h"
+#include "glfw/glfw3.h"
+#include "glm/ext/matrix_clip_space.hpp"
+#include "glm/ext/matrix_transform.hpp"
 #include "shapes/ShapeEnums.h"
 
 CameraController::CameraController(const GLWindow& window, const CameraSettings& settings, float radius) :

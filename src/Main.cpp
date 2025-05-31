@@ -1,12 +1,12 @@
 #include <iostream>
 #include <memory>
 #include <vector>
-#include "GLWindow.h"
+#include "view/GLWindow.h"
 #include "graphics/Shader.h"
 #include "shapes/Cuboid.h"
 #include "shapes/Triangle.h"
 #include "shapes/Tetrahedron.h"
-#include "CameraController.h"
+#include "controller/CameraController.h"
 
 const int WIDTH = 800;
 const int HEIGHT = 600;

@@ -1,5 +1,7 @@
-#include "OpenGLhub.h"
-#include "GLWindow.h"
+#include "view/GLWindow.h"
+#include "glm/fwd.hpp"
+#include "glm/gtc/constants.hpp"
+#include "glm/ext/matrix_transform.hpp"
 
 class CameraController {
 public:

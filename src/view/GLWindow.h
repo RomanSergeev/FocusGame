@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
-#include "OpenGLhub.h"
+#include "glew/glew.h"
+#include "glfw/glfw3.h"
 #define GL_CHECK(stmt) do { stmt; checkGLError(#stmt, __FILE__, __LINE__); } while (0)
 
 // Usage: GL_CHECK(glFunctionCall(args...));
