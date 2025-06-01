@@ -14,7 +14,7 @@ class GLWindow {
     GLFWwindow* window;
     GLFWmonitor* monitor;
     int winX, winY, winW = DEFAULT_WIDTH, winH = DEFAULT_HEIGHT;
-    bool isFullscreen = false;
+    bool inFullscreen = false;
 public:
     GLWindow(int width, int height, const std::string& title);
     ~GLWindow();
@@ -23,9 +23,17 @@ public:
     void swapBuffers();
     bool shouldClose() const;
     GLFWwindow* getHandle() const;
-    bool keyPressed(int keyCode) const;
-    inline int getWindowWidth() const { return winW; } 
-    inline int getWindowHeight() const { return winH; } 
+    bool isPressedAlt() const;
+    bool isPressedCtrl() const;
+    bool isPressedShift() const;
+    bool isPressedEnter() const;
+    bool isPressedKey(int keyCode) const;
+    bool isFullscreen() const { return inFullscreen; }
+    int getWindowWidth() const { return winW; }
+    int getWindowHeight() const { return winH; }
+    void goFullscreenMode();
+    void goWindowedMode();
+    void toggleFullscreenMode();
 
-    void processInput(); // handles fullscreen toggle
+    //void processInput(); // handles fullscreen toggle
 };

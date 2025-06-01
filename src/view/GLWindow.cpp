@@ -39,6 +39,9 @@ GLWindow::GLWindow(int width, int height, const std::string& title) {
     }
 
     glEnable(GL_DEPTH_TEST);
+    //glEnable(GL_CULL_FACE);
+    //glCullFace(GL_BACK);
+    //glFrontFace(GL_CCW);
 
     monitor = glfwGetPrimaryMonitor();
     glfwGetWindowSize(window, &winW, &winH);
@@ -67,27 +70,58 @@ GLFWwindow* GLWindow::getHandle() const {
     return window;
 }
 
-bool GLWindow::keyPressed(int keyCode) const {
+bool GLWindow::isPressedAlt() const {
+    return isPressedKey(GLFW_KEY_LEFT_ALT) || isPressedKey(GLFW_KEY_RIGHT_ALT);
+}
+
+bool GLWindow::isPressedCtrl() const {
+    return isPressedKey(GLFW_KEY_LEFT_CONTROL) || isPressedKey(GLFW_KEY_RIGHT_CONTROL);
+}
+
+bool GLWindow::isPressedShift() const {
+    return isPressedKey(GLFW_KEY_LEFT_SHIFT) || isPressedKey(GLFW_KEY_RIGHT_SHIFT);
+}
+
+bool GLWindow::isPressedEnter() const {
+    return isPressedKey(GLFW_KEY_ENTER) || isPressedKey(GLFW_KEY_KP_ENTER);
+}
+
+bool GLWindow::isPressedKey(int keyCode) const {
     return glfwGetKey(window, keyCode) == GLFW_PRESS;
 }
 
-void GLWindow::processInput() {
+void GLWindow::goFullscreenMode() {
+    if (inFullscreen) return;
+    inFullscreen = true;
+    const GLFWvidmode* mode = glfwGetVideoMode(monitor);
+    glfwGetWindowPos(window, &winX, &winY);
+    glfwGetWindowSize(window, &winW, &winH);
+    glfwSetWindowMonitor(window, monitor, 0, 0, mode->width, mode->height, mode->refreshRate);
+}
+
+void GLWindow::goWindowedMode() {
+    if (!inFullscreen) return;
+    inFullscreen = false;
+    glfwSetWindowMonitor(window, nullptr, winX, winY, winW, winH, 0);
+}
+
+void GLWindow::toggleFullscreenMode() {
+    if (inFullscreen) goWindowedMode();
+    else goFullscreenMode();
+}
+
+/*void GLWindow::processInput() {
     static bool toggledLastFrame = false;
     
-    if ((!keyPressed(GLFW_KEY_ENTER) && !keyPressed(GLFW_KEY_KP_ENTER)) ||
-        (!keyPressed(GLFW_KEY_LEFT_ALT) && !keyPressed(GLFW_KEY_RIGHT_ALT))) {
+    if (!isPressedAlt() || !isPressedEnter()) {
             toggledLastFrame = false;
             return;
         }
     if (toggledLastFrame) return;
-    if (isFullscreen) {
-        glfwSetWindowMonitor(window, nullptr, winX, winY, winW, winH, 0);
-    } else {
-        const GLFWvidmode* mode = glfwGetVideoMode(monitor);
-        glfwGetWindowPos(window, &winX, &winY);
-        glfwGetWindowSize(window, &winW, &winH);
-        glfwSetWindowMonitor(window, monitor, 0, 0, mode->width, mode->height, mode->refreshRate);
-    }
-    isFullscreen = !isFullscreen;
+    if (inFullscreen)
+        goWindowedMode();
+    else
+        goFullscreenMode();
+    inFullscreen = !inFullscreen;
     toggledLastFrame = true;
-}
+}*/

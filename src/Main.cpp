@@ -7,6 +7,7 @@
 #include "shapes/Triangle.h"
 #include "shapes/Tetrahedron.h"
 #include "controller/CameraController.h"
+#include "app/AppController.h"
 
 const int WIDTH = 800;
 const int HEIGHT = 600;
@@ -20,10 +21,6 @@ int main() {
         std::cerr << "Window initialization failed: " << e.what() << std::endl;
         return -1;
     }
-
-    //glEnable(GL_CULL_FACE);
-    //glCullFace(GL_BACK);
-    //glFrontFace(GL_CCW);
 
     //---------- DEMO ----------//
     const char CELLS_X = 8;
@@ -62,9 +59,12 @@ int main() {
     CameraController controller(*window, settings, 20.0f);
     controller.setZoomLimits(4.0f, 30.0f);
 
+    InputHandler inputHandler;
+    AppController appController(*window, inputHandler);
+
     float time = glfwGetTime();
     while (!window->shouldClose()) {
-        window->processInput();
+        appController.handleInputKey();
 
         float timeDelta = time;
         time = glfwGetTime();
