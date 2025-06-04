@@ -1,12 +1,5 @@
 
 #include <memory>
-#include <vector>
-#include "view/GLWindow.h"
-#include "graphics/Shader.h"
-#include "shapes/Cuboid.h"
-#include "shapes/Triangle.h"
-#include "shapes/Tetrahedron.h"
-#include "controller/CameraController.h"
 #include "app/AppController.h"
 
 int main() {

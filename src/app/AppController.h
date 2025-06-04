@@ -3,7 +3,6 @@
 #include <vector>
 #include "InputHandler.h"
 #include "controller/CameraController.h"
-#include "graphics/Shader.h"
 #include "shapes/OpenGLShape.h"
 
 class AppController {
