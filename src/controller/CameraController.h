@@ -1,3 +1,5 @@
+#pragma once
+#include <utility>
 #include "view/GLWindow.h"
 #include "glm/fwd.hpp"
 #include "glm/gtc/constants.hpp"
@@ -6,13 +8,21 @@
 class CameraController {
 public:
     struct CameraSettings {
+        static constexpr float PI2 = glm::half_pi<float>();
+        static constexpr std::pair<float, float> DEFAULT_ZOOM = { 2.0f, 20.0f };
+        static constexpr std::pair<float, float> LIMIT_SENSITIVITY = { 0.005f, 1.0f };
+        static constexpr std::pair<float, float> LIMIT_ZOOM = { 0.01f, 1000.0f };
+        static constexpr std::pair<float, float> LIMIT_ZOOM_STEP = { 0.01f, 10.0f };
+        static constexpr std::pair<float, float> LIMIT_ZOOM_SMOOTH = { 0.0f, 1.0f };
+        static constexpr std::pair<float, float> LIMIT_ROTATE_SLOWDOWN = { 0.1f, 100.0f };
+        static constexpr std::pair<float, float> LIMIT_YAW = { -PI2 + 0.1f, PI2 - 0.1f };
+        static constexpr std::pair<float, float> LIMIT_PITCH = { -PI2 + 0.1f, PI2 - 0.1f };
+        static constexpr float ROTATE_STOP_EPSILON = 0.0001f;
+
         float sensitivity = 0.005f;
         float zoomStep = 0.5f;
         float zoomSmoothFactor = 0.1f;
         float rotateSlowdown = 6.0f;
-        float rotateEpsilon = 0.0001f;
-        float yawMax =  glm::half_pi<float>() - 0.1f;
-        float pitchMax =  glm::half_pi<float>() - 0.1f;
         // smooth rotation/zoom variables:
         bool smoothRotation = false;
         bool smoothZoom = false;
@@ -20,16 +30,21 @@ public:
         bool invertedVerticalMouse = true;
         bool doClampYaw = false;
         bool doClampPitch = true;
+
+        CameraSettings();
+
+        void sanitize();
     private:
-        float zoomMin = 2.0f;
-        float zoomMax = 20.0f;
+        float zoomMin = DEFAULT_ZOOM.first;
+        float zoomMax = DEFAULT_ZOOM.second;
 
         friend class CameraController;
     };
-    CameraController(const GLWindow& window, const CameraSettings& settings, float radius = 5.0f);
+    CameraController(const GLWindow& window);
 
     const glm::mat4& getProjectionMatrix() const { return projectionMatrix; }
 
+    void updateSettings(CameraSettings&& settings);
     void updateView(float timePassed);
     glm::mat4 getView() const;
     void setZoomLimits(float zoomMin, float zoomMax);
@@ -38,8 +53,8 @@ private:
     static constexpr float DEFAULT_ZOOM = 1.0f;
 
     CameraSettings settings;
-    float yaw   = 0.0f;  // horizontal angle (around Y)
-    float pitch = 0.0f;  // vertical angle (around X)
+    float yaw = 0.0f; // horizontal angle (around Y)
+    float pitch = 0.0f; // vertical angle (around X)
     float radius; // distance from origin
     
     float targetRadius; // target distance (for smooth zoom)

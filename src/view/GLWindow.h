@@ -18,7 +18,7 @@ class GLWindow {
 public:
     GLWindow(int width, int height, const std::string& title);
     ~GLWindow();
-
+    void clearBuffer();
     void pollEvents();
     void swapBuffers();
     bool shouldClose() const;
@@ -34,6 +34,5 @@ public:
     void goFullscreenMode();
     void goWindowedMode();
     void toggleFullscreenMode();
-
-    //void processInput(); // handles fullscreen toggle
+    float getCurrentTime() const;
 };

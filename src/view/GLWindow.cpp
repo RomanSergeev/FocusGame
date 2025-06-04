@@ -54,6 +54,10 @@ GLWindow::~GLWindow() {
     glfwTerminate();
 }
 
+void GLWindow::clearBuffer() {
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+}
+
 void GLWindow::pollEvents() {
     glfwPollEvents();
 }
@@ -110,18 +114,6 @@ void GLWindow::toggleFullscreenMode() {
     else goFullscreenMode();
 }
 
-/*void GLWindow::processInput() {
-    static bool toggledLastFrame = false;
-    
-    if (!isPressedAlt() || !isPressedEnter()) {
-            toggledLastFrame = false;
-            return;
-        }
-    if (toggledLastFrame) return;
-    if (inFullscreen)
-        goWindowedMode();
-    else
-        goFullscreenMode();
-    inFullscreen = !inFullscreen;
-    toggledLastFrame = true;
-}*/
+float GLWindow::getCurrentTime() const {
+    return glfwGetTime();
+}

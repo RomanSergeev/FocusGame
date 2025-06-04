@@ -8,10 +8,36 @@
 #include "glm/ext/matrix_transform.hpp"
 #include "shapes/ShapeEnums.h"
 
-CameraController::CameraController(const GLWindow& window, const CameraSettings& settings, float radius) :
-settings(std::move(settings)),
-radius(radius),
-targetRadius(radius) {
+void clampValue(float& value, float from, float to) { value = std::clamp(value, from, to); }
+void clampValue(float& value, const std::pair<float, float>& pair) { value = std::clamp(value, pair.first, pair.second); }
+
+CameraController::CameraSettings::CameraSettings() {
+    sanitize();
+}
+
+void CameraController::CameraSettings::sanitize() {
+#ifndef NDEBUG
+    if (zoomMin < 0) throw std::invalid_argument("CameraController::CameraSettings parameter zoomMin is negative.");
+    if (zoomMax < 0) throw std::invalid_argument("CameraController::CameraSettings parameter zoomMax is negative.");
+    if (zoomMin > zoomMax) throw std::invalid_argument("CameraController::CameraSettings parameters zoomMin and zoomMax are misaligned.");
+#endif
+    clampValue(zoomMin, LIMIT_ZOOM);
+    clampValue(zoomMax, LIMIT_ZOOM);
+    if (zoomMin > zoomMax) {
+        float temp = zoomMin;
+        zoomMin = zoomMax;
+        zoomMax = temp;
+    }
+    clampValue(sensitivity, LIMIT_SENSITIVITY);
+    clampValue(zoomStep, LIMIT_ZOOM_STEP);
+    clampValue(zoomSmoothFactor, LIMIT_ZOOM_SMOOTH);
+    clampValue(rotateSlowdown, LIMIT_ROTATE_SLOWDOWN);
+}
+
+CameraController::CameraController(const GLWindow& window) {
+    float midZoom = (settings.zoomMin + settings.zoomMax) / 2;
+    radius = midZoom;
+    targetRadius = midZoom;
     GLFWwindow* handle = window.getHandle();
     glfwSetWindowUserPointer(handle, this); // store user pointer
     glfwSetMouseButtonCallback(handle, CameraController::mouseButtonCallback);
@@ -20,6 +46,13 @@ targetRadius(radius) {
     glfwSetFramebufferSizeCallback(handle, CameraController::resizeCallback);
 
     handleWindowResize(window.getWindowWidth(), window.getWindowHeight());
+    clampRadius();
+}
+
+void CameraController::updateSettings(CameraSettings&& settings) {
+    CameraSettings temp = std::move(settings);
+    temp.sanitize();
+    this->settings = std::move(temp);
     clampRadius();
 }
 
@@ -87,7 +120,7 @@ void CameraController::handleMousePosition(GLFWwindow* window, double xpos, doub
 
 void CameraController::handleMouseScroll(double xOffset, double yOffset) {
     targetRadius -= yOffset * settings.zoomStep;
-    targetRadius = std::clamp(targetRadius, settings.zoomMin, settings.zoomMax);
+    clampValue(targetRadius, settings.zoomMin, settings.zoomMax);
     if (!settings.smoothZoom) radius = targetRadius;
 }
 
@@ -99,15 +132,16 @@ void CameraController::handleWindowResize(int width, int height) {
 }
 
 void CameraController::clampYaw() {
-    yaw = std::clamp(yaw, -settings.yawMax, settings.yawMax);
+    clampValue(yaw, CameraSettings::LIMIT_YAW);
 }
 
 void CameraController::clampPitch() {
-    pitch = std::clamp(pitch, -settings.pitchMax, settings.pitchMax);
+    clampValue(pitch, CameraSettings::LIMIT_PITCH);
 }
 
 void CameraController::clampRadius() {
-    radius = std::clamp(radius, settings.zoomMin, settings.zoomMax);
+    clampValue(radius, settings.zoomMin, settings.zoomMax);
+    clampValue(targetRadius, settings.zoomMin, settings.zoomMax);
 }
 
 void CameraController::updateView(float timePassed) {
@@ -121,8 +155,8 @@ void CameraController::updateView(float timePassed) {
     yawVelocity   *= std::exp(-settings.rotateSlowdown * timePassed);
     pitchVelocity *= std::exp(-settings.rotateSlowdown * timePassed);
 
-    if (std::abs(yawVelocity  ) < settings.rotateEpsilon) yawVelocity   = 0;
-    if (std::abs(pitchVelocity) < settings.rotateEpsilon) pitchVelocity = 0;
+    if (std::abs(yawVelocity  ) < CameraSettings::ROTATE_STOP_EPSILON) yawVelocity   = 0;
+    if (std::abs(pitchVelocity) < CameraSettings::ROTATE_STOP_EPSILON) pitchVelocity = 0;
 
     if (settings.doClampYaw) clampYaw();
     if (settings.doClampPitch) clampPitch();
@@ -145,22 +179,9 @@ glm::mat4 CameraController::getView() const {
 }
 
 void CameraController::setZoomLimits(float zoomMin, float zoomMax) {
-#ifndef NDEBUG
-    if (zoomMin < 0) throw std::invalid_argument("CameraController::setZoomLimits parameter zoomMin is negative.");
-    if (zoomMax < 0) throw std::invalid_argument("CameraController::setZoomLimits parameter zoomMax is negative.");
-    if (zoomMin > zoomMax) throw std::invalid_argument("CameraController::setZoomLimits parameters zoomMin and zoomMax are misaligned.");
-#endif
-    if (zoomMin < 0) zoomMin = DEFAULT_ZOOM;
-    if (zoomMax < 0) zoomMax = DEFAULT_ZOOM;
-
-    if (zoomMin > zoomMax) {
-        float temp = zoomMin;
-        zoomMin = zoomMax;
-        zoomMax = temp;
-    }
-
     settings.zoomMin = zoomMin;
     settings.zoomMax = zoomMax;
+    settings.sanitize();
     clampRadius();
 }
 
