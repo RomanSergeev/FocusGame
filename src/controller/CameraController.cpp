@@ -114,7 +114,7 @@ void CameraController::handleMouseScroll(double xOffset, double yOffset) {
     targetDistance -= yOffset * settings.zoomStep;
     clampDistance();
     float oldDistance = camera.getDistance();
-    if (!settings.smoothZoom) camera.addDistance(targetDistance - oldDistance);
+    if (!settings.smoothZoom) camera.setDistance(targetDistance);
 }
 
 void CameraController::handleWindowResize(int width, int height) {
@@ -132,7 +132,7 @@ void CameraController::addYaw(float yawDelta) {
     float oldYaw = camera.getYaw();
     float newYaw = oldYaw + yawDelta;
     clampValue(newYaw, CameraSettings::LIMIT_YAW);
-    camera.addYaw(newYaw - oldYaw); // TODO overhead with additional subtraction/addition - maybe replace with setYaw
+    camera.setYaw(newYaw);
 }
 
 void CameraController::addPitch(float pitchDelta) {

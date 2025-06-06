@@ -18,12 +18,15 @@ public:
     float getDistance() const { return distance; }
     float getYaw() const { return yaw; }
     const glm::mat4& getProjectionMatrix() const { return projectionMatrix; }
+    void setDistance(float newDistance);
+    void setYaw(float newYaw);
+    void setPitch(float newPitch);
 
-    glm::mat4 getView() const;
-    void setAspectRatio(float ratio);
     void addDistance(float distanceDelta);
     void addYaw(float yawDelta);
     void addPitch(float pitchDelta);
+    glm::mat4 getView() const;
+    void setAspectRatio(float ratio);
 private:
     static float normalizeAngle(float angle);
 

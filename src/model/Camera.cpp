@@ -15,9 +15,30 @@ Camera::Camera() {
     setAspectRatio(1);
 }
 
-void Camera::addDistance(float dist) {
-    distance += dist;
+void Camera::setDistance(float newDistance) {
+    distance = newDistance;
     clampValue(distance, LIMIT_ZOOM);
+}
+
+void Camera::setYaw(float newYaw) {
+    yaw = normalizeAngle(newYaw);
+}
+
+void Camera::setPitch(float newPitch) {
+    pitch = newPitch;
+    clampValue(pitch, Camera::LIMIT_PITCH);
+}
+
+void Camera::addDistance(float distanceDelta) {
+    setDistance(distance + distanceDelta);
+}
+
+void Camera::addYaw(float yawDelta) {
+    setYaw(yaw + yawDelta);
+}
+
+void Camera::addPitch(float pitchDelta) {
+    setPitch(pitch + pitchDelta);
 }
 
 glm::mat4 Camera::getView() const {
@@ -38,13 +59,4 @@ glm::mat4 Camera::getView() const {
 
 void Camera::setAspectRatio(float ratio) {
     projectionMatrix = glm::perspective(glm::radians(45.0f), ratio, 0.1f, 100.0f);
-}
-
-void Camera::addYaw(float yawDelta) {
-    yaw = normalizeAngle(yaw + yawDelta);
-}
-
-void Camera::addPitch(float pitchDelta) {
-    pitch += pitchDelta;
-    clampValue(pitch, Camera::LIMIT_PITCH);
 }
