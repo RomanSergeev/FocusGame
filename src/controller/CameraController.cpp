@@ -1,18 +1,19 @@
-#include <algorithm>
 #include <cmath>
 #include <memory>
 #include <stdexcept>
 #include "CameraController.h"
 #include "glfw/glfw3.h"
-#include "glm/ext/matrix_clip_space.hpp"
-#include "glm/ext/matrix_transform.hpp"
-#include "shapes/ShapeEnums.h"
-
-void clampValue(float& value, float from, float to) { value = std::clamp(value, from, to); }
-void clampValue(float& value, const std::pair<float, float>& pair) { value = std::clamp(value, pair.first, pair.second); }
 
 CameraController::CameraSettings::CameraSettings() {
+    zoomMin = Camera::DEFAULT_ZOOM_LIMITS.first;
+    zoomMax = Camera::DEFAULT_ZOOM_LIMITS.second;
     sanitize();
+}
+
+void CameraController::CameraSettings::setZoomLimits(float zoomFrom, float zoomTo) {
+    zoomMin = zoomFrom;
+    zoomMax = zoomTo;
+    sanitize(); // will swap if unordered
 }
 
 void CameraController::CameraSettings::sanitize() {
@@ -21,13 +22,10 @@ void CameraController::CameraSettings::sanitize() {
     if (zoomMax < 0) throw std::invalid_argument("CameraController::CameraSettings parameter zoomMax is negative.");
     if (zoomMin > zoomMax) throw std::invalid_argument("CameraController::CameraSettings parameters zoomMin and zoomMax are misaligned.");
 #endif
-    clampValue(zoomMin, LIMIT_ZOOM);
-    clampValue(zoomMax, LIMIT_ZOOM);
-    if (zoomMin > zoomMax) {
-        float temp = zoomMin;
-        zoomMin = zoomMax;
-        zoomMax = temp;
-    }
+    clampValue(zoomMin, Camera::LIMIT_ZOOM);
+    clampValue(zoomMax, Camera::LIMIT_ZOOM);
+    if (zoomMin > zoomMax)
+        std::swap(zoomMin, zoomMax);
     clampValue(sensitivity, LIMIT_SENSITIVITY);
     clampValue(zoomStep, LIMIT_ZOOM_STEP);
     clampValue(zoomSmoothFactor, LIMIT_ZOOM_SMOOTH);
@@ -35,9 +33,7 @@ void CameraController::CameraSettings::sanitize() {
 }
 
 CameraController::CameraController(const GLWindow& window) {
-    float midZoom = (settings.zoomMin + settings.zoomMax) / 2;
-    radius = midZoom;
-    targetRadius = midZoom;
+    targetDistance = camera.getDistance();
     GLFWwindow* handle = window.getHandle();
     glfwSetWindowUserPointer(handle, this); // store user pointer
     glfwSetMouseButtonCallback(handle, CameraController::mouseButtonCallback);
@@ -46,14 +42,14 @@ CameraController::CameraController(const GLWindow& window) {
     glfwSetFramebufferSizeCallback(handle, CameraController::resizeCallback);
 
     handleWindowResize(window.getWindowWidth(), window.getWindowHeight());
-    clampRadius();
+    clampDistance();
 }
 
 void CameraController::updateSettings(CameraSettings&& settings) {
     CameraSettings temp = std::move(settings);
     temp.sanitize();
     this->settings = std::move(temp);
-    clampRadius();
+    clampDistance();
 }
 
 // these identical callbacks cannot be generalized because of the way GLFW (in C) obtains function pointers
@@ -84,107 +80,88 @@ void CameraController::handleMouseButton(int button, int action, int mods) {
 }
 
 void CameraController::handleMousePosition(GLFWwindow* window, double xpos, double ypos) {
-    if (rotating) {
-        float sens = settings.sensitivity;
-        float dx = xpos - lastX;
-        float dy = ypos - lastY;
-        
-        const int DEFAULT_WIDTH = 800, DEFAULT_HEIGHT = 600;
-
-        int wWidth, wHeight;
-        glfwGetFramebufferSize(window, &wWidth, &wHeight);
-        if (wWidth <= 0 || wHeight <= 0) return; // causes a #DIV0 crash when alt-tabbing from fullscreen app
-        float scaleX = DEFAULT_WIDTH / (float)wWidth;
-        float scaleY = DEFAULT_HEIGHT / (float)wHeight;
-        float invertedMultYaw = settings.invertedHorizontalMouse ? -1 : 1;
-        float invertedMultPitch = settings.invertedVerticalMouse ? -1 : 1;
-
-        float deltaX = invertedMultYaw   * dx * scaleX * sens;
-        float deltaY = invertedMultPitch * dy * scaleY * sens;
-
-        yawVelocity   = deltaX;
-        pitchVelocity = deltaY;
-
-        if (!settings.smoothRotation) {
-            yaw   += deltaX;
-            pitch += deltaY;
-        }
-
-        if (settings.doClampYaw) clampYaw();
-        if (settings.doClampPitch) clampPitch();
-    }
-
+    float dx = xpos - lastX;
+    float dy = ypos - lastY;
     lastX = xpos;
     lastY = ypos;
+    if (!rotating) return;
+
+    float sens = settings.sensitivity;
+
+    const int DEFAULT_WIDTH = 800, DEFAULT_HEIGHT = 600;
+
+    int wWidth, wHeight;
+    glfwGetFramebufferSize(window, &wWidth, &wHeight);
+    if (wWidth <= 0 || wHeight <= 0) return; // causes a #DIV0 crash when alt-tabbing from fullscreen app
+    float scaleX = DEFAULT_WIDTH / (float)wWidth;
+    float scaleY = DEFAULT_HEIGHT / (float)wHeight;
+    float invertedMultYaw = settings.invertedHorizontalMouse ? -1 : 1;
+    float invertedMultPitch = settings.invertedVerticalMouse ? -1 : 1;
+
+    float deltaX = invertedMultYaw   * dx * scaleX * sens;
+    float deltaY = invertedMultPitch * dy * scaleY * sens;
+
+    yawVelocity   = deltaX;
+    pitchVelocity = deltaY;
+
+    if (!settings.smoothRotation) {
+        addYaw(deltaX);
+        addPitch(deltaY);
+    }
 }
 
 void CameraController::handleMouseScroll(double xOffset, double yOffset) {
-    targetRadius -= yOffset * settings.zoomStep;
-    clampValue(targetRadius, settings.zoomMin, settings.zoomMax);
-    if (!settings.smoothZoom) radius = targetRadius;
+    targetDistance -= yOffset * settings.zoomStep;
+    clampDistance();
+    float oldDistance = camera.getDistance();
+    if (!settings.smoothZoom) camera.addDistance(targetDistance - oldDistance);
 }
 
 void CameraController::handleWindowResize(int width, int height) {
     glViewport(0, 0, width, height);
     if (width > 0 && height > 0) {
-        setAspectRatio((float)width / height);
+        camera.setAspectRatio((float)width / height);
     }
 }
 
-void CameraController::clampYaw() {
-    clampValue(yaw, CameraSettings::LIMIT_YAW);
+void CameraController::addYaw(float yawDelta) {
+    if (!settings.doClampYaw) {
+        camera.addYaw(yawDelta);
+        return;
+    }
+    float oldYaw = camera.getYaw();
+    float newYaw = oldYaw + yawDelta;
+    clampValue(newYaw, CameraSettings::LIMIT_YAW);
+    camera.addYaw(newYaw - oldYaw); // TODO overhead with additional subtraction/addition - maybe replace with setYaw
 }
 
-void CameraController::clampPitch() {
-    clampValue(pitch, CameraSettings::LIMIT_PITCH);
+void CameraController::addPitch(float pitchDelta) {
+    camera.addPitch(pitchDelta);
 }
 
-void CameraController::clampRadius() {
-    clampValue(radius, settings.zoomMin, settings.zoomMax);
-    clampValue(targetRadius, settings.zoomMin, settings.zoomMax);
+void CameraController::clampDistance() {
+    float zoomMin = settings.getZoomMinimal();
+    float zoomMax = settings.getZoomMaximal();
+    clampValue(targetDistance, zoomMin, zoomMax);
 }
 
 void CameraController::updateView(float timePassed) {
-    if (settings.smoothZoom) radius += (targetRadius - radius) * settings.zoomSmoothFactor;
+    float distance = camera.getDistance();
+    if (settings.smoothZoom) camera.addDistance((targetDistance - distance) * settings.zoomSmoothFactor);
 
     if (!settings.smoothRotation) return;
 
-    yaw += yawVelocity;
-    pitch += pitchVelocity;
+    addYaw(yawVelocity);
+    addPitch(pitchVelocity);
 
     yawVelocity   *= std::exp(-settings.rotateSlowdown * timePassed);
     pitchVelocity *= std::exp(-settings.rotateSlowdown * timePassed);
 
     if (std::abs(yawVelocity  ) < CameraSettings::ROTATE_STOP_EPSILON) yawVelocity   = 0;
     if (std::abs(pitchVelocity) < CameraSettings::ROTATE_STOP_EPSILON) pitchVelocity = 0;
-
-    if (settings.doClampYaw) clampYaw();
-    if (settings.doClampPitch) clampPitch();
 }
 
-glm::mat4 CameraController::getView() const {
-    glm::vec3 cameraPos = glm::vec3(
-        radius * cos(pitch) * sin(yaw),
-        radius * sin(pitch),
-        radius * cos(pitch) * cos(yaw)
-    );
-
-    glm::mat4 view = glm::lookAt(
-        cameraPos, // camera position
-        SPACE_ORIGIN, // target (origin)
-        axisToVec3(Axis::Y) // up direction
-    );
-
-    return view;
-}
-
-void CameraController::setZoomLimits(float zoomMin, float zoomMax) {
-    settings.zoomMin = zoomMin;
-    settings.zoomMax = zoomMax;
-    settings.sanitize();
-    clampRadius();
-}
-
-void CameraController::setAspectRatio(float ratio) {
-    projectionMatrix = glm::perspective(glm::radians(45.0f), ratio, 0.1f, 100.0f);;
+void CameraController::setZoomLimits(float zoomFrom, float zoomTo) {
+    settings.setZoomLimits(zoomFrom, zoomTo);
+    clampDistance();
 }

@@ -1,4 +1,3 @@
-
 #include <memory>
 #include "app/AppController.h"
 

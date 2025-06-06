@@ -12,8 +12,8 @@ AppController::AppController() :
     shader.setVec3(ShaderParams::LIGHT_DIR, -0.3f, -0.2f, -0.7f);
 
     CameraController::CameraSettings settings;
-    settings.smoothRotation = true;
-    settings.smoothZoom = true;
+    settings.smoothRotation = false;
+    settings.smoothZoom = false;
     settings.invertedHorizontalMouse = true;
     settings.invertedVerticalMouse = true;
     cameraController.updateSettings(std::move(settings));
@@ -76,7 +76,7 @@ void AppController::handleInputKey() {
 
 void AppController::render() {
     cameraController.updateView(timeDelta);
-    glm::mat4 view = cameraController.getView();
+    glm::mat4 view = cameraController.getCameraView();
     shader.setMat4(ShaderParams::VIEW, view);
     glm::mat4 projection = cameraController.getProjectionMatrix();
     shader.setMat4(ShaderParams::PROJECTION, projection);
