@@ -41,16 +41,20 @@ void Camera::addPitch(float pitchDelta) {
     setPitch(pitch + pitchDelta);
 }
 
+glm::vec3 Camera::getPosition() const {
+    return distance * glm::vec3(
+        cos(pitch) * sin(yaw),
+        sin(pitch),
+        cos(pitch) * cos(yaw)
+    ) + origin;
+}
+
 glm::mat4 Camera::getView() const {
-    glm::vec3 cameraPos = glm::vec3(
-        distance * cos(pitch) * sin(yaw),
-        distance * sin(pitch),
-        distance * cos(pitch) * cos(yaw)
-    );
+    glm::vec3 cameraPos = getPosition();
 
     glm::mat4 view = glm::lookAt(
         cameraPos, // camera position
-        SPACE_ORIGIN, // target (origin)
+        origin, // target (origin)
         axisToVec3(Axis::Y) // up direction
     );
 

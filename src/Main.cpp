@@ -7,6 +7,7 @@ int main() {
 
     while (!app->shouldClose()) {
         app->updateTime();
+        app->handleInputMouse();
         app->handleInputKey();
         app->render();
     }

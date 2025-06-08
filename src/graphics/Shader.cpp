@@ -15,16 +15,18 @@ std::string replaceAllMap(const std::string& source, const std::map<std::string,
 
 // map all the ShaderParams entries here
 const std::map<std::string, std::string> shaderParamsMap = {
-    { "$V_POS"     , ShaderParams::V_POS      },
-    { "$V_NORMAL"  , ShaderParams::V_NORMAL   },
-    { "$F_POS"     , ShaderParams::F_POS      },
-    { "$F_NORMAL"  , ShaderParams::F_NORMAL   },
-    { "$BASE_COLOR", ShaderParams::BASE_COLOR },
-    { "$F_COLOR"   , ShaderParams::F_COLOR    },
-    { "$LIGHT_DIR" , ShaderParams::LIGHT_DIR  },
-    { "$MODEL"     , ShaderParams::MODEL      },
-    { "$VIEW"      , ShaderParams::VIEW       },
-    { "$PROJECTION", ShaderParams::PROJECTION }
+    { "$V_POS"        , ShaderParams::V_POS      },
+    { "$V_NORMAL"     , ShaderParams::V_NORMAL   },
+    { "$F_POS"        , ShaderParams::F_POS      },
+    { "$F_NORMAL"     , ShaderParams::F_NORMAL   },
+    { "$BASE_COLOR"   , ShaderParams::BASE_COLOR },
+    { "$F_COLOR"      , ShaderParams::F_COLOR    },
+    { "$LIGHT_DIR"    , ShaderParams::LIGHT_DIR  },
+    { "$MODEL"        , ShaderParams::MODEL      },
+    { "$VIEW"         , ShaderParams::VIEW       },
+    { "$PROJECTION"   , ShaderParams::PROJECTION },
+    { "$TIME"         , ShaderParams::TIME       },
+    { "$SELECTED_FLAG", ShaderParams::SELECTED   }
 };
 
 const std::string shaderCodeVerticesRaw = R"(
@@ -55,11 +57,16 @@ const std::string shaderCodeFragmentsRaw = R"(
 
     uniform vec3 $LIGHT_DIR;
     uniform vec3 $BASE_COLOR;
+    uniform float $TIME;
+    uniform bool $SELECTED_FLAG;
 
     void main() {
         float ambient = 0.1;
+        float highlight = $SELECTED_FLAG ? 0.5 + 0.5 * sin($TIME * 4.0) : 0.0;
+
         float brightness = max(dot(normalize($F_NORMAL), normalize(-$LIGHT_DIR)), 0.0);
         vec3 color = $BASE_COLOR * (ambient + (1 - ambient) * brightness);
+        color += highlight * vec3(1.0, 1.0, 0.5);
         $F_COLOR = vec4(color, 1.0);
     }
 )";

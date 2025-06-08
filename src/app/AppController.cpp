@@ -57,10 +57,35 @@ void AppController::setupDefaultBoard() {
     }
 }
 
+void AppController::TEMPselectBoardIndex(const Ray& ray) {
+    float closestDist = FLT_MAX;
+    int hitIndex = -1;
+
+    for (int i = 0; i < gameBoard.size(); ++i) {
+        float dist;
+        if (ray.intersects(gameBoard[i]->getBoundingBox(), dist) /*&& TEMPrayIntersectsShape(ray, gameBoard[i], dist)*/) {
+            if (dist < closestDist) {
+                closestDist = dist;
+                hitIndex = i;
+            }
+        }
+        gameBoard[i]->deselect();
+    }
+
+    if (hitIndex >= 0) gameBoard[hitIndex]->select();
+}
+
 void AppController::updateTime() {
     float timeNow = window.getCurrentTime();
     timeDelta = timeNow - currentTime;
     currentTime = timeNow;
+}
+
+void AppController::handleInputMouse() {
+    Ray ray = cameraController.getMouseRay();
+    if (!ray.isActive()) return;
+
+    TEMPselectBoardIndex(ray);
 }
 
 void AppController::handleInputKey() {
@@ -85,7 +110,7 @@ void AppController::render() {
     // rotation:
     // shape->setModel(glm::rotate(shape->getBaseModel(), time, glm::vec3(0.3f, 1.0f, 0.0f)));
     for (const auto& shape : gameBoard) {
-        shape->setUniforms(shader);
+        shape->setUniforms(shader, currentTime);
         shape->draw();
     }
 

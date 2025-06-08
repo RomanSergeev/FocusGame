@@ -4,6 +4,7 @@
 #include "glm/glm.hpp"
 #include "glew/glew.h"
 #include "graphics/Shader.h"
+#include "Utils.h"
 
 class OpenGLShape {
     protected:
@@ -14,7 +15,11 @@ class OpenGLShape {
         glm::mat4 baseModel = glm::mat4(1.0f);
         glm::mat4 model = glm::mat4(1.0f);
         glm::vec3 baseColor = glm::vec3(1.0f);
+        bool selected = false;
+        mutable AABB boundingBox;
+        mutable bool boxIsValid = false;
 
+        void recalculateAABB() const;
         void addFace(const glm::vec3& A, const glm::vec3& B, const glm::vec3& C);
     public:
         OpenGLShape(unsigned int fpa) : floatsPerAttribute(fpa), pointsPerAttribute(1, { AttributeType::Position, fpa }), vertices() {}
@@ -26,11 +31,15 @@ class OpenGLShape {
         const glm::mat4& getBaseModel() const { return baseModel; }
         const glm::mat4& getModel() const { return model; }
         const glm::vec3& getColor() const { return baseColor; }
+        const AABB& getBoundingBox() const;
+        bool isSelected() const { return selected; }
 
-        void setBaseModel(const glm::mat4& mat) { baseModel = mat; }
-        void setModel(const glm::mat4& mat) { model = mat; }
+        void setBaseModel(const glm::mat4& mat) { baseModel = mat; boxIsValid = false; }
+        void setModel(const glm::mat4& mat) { model = mat; boxIsValid = false; }
         void setColor(const glm::vec3& color) { baseColor = color; }
         inline void setColor(float r, float g, float b) { setColor(glm::vec3(r, g, b)); }
+        void select() { selected = true; }
+        void deselect() { selected = false; }
 
         inline unsigned int getVerticeCount() const {
             unsigned int fpa = floatsPerAttribute;
@@ -44,7 +53,7 @@ class OpenGLShape {
         inline void position(float x, float y, float z) { position(glm::vec3(x, y, z)); }
         void setupBuffer();
         virtual void draw() const;
-        virtual void setUniforms(const Shader& shader) const;
+        virtual void setUniforms(const Shader& shader, float time) const;
 };
 
 inline OpenGLShape::~OpenGLShape() {}

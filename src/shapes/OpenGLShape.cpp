@@ -1,6 +1,35 @@
 #include "OpenGLShape.h"
 #include "glm/gtc/type_ptr.hpp"
 
+const AABB& OpenGLShape::getBoundingBox() const {
+    if (boxIsValid) return boundingBox;
+    recalculateAABB();
+    return boundingBox;
+}
+
+void OpenGLShape::recalculateAABB() const {
+    static const glm::vec3 corners[8] = {
+        {-1, -1, -1}, { 1, -1, -1}, {-1,  1, -1}, { 1,  1, -1},
+        {-1, -1,  1}, { 1, -1,  1}, {-1,  1,  1}, { 1,  1,  1},
+    };
+
+    glm::vec3 minPoint = glm::vec3(std::numeric_limits<float>::max());
+    glm::vec3 maxPoint = glm::vec3(std::numeric_limits<float>::lowest());
+
+    glm::mat4 transform = model * baseModel;
+
+    for (const glm::vec3& corner : corners) {
+        glm::vec4 transformed = transform * glm::vec4(corner, 1.0f);
+        glm::vec3 pos = glm::vec3(transformed);
+
+        minPoint = glm::min(minPoint, pos);
+        maxPoint = glm::max(maxPoint, pos);
+    }
+
+    boundingBox = AABB(minPoint, maxPoint);
+    boxIsValid = true;
+}
+
 void OpenGLShape::addFace(const glm::vec3& A, const glm::vec3& B, const glm::vec3& C) {
     glm::vec3 N = glm::normalize(glm::cross(B - A, C - A));
     std::vector<float> face = {
@@ -34,9 +63,11 @@ void OpenGLShape::setupBuffer() {
     }
 }
 
-void OpenGLShape::setUniforms(const Shader& shader) const {
-    shader.setMat4(ShaderParams::MODEL, baseModel * model);
-    shader.setVec3(ShaderParams::BASE_COLOR, baseColor);
+void OpenGLShape::setUniforms(const Shader& shader, float time) const {
+    shader.setMat4 (ShaderParams::MODEL     , baseModel * model);
+    shader.setVec3 (ShaderParams::BASE_COLOR, baseColor);
+    shader.setFloat(ShaderParams::TIME      , time);
+    shader.setBool (ShaderParams::SELECTED  , selected);
 }
 
 void OpenGLShape::draw() const {

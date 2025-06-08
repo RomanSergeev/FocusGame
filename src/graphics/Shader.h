@@ -18,6 +18,8 @@ namespace ShaderParams {
     inline constexpr const char* MODEL      = "model";
     inline constexpr const char* VIEW       = "view";
     inline constexpr const char* PROJECTION = "projection";
+    inline constexpr const char* TIME       = "time";
+    inline constexpr const char* SELECTED   = "isSelected";
 }
 
 class Shader {

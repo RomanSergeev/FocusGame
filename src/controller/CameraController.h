@@ -1,6 +1,8 @@
 #pragma once
 #include "model/Camera.h"
+#include "model/Ray.h"
 #include "view/GLWindow.h"
+#include "shapes/ShapeEnums.h"
 
 class CameraController {
 public:
@@ -37,15 +39,18 @@ public:
     };
     CameraController(const GLWindow& window);
 
+    const Ray& getMouseRay() const { return ray; }
+
     const glm::mat4& getProjectionMatrix() const { return camera.getProjectionMatrix(); }
+    glm::mat4 getCameraView() const { return camera.getView(); };
 
     void updateSettings(CameraSettings&& settings);
     void updateView(float timePassed);
-    glm::mat4 getCameraView() const { return camera.getView(); };
     void setZoomLimits(float zoomFrom, float zoomTo);
 private:
     CameraSettings settings;
     Camera camera;
+    Ray ray;
     
     float targetDistance; // target distance (for smooth zoom)
     float yawVelocity = 0.0f;
@@ -63,6 +68,7 @@ private:
     void handleMousePosition(GLFWwindow* window, double xpos, double ypos);
     void handleMouseScroll(double xOffset, double yOffset);
     void handleWindowResize(int width, int height);
+    void updateRayFromCursor(GLFWwindow* window, double xpos, double ypos);
 
     void addYaw(float yawDelta);
     void addPitch(float pitchDelta);

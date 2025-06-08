@@ -32,7 +32,9 @@ void CameraController::CameraSettings::sanitize() {
     clampValue(rotateSlowdown, LIMIT_ROTATE_SLOWDOWN);
 }
 
-CameraController::CameraController(const GLWindow& window) {
+CameraController::CameraController(const GLWindow& window) :
+ray(SPACE_ORIGIN, SPACE_ORIGIN, false)
+{
     targetDistance = camera.getDistance();
     GLFWwindow* handle = window.getHandle();
     glfwSetWindowUserPointer(handle, this); // store user pointer
@@ -80,6 +82,7 @@ void CameraController::handleMouseButton(int button, int action, int mods) {
 }
 
 void CameraController::handleMousePosition(GLFWwindow* window, double xpos, double ypos) {
+    updateRayFromCursor(window, xpos, ypos);
     float dx = xpos - lastX;
     float dy = ypos - lastY;
     lastX = xpos;
@@ -122,6 +125,41 @@ void CameraController::handleWindowResize(int width, int height) {
     if (width > 0 && height > 0) {
         camera.setAspectRatio((float)width / height);
     }
+}
+
+void CameraController::updateRayFromCursor(GLFWwindow* window, double xpos, double ypos) {
+    // 1. Get window dimensions, deactivate if unfocused
+    int winWidth, winHeight;
+    glfwGetWindowSize(window, &winWidth, &winHeight);
+    if (winWidth == 0 || winHeight == 0 ||
+        xpos < 0 || ypos < 0 ||
+        xpos > winWidth || ypos > winHeight) {
+        ray.deactivate();
+        return;
+    }
+
+    // 2. Convert mouse position from screen space to Normalized Device Coordinates (NDC)
+    float x = 2.0f * xpos / winWidth - 1.0f;
+    float y = 1.0f - 2.0f * ypos / winHeight;
+    float z = 1.0f;
+
+    glm::vec4 rayNDC(x, y, -1.0f, 1.0f); // Normalized Device Coordinates, z = -1 for near plane
+    glm::vec4 rayClip(rayNDC);
+
+    // 3. Unproject to eye space
+    glm::mat4 invProj = glm::inverse(camera.getProjectionMatrix());
+    glm::vec4 rayEye = invProj * rayClip;
+    rayEye = glm::vec4(rayEye.x, rayEye.y, -1.0f, 0.0f); // We set z=-1, w=0 for direction
+
+    // 4. Unproject to world space
+    glm::mat4 invView = glm::inverse(camera.getView());
+    glm::vec4 rayWorld4 = invView * rayEye;
+    glm::vec3 rayDir = glm::vec3(rayWorld4);
+
+    // 5. Update ray
+    ray.activate();
+    ray.setOrigin(camera.getPosition()); // Make sure you expose getPosition() from Camera
+    ray.setDirection(rayDir);
 }
 
 void CameraController::addYaw(float yawDelta) {

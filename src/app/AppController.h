@@ -23,9 +23,11 @@ class AppController {
     AppController();
 
     void setupDefaultBoard();
+    void TEMPselectBoardIndex(const Ray& ray);
 public:
     static std::unique_ptr<AppController> create();
     void updateTime();
+    void handleInputMouse();
     void handleInputKey();
     void render();
     bool shouldClose() const { return window.shouldClose(); }
