@@ -32,18 +32,12 @@ void CameraController::CameraSettings::sanitize() {
     clampValue(rotateSlowdown, LIMIT_ROTATE_SLOWDOWN);
 }
 
-CameraController::CameraController(const GLWindow& window) :
+CameraController::CameraController(int winWidth, int winHeight) :
 ray(SPACE_ORIGIN, SPACE_ORIGIN, false)
 {
     targetDistance = camera.getDistance();
-    GLFWwindow* handle = window.getHandle();
-    glfwSetWindowUserPointer(handle, this); // store user pointer
-    glfwSetMouseButtonCallback(handle, CameraController::mouseButtonCallback);
-    glfwSetCursorPosCallback(handle, CameraController::mousePositionCallback);
-    glfwSetScrollCallback(handle, CameraController::mouseScrollCallback);
-    glfwSetFramebufferSizeCallback(handle, CameraController::resizeCallback);
 
-    handleWindowResize(window.getWindowWidth(), window.getWindowHeight());
+    handleWindowResize(winWidth, winHeight);
     clampDistance();
 }
 
@@ -54,53 +48,23 @@ void CameraController::updateSettings(CameraSettings&& settings) {
     clampDistance();
 }
 
-// these identical callbacks cannot be generalized because of the way GLFW (in C) obtains function pointers
-void CameraController::mouseButtonCallback(GLFWwindow* window, int button, int action, int mods) {
-    auto* controller = static_cast<CameraController*>(glfwGetWindowUserPointer(window));
-    if (controller) controller->handleMouseButton(button, action, mods);
-}
-
-void CameraController::mousePositionCallback(GLFWwindow* window, double xpos, double ypos) {
-    auto* controller = static_cast<CameraController*>(glfwGetWindowUserPointer(window));
-    if (controller) controller->handleMousePosition(window, xpos, ypos);
-}
-
-void CameraController::mouseScrollCallback(GLFWwindow* window, double xOffset, double yOffset) {
-    auto* controller = static_cast<CameraController*>(glfwGetWindowUserPointer(window));
-    if (controller) controller->handleMouseScroll(xOffset, yOffset);
-}
-
-void CameraController::resizeCallback(GLFWwindow* window, int width, int height) {
-    auto* controller = static_cast<CameraController*>(glfwGetWindowUserPointer(window));
-    if (controller) controller->handleWindowResize(width, height);
-}
-
-void CameraController::handleMouseButton(int button, int action, int mods) {
-    if (button != GLFW_MOUSE_BUTTON_LEFT) return;
-    if (action == GLFW_PRESS) rotating = true;
-    else if (action == GLFW_RELEASE) rotating = false;
-}
-
-void CameraController::handleMousePosition(GLFWwindow* window, double xpos, double ypos) {
-    updateRayFromCursor(window, xpos, ypos);
+void CameraController::handleMousePosition(int winWidth, int winHeight, double xpos, double ypos) {
+    updateRayFromCursor(winWidth, winHeight, xpos, ypos);
     float dx = xpos - lastX;
     float dy = ypos - lastY;
     lastX = xpos;
     lastY = ypos;
     if (!rotating) return;
 
-    float sens = settings.sensitivity;
-
     const int DEFAULT_WIDTH = 800, DEFAULT_HEIGHT = 600;
 
-    int wWidth, wHeight;
-    glfwGetFramebufferSize(window, &wWidth, &wHeight);
-    if (wWidth <= 0 || wHeight <= 0) return; // causes a #DIV0 crash when alt-tabbing from fullscreen app
-    float scaleX = DEFAULT_WIDTH / (float)wWidth;
-    float scaleY = DEFAULT_HEIGHT / (float)wHeight;
+    if (winWidth <= 0 || winHeight <= 0) return; // causes a #DIV0 crash when alt-tabbing from fullscreen app
+    float scaleX = DEFAULT_WIDTH / (float)winWidth;
+    float scaleY = DEFAULT_HEIGHT / (float)winHeight;
     float invertedMultYaw = settings.invertedHorizontalMouse ? -1 : 1;
     float invertedMultPitch = settings.invertedVerticalMouse ? -1 : 1;
 
+    float sens = settings.sensitivity;
     float deltaX = invertedMultYaw   * dx * scaleX * sens;
     float deltaY = invertedMultPitch * dy * scaleY * sens;
 
@@ -121,16 +85,12 @@ void CameraController::handleMouseScroll(double xOffset, double yOffset) {
 }
 
 void CameraController::handleWindowResize(int width, int height) {
-    glViewport(0, 0, width, height);
-    if (width > 0 && height > 0) {
-        camera.setAspectRatio((float)width / height);
-    }
+    if (width <= 0 || height <= 0) return;
+    camera.setAspectRatio((float)width / height);
 }
 
-void CameraController::updateRayFromCursor(GLFWwindow* window, double xpos, double ypos) {
+void CameraController::updateRayFromCursor(int winWidth, int winHeight, double xpos, double ypos) {
     // 1. Get window dimensions, deactivate if unfocused
-    int winWidth, winHeight;
-    glfwGetWindowSize(window, &winWidth, &winHeight);
     if (winWidth == 0 || winHeight == 0 ||
         xpos < 0 || ypos < 0 ||
         xpos > winWidth || ypos > winHeight) {

@@ -1,12 +1,47 @@
 #include <iostream>
 #include "AppController.h"
 #include "shapes/Cuboid.h"
+#define EVERY_N_FRAMES_DO(n, code) do { if ((frameCounter % (n)) == 0) code; } while(0)
+
+// these identical callbacks cannot be generalized because of the way GLFW (in C) obtains function pointers
+void AppController::mouseButtonCallback(GLFWwindow* window, int button, int action, int mods) {
+    if (button != GLFW_MOUSE_BUTTON_LEFT) return;
+    auto* controller = static_cast<AppController*>(glfwGetWindowUserPointer(window));
+    if (!controller) return;
+    if (action == GLFW_PRESS) controller->cameraController.setRotating(true);
+    else if (action == GLFW_RELEASE) controller->cameraController.setRotating(false);
+}
+
+void AppController::mousePositionCallback(GLFWwindow* window, double xpos, double ypos) {
+    auto* controller = static_cast<AppController*>(glfwGetWindowUserPointer(window));
+    int winWidth, winHeight;
+    glfwGetFramebufferSize(window, &winWidth, &winHeight);
+    if (controller) controller->cameraController.handleMousePosition(winWidth, winHeight, xpos, ypos);
+}
+
+void AppController::mouseScrollCallback(GLFWwindow* window, double xOffset, double yOffset) {
+    auto* controller = static_cast<AppController*>(glfwGetWindowUserPointer(window));
+    if (controller) controller->cameraController.handleMouseScroll(xOffset, yOffset);
+}
+
+void AppController::resizeCallback(GLFWwindow* window, int width, int height) {
+    auto* controller = static_cast<AppController*>(glfwGetWindowUserPointer(window));
+    glViewport(0, 0, width, height);
+    if (controller) controller->cameraController.handleWindowResize(width, height);
+}
 
 AppController::AppController() :
     window(WIDTH, HEIGHT, "Focus Game"),
     inputHandler(),
-    cameraController(window),
+    cameraController(WIDTH, HEIGHT),
     shader(shaderCodeVertices.c_str(), shaderCodeFragments.c_str()) {
+        
+    GLFWwindow* handle = window.getHandle();
+    glfwSetWindowUserPointer(handle, this); // store user pointer
+    glfwSetMouseButtonCallback(handle, AppController::mouseButtonCallback);
+    glfwSetCursorPosCallback(handle, AppController::mousePositionCallback);
+    glfwSetScrollCallback(handle, AppController::mouseScrollCallback);
+    glfwSetFramebufferSizeCallback(handle, AppController::resizeCallback);
 
     shader.use();
     shader.setVec3(ShaderParams::LIGHT_DIR, -0.3f, -0.2f, -0.7f);
@@ -76,6 +111,7 @@ void AppController::TEMPselectBoardIndex(const Ray& ray) {
 }
 
 void AppController::updateTime() {
+    ++frameCounter;
     float timeNow = window.getCurrentTime();
     timeDelta = timeNow - currentTime;
     currentTime = timeNow;

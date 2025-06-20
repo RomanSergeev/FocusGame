@@ -37,12 +37,17 @@ public:
         float zoomMin;
         float zoomMax;
     };
-    CameraController(const GLWindow& window);
+    CameraController(int winWidth, int winHeight);
 
     const Ray& getMouseRay() const { return ray; }
+    void setRotating(bool newRotating) { rotating = newRotating; }
 
     const glm::mat4& getProjectionMatrix() const { return camera.getProjectionMatrix(); }
     glm::mat4 getCameraView() const { return camera.getView(); };
+    
+    void handleMousePosition(int winWidth, int winHeight, double xpos, double ypos);
+    void handleMouseScroll(double xOffset, double yOffset);
+    void handleWindowResize(int width, int height);
 
     void updateSettings(CameraSettings&& settings);
     void updateView(float timePassed);
@@ -59,16 +64,7 @@ private:
     bool rotating = false;
     double lastX = 0.0, lastY = 0.0;
 
-    static void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods);
-    static void mousePositionCallback(GLFWwindow* window, double xpos, double ypos);
-    static void mouseScrollCallback(GLFWwindow* window, double xOffset, double yOffset);
-    static void resizeCallback(GLFWwindow* window, int width, int height);
-
-    void handleMouseButton(int button, int action, int mods);
-    void handleMousePosition(GLFWwindow* window, double xpos, double ypos);
-    void handleMouseScroll(double xOffset, double yOffset);
-    void handleWindowResize(int width, int height);
-    void updateRayFromCursor(GLFWwindow* window, double xpos, double ypos);
+    void updateRayFromCursor(int winWidth, int winHeight, double xpos, double ypos);
 
     void addYaw(float yawDelta);
     void addPitch(float pitchDelta);
