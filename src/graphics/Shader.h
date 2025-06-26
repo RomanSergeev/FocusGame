@@ -6,6 +6,8 @@
 
 extern const std::string shaderCodeVertices;
 extern const std::string shaderCodeFragments;
+extern const std::string shaderCodeVertices2D;
+extern const std::string shaderCodeFragments2D;
 
 namespace ShaderParams {
     inline constexpr const char* V_POS      = "aPos";

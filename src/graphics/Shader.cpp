@@ -71,8 +71,32 @@ const std::string shaderCodeFragmentsRaw = R"(
     }
 )";
 
-const std::string shaderCodeVertices  = replaceAllMap(shaderCodeVerticesRaw , shaderParamsMap);
-const std::string shaderCodeFragments = replaceAllMap(shaderCodeFragmentsRaw, shaderParamsMap);
+const std::string shaderCodeVerticesRaw2D = R"(
+    #version 330 core
+    layout (location = 0) in vec3 $V_POS;
+
+    uniform mat4 $PROJECTION;
+    uniform mat4 $VIEW;
+
+    void main() {
+        gl_Position = $PROJECTION * $VIEW * vec4($V_POS, 1.0); // No matrices, directly to clip space
+    }
+)";
+
+const char* shaderCodeFragmentsRaw2D = R"(
+    #version 330 core
+    out vec4 $F_COLOR;
+    uniform vec3 $BASE_COLOR;
+
+    void main() {
+        $F_COLOR = vec4($BASE_COLOR, 1.0);
+    }
+)";
+
+const std::string shaderCodeVertices    = replaceAllMap(shaderCodeVerticesRaw   , shaderParamsMap);
+const std::string shaderCodeFragments   = replaceAllMap(shaderCodeFragmentsRaw  , shaderParamsMap);
+const std::string shaderCodeVertices2D  = replaceAllMap(shaderCodeVerticesRaw2D , shaderParamsMap);
+const std::string shaderCodeFragments2D = replaceAllMap(shaderCodeFragmentsRaw2D, shaderParamsMap);
 
 const int LOG_SIZE = 512;
 

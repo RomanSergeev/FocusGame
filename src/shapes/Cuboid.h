@@ -6,5 +6,6 @@ class Cuboid : public OpenGLShape {
 public:
     Cuboid(float sizex, float sizey, float sizez);
     ShapeType getType() const override { return ShapeType::Cuboid; }
+    DrawMode getDrawMode() const override { return DrawMode::Triangles; }
     //void setUniforms(const Shader& shader) const override;
 };

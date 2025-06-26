@@ -1,4 +1,5 @@
 #pragma once
+#include <iostream>
 #include <vector>
 #include "ShapeEnums.h"
 #include "glm/glm.hpp"
@@ -19,11 +20,15 @@ class OpenGLShape {
         mutable AABB boundingBox;
         mutable bool boxIsValid = false;
 
+        std::pair<int, int> locatePositionWithOffset() const;
+        bool getVertexBoundaries(glm::vec3& minPoint, glm::vec3& maxPoint) const;
         void recalculateAABB() const;
         void addFace(const glm::vec3& A, const glm::vec3& B, const glm::vec3& C);
     public:
         OpenGLShape(unsigned int fpa) : floatsPerAttribute(fpa), pointsPerAttribute(1, { AttributeType::Position, fpa }), vertices() {}
         virtual ~OpenGLShape() = 0;
+
+        friend std::ostream& operator << (std::ostream& out, const OpenGLShape& shape);
 
         inline const std::vector<float>& getVertices() const { return vertices; }
         inline const std::vector<std::pair<AttributeType, int>>& getPPA() const { return pointsPerAttribute; }
@@ -48,12 +53,14 @@ class OpenGLShape {
         }
         inline unsigned int getTrianglesCount() const { return getVerticeCount() / 3; }
         virtual ShapeType getType() const = 0;
+        virtual DrawMode getDrawMode() const = 0;
 
         void position(const glm::vec3& center);
         inline void position(float x, float y, float z) { position(glm::vec3(x, y, z)); }
         void setupBuffer();
         virtual void draw() const;
         virtual void setUniforms(const Shader& shader, float time) const;
+        virtual void print(std::ostream& out) const;
 };
 
 inline OpenGLShape::~OpenGLShape() {}

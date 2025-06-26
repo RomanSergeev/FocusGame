@@ -17,11 +17,13 @@ void AppController::mousePositionCallback(GLFWwindow* window, double xpos, doubl
     int winWidth, winHeight;
     glfwGetFramebufferSize(window, &winWidth, &winHeight);
     if (controller) controller->cameraController.handleMousePosition(winWidth, winHeight, xpos, ypos);
+    if (controller->drawCameraRay) controller->updateRayLine();
 }
 
 void AppController::mouseScrollCallback(GLFWwindow* window, double xOffset, double yOffset) {
     auto* controller = static_cast<AppController*>(glfwGetWindowUserPointer(window));
     if (controller) controller->cameraController.handleMouseScroll(xOffset, yOffset);
+    if (controller->drawCameraRay) controller->updateRayLine();
 }
 
 void AppController::resizeCallback(GLFWwindow* window, int width, int height) {
@@ -34,27 +36,36 @@ AppController::AppController() :
     window(WIDTH, HEIGHT, "Focus Game"),
     inputHandler(),
     cameraController(WIDTH, HEIGHT),
-    shader(shaderCodeVertices.c_str(), shaderCodeFragments.c_str()) {
-        
-    GLFWwindow* handle = window.getHandle();
-    glfwSetWindowUserPointer(handle, this); // store user pointer
-    glfwSetMouseButtonCallback(handle, AppController::mouseButtonCallback);
-    glfwSetCursorPosCallback(handle, AppController::mousePositionCallback);
-    glfwSetScrollCallback(handle, AppController::mouseScrollCallback);
-    glfwSetFramebufferSizeCallback(handle, AppController::resizeCallback);
+    shader(shaderCodeVertices.c_str(), shaderCodeFragments.c_str()),
+    shader2D(shaderCodeVertices2D.c_str(), shaderCodeFragments2D.c_str()),
+    rayLine(SPACE_ORIGIN, SPACE_ORIGIN) {
+
+    registerCallbacks();
 
     shader.use();
     shader.setVec3(ShaderParams::LIGHT_DIR, -0.3f, -0.2f, -0.7f);
 
+    rayLine.setupBuffer();
+    rayLine.setColor(1.0f, 0.0f, 0.0f);
+
     CameraController::CameraSettings settings;
-    settings.smoothRotation = false;
-    settings.smoothZoom = false;
+    settings.smoothRotation = true;
+    settings.smoothZoom = true;
     settings.invertedHorizontalMouse = true;
     settings.invertedVerticalMouse = true;
     cameraController.updateSettings(std::move(settings));
     cameraController.setZoomLimits(4.0f, 30.0f);
 
     setupDefaultBoard();
+}
+
+void AppController::registerCallbacks() {
+    GLFWwindow* handle = window.getHandle();
+    glfwSetWindowUserPointer(handle, this); // store user pointer
+    glfwSetMouseButtonCallback(handle, AppController::mouseButtonCallback);
+    glfwSetCursorPosCallback(handle, AppController::mousePositionCallback);
+    glfwSetScrollCallback(handle, AppController::mouseScrollCallback);
+    glfwSetFramebufferSizeCallback(handle, AppController::resizeCallback);
 }
 
 std::unique_ptr<AppController> AppController::create() {
@@ -67,18 +78,25 @@ std::unique_ptr<AppController> AppController::create() {
     }
 }
 
+bool removeCondition(char sizeX, char sizeY, int i, int j) {
+    //return i != 4 || j != 4;
+    float distX = sizeX / 2.0 - 0.5 - i;
+    float distY = sizeY / 2.0 - 0.5 - j;
+    float distance = distX*distX + distY*distY;
+    float removeDist = 2 * (sizeX / 2.0 - 1.5) * (sizeX / 2.0 - 1.5) + 2.5;
+    return distance >= removeDist;
+}
+
 void AppController::setupDefaultBoard() {
     const char CELLS_X = 8;
     const char CELLS_Y = 8;
     const float CUBE_W = 2.0f;
     const float CUBE_D = 0.3f; // ratio
-    const float REMOVE = 2 * (CELLS_X / 2 - 1.5) * (CELLS_X / 2 - 1.5) + 2.5;
 
     gameBoard.clear();
     for (int i = 0; i < CELLS_X; ++i) {
         for (int j = 0; j < CELLS_Y; ++j) {
-            const float DISTANCE = (CELLS_X / 2 - 0.5 - i) * (CELLS_X / 2 - 0.5 - i) + (CELLS_Y / 2 - 0.5 - j) * (CELLS_Y / 2 - 0.5 - j);
-            if (DISTANCE >= REMOVE) continue;
+            if (removeCondition(CELLS_X, CELLS_Y, i, j)) continue;
             std::unique_ptr<OpenGLShape> cell = std::make_unique<Cuboid>(CUBE_W, CUBE_W, CUBE_W * CUBE_D);
             cell->setupBuffer();
             bool even = (i + j) & 1;
@@ -93,14 +111,14 @@ void AppController::setupDefaultBoard() {
 }
 
 void AppController::TEMPselectBoardIndex(const Ray& ray) {
-    float closestDist = FLT_MAX;
+    TEMPhitDistance = FLT_MAX;
     int hitIndex = -1;
 
     for (int i = 0; i < gameBoard.size(); ++i) {
         float dist;
         if (ray.intersects(gameBoard[i]->getBoundingBox(), dist) /*&& TEMPrayIntersectsShape(ray, gameBoard[i], dist)*/) {
-            if (dist < closestDist) {
-                closestDist = dist;
+            if (dist < TEMPhitDistance) {
+                TEMPhitDistance = dist;
                 hitIndex = i;
             }
         }
@@ -108,6 +126,12 @@ void AppController::TEMPselectBoardIndex(const Ray& ray) {
     }
 
     if (hitIndex >= 0) gameBoard[hitIndex]->select();
+}
+
+void AppController::updateRayLine() {
+    const Ray& ray = cameraController.getMouseRay();
+    glm::vec3 origin = ray.getOrigin();
+    rayLine.update(origin, origin + TEMPhitDistance * ray.getDirection());
 }
 
 void AppController::updateTime() {
@@ -118,10 +142,14 @@ void AppController::updateTime() {
 }
 
 void AppController::handleInputMouse() {
-    Ray ray = cameraController.getMouseRay();
+    const Ray& ray = cameraController.getMouseRay();
     if (!ray.isActive()) return;
 
     TEMPselectBoardIndex(ray);
+    /*EVERY_N_FRAMES_DO(60, {
+        std::cout << "RAY:\n" << rayLine;
+        std::cout << "BOX:\n" << gameBoard[0]->getBoundingBox();
+    });*/
 }
 
 void AppController::handleInputKey() {
@@ -139,8 +167,10 @@ void AppController::render() {
     cameraController.updateView(timeDelta);
     glm::mat4 view = cameraController.getCameraView();
     shader.setMat4(ShaderParams::VIEW, view);
+    shader2D.setMat4(ShaderParams::VIEW, view);
     glm::mat4 projection = cameraController.getProjectionMatrix();
     shader.setMat4(ShaderParams::PROJECTION, projection);
+    shader2D.setMat4(ShaderParams::PROJECTION, projection);
 
     window.clearBuffer();
     // rotation:
@@ -148,6 +178,12 @@ void AppController::render() {
     for (const auto& shape : gameBoard) {
         shape->setUniforms(shader, currentTime);
         shape->draw();
+    }
+
+    if (drawCameraRay) {
+        ShaderBinder binder(shader);
+        rayLine.setUniforms(shader2D, currentTime);
+        rayLine.draw();
     }
 
     window.swapBuffers();

@@ -3,7 +3,7 @@
 #include <vector>
 #include "InputHandler.h"
 #include "controller/CameraController.h"
-#include "shapes/OpenGLShape.h"
+#include "shapes/Line.h"
 
 class AppController {
     static const int WIDTH = 800;
@@ -18,18 +18,24 @@ class AppController {
     InputHandler inputHandler;
     CameraController cameraController;
     Shader shader;
+    Shader shader2D;
 
     bool toggledFullscreenLastFrame = false;
     float currentTime;
     float timeDelta;
+    float TEMPhitDistance = 0;
     int frameCounter = 0;
+    bool drawCameraRay = true;
+    Line rayLine;
 
     std::vector<std::unique_ptr<OpenGLShape>> gameBoard; // TODO move to model, replace setupDefaultBoard with appropriate setup
 
     AppController();
 
+    void registerCallbacks();
     void setupDefaultBoard();
     void TEMPselectBoardIndex(const Ray& ray);
+    void updateRayLine();
 public:
     static std::unique_ptr<AppController> create();
     void updateTime();

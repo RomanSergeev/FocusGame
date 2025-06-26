@@ -8,6 +8,8 @@ class Ray {
 public:
     Ray(const glm::vec3& origin, const glm::vec3& direction, bool active) : origin(origin), direction(direction), active(active) {}
 
+    const glm::vec3& getOrigin() const { return origin; }
+    const glm::vec3& getDirection() const { return direction; }
     void setOrigin(const glm::vec3& newOrigin) { origin = newOrigin; }
     void setDirection(const glm::vec3& newDirection) { direction = glm::normalize(newDirection); }
     bool isActive() const { return active; }

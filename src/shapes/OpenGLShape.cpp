@@ -1,16 +1,59 @@
 #include "OpenGLShape.h"
 #include "glm/gtc/type_ptr.hpp"
 
+std::ostream& operator << (std::ostream& out, const OpenGLShape& shape) {
+    shape.print(out);
+    return out;
+}
+
 const AABB& OpenGLShape::getBoundingBox() const {
     if (boxIsValid) return boundingBox;
     recalculateAABB();
     return boundingBox;
 }
 
+std::pair<int, int> OpenGLShape::locatePositionWithOffset() const {
+    int offset = 0;
+    for (const std::pair<AttributeType, int>& pair : pointsPerAttribute) {
+        if (pair.first == AttributeType::Position) return { offset, pair.second };
+        offset += pair.second;
+    }
+    return { -1, -1 };
+}
+
+bool OpenGLShape::getVertexBoundaries(glm::vec3& minPoint, glm::vec3& maxPoint) const {
+    std::pair<int, int> position = locatePositionWithOffset();
+    if (position.first == -1) return false;
+
+    minPoint = glm::vec3( FLT_MAX);
+    maxPoint = glm::vec3(-FLT_MAX);
+    float x, y, z;
+    int offset = position.first;
+
+    for (int i = 0; i < vertices.size(); i += floatsPerAttribute) {
+        x = vertices[offset + i    ];
+        y = vertices[offset + i + 1];
+        z = vertices[offset + i + 2];
+
+        if (x < minPoint.x) minPoint.x = x;
+        if (x > maxPoint.x) maxPoint.x = x;
+        if (y < minPoint.y) minPoint.y = y;
+        if (y > maxPoint.y) maxPoint.y = y;
+        if (z < minPoint.z) minPoint.z = z;
+        if (z > maxPoint.z) maxPoint.z = z;
+    }
+    return true;
+}
+
 void OpenGLShape::recalculateAABB() const {
-    static const glm::vec3 corners[8] = {
-        {-1, -1, -1}, { 1, -1, -1}, {-1,  1, -1}, { 1,  1, -1},
-        {-1, -1,  1}, { 1, -1,  1}, {-1,  1,  1}, { 1,  1,  1},
+    glm::vec3 m, M; // min and max boundaries
+    // using simple option here: precalculate min-max boundaries of object's vertices
+    // to form the object-spaced bounding box
+    if (!getVertexBoundaries(m, M)) return;
+
+    const glm::vec3 corners[8] = {
+        { m.x, m.y, m.z }, { m.x, m.y, M.z }, { m.x, M.y, m.z }, { m.x, M.y, M.z }, 
+        { M.x, m.y, m.z }, { M.x, m.y, M.z }, { M.x, M.y, m.z }, { M.x, M.y, M.z } 
     };
 
     glm::vec3 minPoint = glm::vec3(std::numeric_limits<float>::max());
@@ -41,7 +84,7 @@ void OpenGLShape::addFace(const glm::vec3& A, const glm::vec3& B, const glm::vec
 }
 
 void OpenGLShape::position(const glm::vec3& center) {
-    baseModel = glm::translate(glm::mat4(1.0f), center);
+    setBaseModel(glm::translate(glm::mat4(1.0f), center));
 }
 
 void OpenGLShape::setupBuffer() {
@@ -72,5 +115,15 @@ void OpenGLShape::setUniforms(const Shader& shader, float time) const {
 
 void OpenGLShape::draw() const {
     glBindVertexArray(VAO);
-    glDrawArrays(GL_TRIANGLES, 0, getVerticeCount());
+    glDrawArrays(getGLDrawMode(getDrawMode()), 0, getVerticeCount());
+}
+
+void OpenGLShape::print(std::ostream& out) const {
+    int fpa = floatsPerAttribute;
+    const std::vector<float>& v = vertices;
+    for (int i = 0; i < v.size(); ++i) {
+        out << v[i] << ' ';
+        if (i % fpa == fpa - 1) out << '\n';
+    }
+    out << '\n';
 }
