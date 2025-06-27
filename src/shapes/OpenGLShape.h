@@ -24,6 +24,7 @@ class OpenGLShape {
         bool getVertexBoundaries(glm::vec3& minPoint, glm::vec3& maxPoint) const;
         void recalculateAABB() const;
         void addFace(const glm::vec3& A, const glm::vec3& B, const glm::vec3& C);
+        void addFacePoly(const std::vector<glm::vec3>& verticeList);
     public:
         OpenGLShape(unsigned int fpa) : floatsPerAttribute(fpa), pointsPerAttribute(1, { AttributeType::Position, fpa }), vertices() {}
         virtual ~OpenGLShape() = 0;

@@ -20,16 +20,11 @@ Cuboid::Cuboid(float sizex, float sizey, float sizez) : OpenGLShape(6), wx(sizex
     glm::vec3 G(-x, -y, -z);
     glm::vec3 H(-x, -y,  z);
 
-    addFace(A, C, B);
-    addFace(A, D, C);
-    addFace(E, G, F);
-    addFace(E, H, G);
-    addFace(A, E, D);
-    addFace(D, E, H);
-    addFace(B, F, C);
-    addFace(C, F, G);
-    addFace(A, B, E);
-    addFace(B, F, E);
-    addFace(D, C, H);
-    addFace(C, G, H);
+    // order of vertices inside lists also matters, if triangles criss-cross on adjacent edges of touching cubes, artifacts will appear 
+    addFacePoly({A, D, C, B});
+    addFacePoly({E, H, G, F});
+    addFacePoly({A, E, H, D});
+    addFacePoly({B, F, G, C});
+    addFacePoly({B, F, E, A});
+    addFacePoly({C, G, H, D});
 }

@@ -1,3 +1,4 @@
+#include <stdexcept>
 #include "OpenGLShape.h"
 #include "glm/gtc/type_ptr.hpp"
 
@@ -81,6 +82,13 @@ void OpenGLShape::addFace(const glm::vec3& A, const glm::vec3& B, const glm::vec
         C.x, C.y, C.z, N.x, N.y, N.z
     };
     vertices.insert(vertices.end(), face.begin(), face.end());
+}
+
+void OpenGLShape::addFacePoly(const std::vector<glm::vec3>& verticeList) {
+    if (verticeList.size() < 3) throw std::invalid_argument("OpenGLShape::addFacePoly verticeList argument should be at least length 3.");
+    const glm::vec3& A = verticeList.at(0);
+    for (int i = 1; i < verticeList.size() - 1; ++i)
+        addFace(A, verticeList.at(i), verticeList.at(i + 1));
 }
 
 void OpenGLShape::position(const glm::vec3& center) {
