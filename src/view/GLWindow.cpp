@@ -47,6 +47,7 @@ GLWindow::GLWindow(int width, int height, const std::string& title) {
     glfwGetWindowSize(window, &winW, &winH);
     glfwGetWindowPos(window, &winX, &winY);
     glClearColor(0.01f, 0.03f, 0.025f, 1.0f); // Set a dark greenish background
+    glLineWidth(1.0f); // 1 through 31 is available
 }
 
 GLWindow::~GLWindow() {

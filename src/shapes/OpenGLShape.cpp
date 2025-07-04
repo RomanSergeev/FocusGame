@@ -2,6 +2,13 @@
 #include "OpenGLShape.h"
 #include "glm/gtc/type_ptr.hpp"
 
+#include "view/GLWindow.h"
+
+OpenGLShape::OpenGLShape(unsigned int fpa) :
+    floatsPerAttribute(fpa),
+    pointsPerAttribute(1, { AttributeType::Position, fpa }),
+    vertices() {}
+
 std::ostream& operator << (std::ostream& out, const OpenGLShape& shape) {
     shape.print(out);
     return out;
@@ -112,6 +119,8 @@ void OpenGLShape::setupBuffer() {
         glEnableVertexAttribArray(i);
         totalShift += ppa;
     }
+
+    glBindVertexArray(0);  // Important: prevent accidental state changes
 }
 
 void OpenGLShape::setUniforms(const Shader& shader, float time) const {

@@ -4,6 +4,7 @@
 #include "InputHandler.h"
 #include "controller/CameraController.h"
 #include "shapes/Line.h"
+#include "shapes/Tetrahedron.h"
 
 class AppController {
     static const int WIDTH = 800;
@@ -29,6 +30,7 @@ class AppController {
     Line rayLine;
 
     std::vector<std::unique_ptr<OpenGLShape>> gameBoard; // TODO move to model, replace setupDefaultBoard with appropriate setup
+    Tetrahedron tetra;
 
     AppController();
 

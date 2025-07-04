@@ -20,13 +20,14 @@ class OpenGLShape {
         mutable AABB boundingBox;
         mutable bool boxIsValid = false;
 
+        void setupBuffer();
         std::pair<int, int> locatePositionWithOffset() const;
         bool getVertexBoundaries(glm::vec3& minPoint, glm::vec3& maxPoint) const;
         void recalculateAABB() const;
         void addFace(const glm::vec3& A, const glm::vec3& B, const glm::vec3& C);
         void addFacePoly(const std::vector<glm::vec3>& verticeList);
     public:
-        OpenGLShape(unsigned int fpa) : floatsPerAttribute(fpa), pointsPerAttribute(1, { AttributeType::Position, fpa }), vertices() {}
+        OpenGLShape(unsigned int fpa);
         virtual ~OpenGLShape() = 0;
 
         friend std::ostream& operator << (std::ostream& out, const OpenGLShape& shape);
@@ -58,7 +59,6 @@ class OpenGLShape {
 
         void position(const glm::vec3& center);
         inline void position(float x, float y, float z) { position(glm::vec3(x, y, z)); }
-        void setupBuffer();
         virtual void draw() const;
         virtual void setUniforms(const Shader& shader, float time) const;
         virtual void print(std::ostream& out) const;

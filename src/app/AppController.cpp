@@ -44,8 +44,10 @@ AppController::AppController() :
 
     shader.use();
     shader.setVec3(ShaderParams::LIGHT_DIR, -0.3f, -0.2f, -0.7f);
+    
+    tetra.setColor(1.0f, 0.6f, 0.0f);
+    tetra.position({ 0.0f, 0.0f, 3.0f });
 
-    rayLine.setupBuffer();
     rayLine.setColor(1.0f, 0.0f, 0.0f);
 
     CameraController::CameraSettings settings;
@@ -98,7 +100,6 @@ void AppController::setupDefaultBoard() {
         for (int j = 0; j < CELLS_Y; ++j) {
             if (removeCondition(CELLS_X, CELLS_Y, i, j)) continue;
             std::unique_ptr<OpenGLShape> cell = std::make_unique<Cuboid>(CUBE_W, CUBE_W, CUBE_W * CUBE_D);
-            cell->setupBuffer();
             bool even = (i + j) & 1;
             float rgb = even ? 0.2 : 0.9;
             cell->setColor(rgb, rgb, rgb);
@@ -131,7 +132,7 @@ void AppController::TEMPselectBoardIndex(const Ray& ray) {
 void AppController::updateRayLine() {
     const Ray& ray = cameraController.getMouseRay();
     glm::vec3 origin = ray.getOrigin();
-    rayLine.update(origin, origin + TEMPhitDistance * ray.getDirection());
+    // rayLine.update(origin, origin + TEMPhitDistance * ray.getDirection());
 }
 
 void AppController::updateTime() {
@@ -148,7 +149,7 @@ void AppController::handleInputMouse() {
     TEMPselectBoardIndex(ray);
     /*EVERY_N_FRAMES_DO(60, {
         std::cout << "RAY:\n" << rayLine;
-        std::cout << "BOX:\n" << gameBoard[0]->getBoundingBox();
+        //std::cout << "BOX:\n" << gameBoard[0]->getBoundingBox();
     });*/
 }
 
@@ -166,22 +167,28 @@ void AppController::handleInputKey() {
 void AppController::render() {
     cameraController.updateView(timeDelta);
     glm::mat4 view = cameraController.getCameraView();
-    shader.setMat4(ShaderParams::VIEW, view);
-    shader2D.setMat4(ShaderParams::VIEW, view);
     glm::mat4 projection = cameraController.getProjectionMatrix();
+    shader.setMat4(ShaderParams::VIEW, view);
     shader.setMat4(ShaderParams::PROJECTION, projection);
-    shader2D.setMat4(ShaderParams::PROJECTION, projection);
 
     window.clearBuffer();
+    
     // rotation:
-    // shape->setModel(glm::rotate(shape->getBaseModel(), time, glm::vec3(0.3f, 1.0f, 0.0f)));
+    tetra.setModel(glm::rotate(tetra.getBaseModel(), currentTime, glm::vec3(0.3f, 1.0f, 0.0f)));
+    tetra.setUniforms(shader, currentTime);
+    tetra.draw();
+    //tetra.getBoundingBox().draw();
+
     for (const auto& shape : gameBoard) {
         shape->setUniforms(shader, currentTime);
         shape->draw();
     }
 
     if (drawCameraRay) {
-        ShaderBinder binder(shader);
+        ShaderBinder binder(shader2D); // uses shader2D instead of shader, uses shader back on destruction
+        shader2D.setMat4(ShaderParams::VIEW, view);
+        shader2D.setMat4(ShaderParams::PROJECTION, projection);
+        rayLine.update(SPACE_ORIGIN, {3*cos(currentTime), 3*sin(currentTime), 6}); // just make it spin now
         rayLine.setUniforms(shader2D, currentTime);
         rayLine.draw();
     }

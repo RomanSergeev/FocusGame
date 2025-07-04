@@ -27,4 +27,6 @@ Cuboid::Cuboid(float sizex, float sizey, float sizez) : OpenGLShape(6), wx(sizex
     addFacePoly({B, F, G, C});
     addFacePoly({B, F, E, A});
     addFacePoly({C, G, H, D});
+
+    setupBuffer();
 }

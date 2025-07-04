@@ -15,4 +15,6 @@ Tetrahedron::Tetrahedron() : OpenGLShape(6) {
     addFace(A, D, C);
     addFace(A, D, B);
     addFace(B, D, C);
+
+    setupBuffer();
 }
