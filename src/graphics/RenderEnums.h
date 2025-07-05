@@ -1,4 +1,5 @@
 #pragma once
+#include <string>
 #include "glm/glm.hpp"
 #include "glew/glew.h"
 
@@ -27,5 +28,6 @@ enum class ShaderType {
     Program
 };
 
+std::string getShaderTypeString(ShaderType type);
 glm::vec3 axisToVec3(Axis axis);
 GLenum getGLDrawMode(DrawMode mode);

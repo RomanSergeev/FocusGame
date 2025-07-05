@@ -1,5 +1,15 @@
 #include "RenderEnums.h"
 
+std::string getShaderTypeString(ShaderType type) {
+    switch (type) {
+        case ShaderType::Vertex  : return "Vertex";
+        case ShaderType::Fragment: return "Fragment";
+        case ShaderType::Geometry: return "Geometry";
+        case ShaderType::Program : return "Program";
+        default: return "Unknown shader type";
+    }
+}
+
 glm::vec3 axisToVec3(Axis axis) {
     switch (axis) {
         case Axis::X: return glm::vec3(1, 0, 0);
