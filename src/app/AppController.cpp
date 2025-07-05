@@ -46,7 +46,7 @@ AppController::AppController() :
     shader.setVec3(ShaderParams::LIGHT_DIR, -0.3f, -0.2f, -0.7f);
     
     tetra.setColor(1.0f, 0.6f, 0.0f);
-    tetra.position({ 0.0f, 0.0f, 3.0f });
+    tetra.translate(0.0f, 0.0f, 3.0f);
 
     rayLine.setColor(1.0f, 0.0f, 0.0f);
 
@@ -105,7 +105,7 @@ void AppController::setupDefaultBoard() {
             cell->setColor(rgb, rgb, rgb);
             float x = (i - CELLS_X / 2 + 0.5) * CUBE_W;
             float y = (j - CELLS_Y / 2 + 0.5) * CUBE_W;
-            cell->position(x, y, 0);
+            cell->translate(x, y, 0);
             gameBoard.push_back(std::move(cell));
         }
     }
@@ -132,8 +132,10 @@ void AppController::TEMPselectBoardIndex(const Ray& ray) {
 void AppController::updateRayLine() {
     const Ray& ray = cameraController.getMouseRay();
     glm::vec3 origin = ray.getOrigin();
-    // rayLine.update(origin, origin + TEMPhitDistance * ray.getDirection());
+    rayLine.update(origin, origin + TEMPhitDistance * ray.getDirection());
 }
+
+/********** Main pipeline **********/
 
 void AppController::updateTime() {
     ++frameCounter;
@@ -147,10 +149,6 @@ void AppController::handleInputMouse() {
     if (!ray.isActive()) return;
 
     TEMPselectBoardIndex(ray);
-    /*EVERY_N_FRAMES_DO(60, {
-        std::cout << "RAY:\n" << rayLine;
-        //std::cout << "BOX:\n" << gameBoard[0]->getBoundingBox();
-    });*/
 }
 
 void AppController::handleInputKey() {
@@ -184,11 +182,19 @@ void AppController::render() {
         shape->draw();
     }
 
+    //EVERY_N_FRAMES_DO(60, {std::cout << "1\n";});
+    /*EVERY_N_FRAMES_DO(60, {
+        std::cout << "RAY:\n" << rayLine;
+        glm::vec3 cp = cameraController.getCameraPosition();
+        std::cout << "CAMERA:\n" << cp[0] << ' ' << cp[1] << ' ' << cp[2] << "\n\n";
+    });*/
+
     if (drawCameraRay) {
         ShaderBinder binder(shader2D); // uses shader2D instead of shader, uses shader back on destruction
         shader2D.setMat4(ShaderParams::VIEW, view);
         shader2D.setMat4(ShaderParams::PROJECTION, projection);
-        rayLine.update(SPACE_ORIGIN, {3*cos(currentTime), 3*sin(currentTime), 6}); // just make it spin now
+        //rayLine.update(SPACE_ORIGIN, {3*cos(currentTime), 3*sin(currentTime), 6}); // just make it spin now
+
         rayLine.setUniforms(shader2D, currentTime);
         rayLine.draw();
     }

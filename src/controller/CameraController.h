@@ -42,6 +42,7 @@ public:
     void setRotating(bool newRotating) { rotating = newRotating; }
 
     const glm::mat4& getProjectionMatrix() const { return camera.getProjectionMatrix(); }
+    glm::vec3 getCameraPosition() const { return camera.getPosition(); }
     glm::mat4 getCameraView() const { return camera.getView(); };
     
     void handleMousePosition(int winWidth, int winHeight, double xpos, double ypos);

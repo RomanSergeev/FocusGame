@@ -49,6 +49,7 @@ void CameraController::updateSettings(CameraSettings&& settings) {
 }
 
 void CameraController::handleMousePosition(int winWidth, int winHeight, double xpos, double ypos) {
+    //std::cout << "called ";
     updateRayFromCursor(winWidth, winHeight, xpos, ypos);
     float dx = xpos - lastX;
     float dy = ypos - lastY;
@@ -118,8 +119,9 @@ void CameraController::updateRayFromCursor(int winWidth, int winHeight, double x
 
     // 5. Update ray
     ray.activate();
-    ray.setOrigin(camera.getPosition()); // Make sure you expose getPosition() from Camera
+    ray.setOrigin(camera.getPosition());
     ray.setDirection(rayDir);
+    //std::cout << "updated\n";
 }
 
 void CameraController::addYaw(float yawDelta) {

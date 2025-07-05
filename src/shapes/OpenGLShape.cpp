@@ -4,20 +4,53 @@
 
 #include "view/GLWindow.h"
 
-OpenGLShape::OpenGLShape(unsigned int fpa) :
-    floatsPerAttribute(fpa),
-    pointsPerAttribute(1, { AttributeType::Position, fpa }),
-    vertices() {}
+/********** private **********/
 
-std::ostream& operator << (std::ostream& out, const OpenGLShape& shape) {
-    shape.print(out);
-    return out;
+void OpenGLShape::setupVBO() {
+    glGenBuffers(1, &VBO); // create buffer
+    glBindBuffer(GL_ARRAY_BUFFER, VBO); // bind it
+    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), vertices.data(), GL_STATIC_DRAW); // fill it
 }
 
-const AABB& OpenGLShape::getBoundingBox() const {
-    if (boxIsValid) return boundingBox;
-    recalculateAABB();
-    return boundingBox;
+void OpenGLShape::setupVAO() {
+    glGenVertexArrays(1, &VAO);
+    glBindVertexArray(VAO);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO); // still needs to be bound beforehand
+
+    // Define vertex attributes
+    int totalShift = 0;
+    for (int i = 0; i < pointsPerAttribute.size(); ++i) {
+        int ppa = pointsPerAttribute[i].second;
+        glVertexAttribPointer(i, ppa, GL_FLOAT, GL_FALSE, floatsPerAttribute * sizeof(float), (void*)(totalShift * sizeof(float)));
+        glEnableVertexAttribArray(i);
+        totalShift += ppa;
+    }
+
+    glBindVertexArray(0);  // Important: prevent accidental state changes
+}
+
+void OpenGLShape::updateBuffer(int oldVerticesLength) const {
+    int newVerticesLength = vertices.size();
+    bool reassignBuffer = (newVerticesLength > oldVerticesLength);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    if (reassignBuffer)
+        glBufferData(GL_ARRAY_BUFFER, newVerticesLength * sizeof(float), vertices.data(), GL_DYNAMIC_DRAW);
+    else
+        glBufferSubData(GL_ARRAY_BUFFER, 0, newVerticesLength * sizeof(float), vertices.data());
+}
+
+/********** protected **********/
+
+void OpenGLShape::setVertices(const std::vector<float>& newVertices) {
+    boxIsValid = false;
+    int oldLength = vertices.size();
+    vertices = newVertices;
+    updateBuffer(oldLength);
+}
+
+void OpenGLShape::setupBuffer() {
+    setupVBO();
+    setupVAO();
 }
 
 std::pair<int, int> OpenGLShape::locatePositionWithOffset() const {
@@ -98,29 +131,30 @@ void OpenGLShape::addFacePoly(const std::vector<glm::vec3>& verticeList) {
         addFace(A, verticeList.at(i), verticeList.at(i + 1));
 }
 
-void OpenGLShape::position(const glm::vec3& center) {
+/********** public **********/
+
+OpenGLShape::OpenGLShape(unsigned int fpa) :
+    floatsPerAttribute(fpa),
+    pointsPerAttribute(1, { AttributeType::Position, fpa }),
+    vertices() {}
+
+std::ostream& operator << (std::ostream& out, const OpenGLShape& shape) {
+    shape.print(out);
+    return out;
+}
+
+const AABB& OpenGLShape::getBoundingBox() const {
+    if (!boxIsValid) recalculateAABB();
+    return boundingBox;
+}
+
+void OpenGLShape::translate(const glm::vec3& center) {
     setBaseModel(glm::translate(glm::mat4(1.0f), center));
 }
 
-void OpenGLShape::setupBuffer() {
-    GLuint VBO; // Vertex Buffer Object
-    glGenVertexArrays(1, &VAO);
-    glGenBuffers(1, &VBO);
+void OpenGLShape::draw() const {
     glBindVertexArray(VAO);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-
-    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), vertices.data(), GL_STATIC_DRAW);
-
-    // Define vertex attributes
-    int totalShift = 0;
-    for (int i = 0; i < pointsPerAttribute.size(); ++i) {
-        int ppa = pointsPerAttribute[i].second;
-        glVertexAttribPointer(i, ppa, GL_FLOAT, GL_FALSE, floatsPerAttribute * sizeof(float), (void*)(totalShift * sizeof(float)));
-        glEnableVertexAttribArray(i);
-        totalShift += ppa;
-    }
-
-    glBindVertexArray(0);  // Important: prevent accidental state changes
+    glDrawArrays(getGLDrawMode(getDrawMode()), 0, getVerticeCount());
 }
 
 void OpenGLShape::setUniforms(const Shader& shader, float time) const {
@@ -128,11 +162,6 @@ void OpenGLShape::setUniforms(const Shader& shader, float time) const {
     shader.setVec3 (ShaderParams::BASE_COLOR, baseColor);
     shader.setFloat(ShaderParams::TIME      , time);
     shader.setBool (ShaderParams::SELECTED  , selected);
-}
-
-void OpenGLShape::draw() const {
-    glBindVertexArray(VAO);
-    glDrawArrays(getGLDrawMode(getDrawMode()), 0, getVerticeCount());
 }
 
 void OpenGLShape::print(std::ostream& out) const {
