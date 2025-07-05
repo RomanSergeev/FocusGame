@@ -1,6 +1,7 @@
 #pragma once
+#include "Constants.h"
 #include "Utils.h"
-#include "shapes/ShapeEnums.h"
+#include "graphics/RenderEnums.h"
 #include "glm/gtc/constants.hpp"
 #include "glm/fwd.hpp"
 #include "glm/ext/matrix_transform.hpp"

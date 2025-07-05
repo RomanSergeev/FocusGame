@@ -2,7 +2,6 @@
 #include "model/Camera.h"
 #include "model/Ray.h"
 #include "view/GLWindow.h"
-#include "shapes/ShapeEnums.h"
 
 class CameraController {
 public:

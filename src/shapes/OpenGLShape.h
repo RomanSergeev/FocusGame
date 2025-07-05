@@ -1,7 +1,7 @@
 #pragma once
 #include <iostream>
 #include <vector>
-#include "ShapeEnums.h"
+#include "ShapeType.h"
 #include "glm/glm.hpp"
 #include "glew/glew.h"
 #include "graphics/Shader.h"

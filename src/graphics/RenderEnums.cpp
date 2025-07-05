@@ -1,6 +1,4 @@
-#include "ShapeEnums.h"
-
-const glm::vec3 SPACE_ORIGIN(0.0f);
+#include "RenderEnums.h"
 
 glm::vec3 axisToVec3(Axis axis) {
     switch (axis) {
@@ -8,7 +6,7 @@ glm::vec3 axisToVec3(Axis axis) {
         case Axis::Y: return glm::vec3(0, 1, 0);
         case Axis::Z: return glm::vec3(0, 0, 1);
     }
-    return SPACE_ORIGIN; // fallback
+    return glm::vec3(0, 0, 0); // fallback
 }
 
 GLenum getGLDrawMode(DrawMode mode) {

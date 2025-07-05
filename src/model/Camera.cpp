@@ -1,6 +1,5 @@
 #include <cmath>
 #include "Camera.h"
-#include "shapes/ShapeEnums.h"
 #include "glm/ext/matrix_clip_space.hpp"
 
 float Camera::normalizeAngle(float angle) {

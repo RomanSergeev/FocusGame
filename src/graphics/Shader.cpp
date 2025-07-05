@@ -126,20 +126,20 @@ GLuint Shader::compile(GLenum type, const char* src) {
     return shader;
 }
 
-void Shader::checkForCompilationErrors(GLuint object, const std::string& type) {
+void Shader::checkForCompilationErrors(GLuint objectID, const std::string& type) {
     GLint success;
     GLchar infoLog[LOG_SIZE];
 
     if (type != "PROGRAM") {
-        glGetShaderiv(object, GL_COMPILE_STATUS, &success);
+        glGetShaderiv(objectID, GL_COMPILE_STATUS, &success);
         if (!success) {
-            glGetShaderInfoLog(object, LOG_SIZE, nullptr, infoLog);
+            glGetShaderInfoLog(objectID, LOG_SIZE, nullptr, infoLog);
             std::cerr << "ERROR::SHADER_COMPILATION_ERROR of type: " << type << "\n" << infoLog << "\n";
         }
     } else {
-        glGetProgramiv(object, GL_LINK_STATUS, &success);
+        glGetProgramiv(objectID, GL_LINK_STATUS, &success);
         if (!success) {
-            glGetProgramInfoLog(object, LOG_SIZE, nullptr, infoLog);
+            glGetProgramInfoLog(objectID, LOG_SIZE, nullptr, infoLog);
             std::cerr << "ERROR::PROGRAM_LINKING_ERROR\n" << infoLog << "\n";
         }
     }

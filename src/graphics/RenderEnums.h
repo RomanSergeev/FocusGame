@@ -2,16 +2,6 @@
 #include "glm/glm.hpp"
 #include "glew/glew.h"
 
-extern const glm::vec3 SPACE_ORIGIN;
-
-enum class ShapeType {
-    UNKNOWN,
-    Triangle,
-    Tetrahedron,
-    Cuboid,
-    Line
-};
-
 enum class AttributeType {
     Position,
     Normal,
@@ -33,7 +23,8 @@ enum class DrawMode {
 enum class ShaderType {
     Vertex,
     Fragment,
-    Geometry
+    Geometry,
+    Program
 };
 
 glm::vec3 axisToVec3(Axis axis);

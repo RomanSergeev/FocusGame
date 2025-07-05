@@ -1,8 +1,7 @@
 #pragma once
 #include <map>
 #include <string>
-#include "glm/glm.hpp"
-#include "glew/glew.h"
+#include "RenderEnums.h"
 
 extern const std::string shaderCodeVertices;
 extern const std::string shaderCodeFragments;
@@ -27,7 +26,7 @@ namespace ShaderParams {
 class Shader {
     GLuint ID;
     GLuint compile(GLenum type, const char* src);
-    void checkForCompilationErrors(GLuint object, const std::string& type);
+    void checkForCompilationErrors(GLuint objectID, const std::string& type);
 public:
     Shader(const char* vertexSrc, const char* fragmentSrc);
     ~Shader();
