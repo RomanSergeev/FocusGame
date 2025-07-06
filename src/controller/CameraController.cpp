@@ -50,7 +50,6 @@ void CameraController::updateSettings(CameraSettings&& settings) {
 
 void CameraController::handleMousePosition(int winWidth, int winHeight, double xpos, double ypos) {
     //std::cout << "called ";
-    updateRayFromCursor(winWidth, winHeight, xpos, ypos);
     float dx = xpos - lastX;
     float dy = ypos - lastY;
     lastX = xpos;

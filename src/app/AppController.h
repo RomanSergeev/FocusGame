@@ -26,7 +26,7 @@ class AppController {
     float timeDelta;
     float TEMPhitDistance = 0;
     int frameCounter = 0;
-    bool drawCameraRay = true;
+    bool drawCameraRay = false;
     Line rayLine;
 
     std::vector<std::unique_ptr<OpenGLShape>> gameBoard; // TODO move to model, replace setupDefaultBoard with appropriate setup

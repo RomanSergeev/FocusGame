@@ -48,6 +48,8 @@ public:
     void handleMousePosition(int winWidth, int winHeight, double xpos, double ypos);
     void handleMouseScroll(double xOffset, double yOffset);
     void handleWindowResize(int width, int height);
+    void updateRayFromCursor(int winWidth, int winHeight, double xpos, double ypos);
+    void updateRayFromCursor(int winWidth, int winHeight) { updateRayFromCursor(winWidth, winHeight, lastX, lastY); }
 
     void updateSettings(CameraSettings&& settings);
     void updateView(float timePassed);
@@ -63,8 +65,6 @@ private:
 
     bool rotating = false;
     double lastX = 0.0, lastY = 0.0;
-
-    void updateRayFromCursor(int winWidth, int winHeight, double xpos, double ypos);
 
     void addYaw(float yawDelta);
     void addPitch(float pitchDelta);

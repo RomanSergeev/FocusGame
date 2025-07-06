@@ -14,16 +14,20 @@ void AppController::mouseButtonCallback(GLFWwindow* window, int button, int acti
 
 void AppController::mousePositionCallback(GLFWwindow* window, double xpos, double ypos) {
     auto* controller = static_cast<AppController*>(glfwGetWindowUserPointer(window));
+    if (!controller) return;
     int winWidth, winHeight;
     glfwGetFramebufferSize(window, &winWidth, &winHeight);
-    if (controller) controller->cameraController.handleMousePosition(winWidth, winHeight, xpos, ypos);
-    if (controller->drawCameraRay) controller->updateRayLine();
+    controller->cameraController.handleMousePosition(winWidth, winHeight, xpos, ypos);
+    controller->cameraController.updateRayFromCursor(winWidth, winHeight);
 }
 
 void AppController::mouseScrollCallback(GLFWwindow* window, double xOffset, double yOffset) {
     auto* controller = static_cast<AppController*>(glfwGetWindowUserPointer(window));
-    if (controller) controller->cameraController.handleMouseScroll(xOffset, yOffset);
-    if (controller->drawCameraRay) controller->updateRayLine();
+    if (!controller) return;
+    int winWidth, winHeight;
+    glfwGetFramebufferSize(window, &winWidth, &winHeight);
+    controller->cameraController.handleMouseScroll(xOffset, yOffset);
+    controller->cameraController.updateRayFromCursor(winWidth, winHeight);
 }
 
 void AppController::resizeCallback(GLFWwindow* window, int width, int height) {
@@ -131,8 +135,10 @@ void AppController::TEMPselectBoardIndex(const Ray& ray) {
 
 void AppController::updateRayLine() {
     const Ray& ray = cameraController.getMouseRay();
+    if (!ray.isActive()) return;
     glm::vec3 origin = ray.getOrigin();
-    rayLine.update(origin, origin + TEMPhitDistance * ray.getDirection());
+    glm::vec3 dir = TEMPhitDistance * ray.getDirection();
+    rayLine.update(origin + dir * 0.1f, origin + dir);
 }
 
 /********** Main pipeline **********/
@@ -193,6 +199,7 @@ void AppController::render() {
         ShaderBinder binder(shader2D); // uses shader2D instead of shader, uses shader back on destruction
         shader2D.setMat4(ShaderParams::VIEW, view);
         shader2D.setMat4(ShaderParams::PROJECTION, projection);
+        updateRayLine();
         //rayLine.update(SPACE_ORIGIN, {3*cos(currentTime), 3*sin(currentTime), 6}); // just make it spin now
 
         rayLine.setUniforms(shader2D, currentTime);
