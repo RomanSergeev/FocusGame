@@ -48,9 +48,6 @@ AppController::AppController() :
 
     shader.use();
     shader.setVec3(ShaderParams::LIGHT_DIR, -0.3f, -0.2f, -0.7f);
-    
-    tetra.setColor(1.0f, 0.6f, 0.0f);
-    tetra.translate(0.0f, 0.0f, 3.0f);
 
     rayLine.setColor(1.0f, 0.0f, 0.0f);
 
@@ -176,12 +173,6 @@ void AppController::render() {
     shader.setMat4(ShaderParams::PROJECTION, projection);
 
     window.clearBuffer();
-    
-    // rotation:
-    tetra.setModel(glm::rotate(tetra.getBaseModel(), currentTime, glm::vec3(0.3f, 1.0f, 0.0f)));
-    tetra.setUniforms(shader, currentTime);
-    tetra.draw();
-    //tetra.getBoundingBox().draw();
 
     for (const auto& shape : gameBoard) {
         shape->setUniforms(shader, currentTime);

@@ -30,7 +30,6 @@ class AppController {
     Line rayLine;
 
     std::vector<std::unique_ptr<OpenGLShape>> gameBoard; // TODO move to model, replace setupDefaultBoard with appropriate setup
-    Tetrahedron tetra;
 
     AppController();
 
