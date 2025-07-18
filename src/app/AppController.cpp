@@ -36,16 +36,18 @@ void AppController::resizeCallback(GLFWwindow* window, int width, int height) {
     if (controller) controller->cameraController.handleWindowResize(width, height);
 }
 
+std::vector<Shader> AppController::createShaders() {
+    std::vector<Shader> result;
+    result.emplace_back(Shader(shaderCodeVertices.c_str(), shaderCodeFragments.c_str())); // shader3D
+    result.emplace_back(Shader(shaderCodeVertices2D.c_str(), shaderCodeFragments2D.c_str())); // shader2D
+    return result;
+}
+
 AppController::AppController() :
     window(WIDTH, HEIGHT, "Focus Game"),
     inputHandler(),
     cameraController(WIDTH, HEIGHT),
-    shaders([] {
-        std::vector<Shader> shaders;
-        shaders.emplace_back(Shader(shaderCodeVertices.c_str(), shaderCodeFragments.c_str())); // shader3D
-        shaders.emplace_back(Shader(shaderCodeVertices2D.c_str(), shaderCodeFragments2D.c_str())); // shader2D
-        return shaders;
-    }()),
+    shaders(createShaders()),
     rayLine(SPACE_ORIGIN, SPACE_ORIGIN) {
 
     registerCallbacks();

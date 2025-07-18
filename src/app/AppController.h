@@ -13,6 +13,7 @@ class AppController {
     static void mousePositionCallback(GLFWwindow* window, double xpos, double ypos);
     static void mouseScrollCallback(GLFWwindow* window, double xOffset, double yOffset);
     static void resizeCallback(GLFWwindow* window, int width, int height);
+    static std::vector<Shader> createShaders();
 
     GLWindow window;
     InputHandler inputHandler;
