@@ -1,6 +1,8 @@
 #include <cmath>
 #include "Camera.h"
+#include "Utils.h"
 #include "glm/ext/matrix_clip_space.hpp"
+#include "glm/ext/matrix_transform.hpp"
 
 float Camera::normalizeAngle(float angle) {
     angle = std::fmod(angle, TWOPI);

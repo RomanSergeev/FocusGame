@@ -1,4 +1,3 @@
-#include <memory>
 #include <optional>
 #include "view/GLWindow.h"
 

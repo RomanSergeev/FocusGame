@@ -1,4 +1,5 @@
 #include <iostream>
+#include <map>
 #include "Shader.h"
 
 std::string replaceAllMap(const std::string& source, const std::map<std::string, std::string>& replacements) {

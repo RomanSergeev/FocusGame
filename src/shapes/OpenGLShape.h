@@ -2,7 +2,6 @@
 #include <iostream>
 #include <vector>
 #include "ShapeType.h"
-#include "glm/glm.hpp"
 #include "glew/glew.h"
 #include "graphics/Shader.h"
 #include "Utils.h"

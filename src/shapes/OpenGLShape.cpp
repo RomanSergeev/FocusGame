@@ -1,8 +1,6 @@
 #include <stdexcept>
 #include "OpenGLShape.h"
-#include "glm/gtc/type_ptr.hpp"
-
-#include "view/GLWindow.h"
+#include "glm/ext/matrix_transform.hpp"
 
 /********** private **********/
 

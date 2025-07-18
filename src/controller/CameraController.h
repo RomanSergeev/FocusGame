@@ -1,7 +1,6 @@
 #pragma once
 #include "model/Camera.h"
 #include "model/Ray.h"
-#include "view/GLWindow.h"
 
 class CameraController {
 public:
