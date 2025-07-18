@@ -24,15 +24,26 @@ struct AABB { // Axis-Aligned Bounding Box
     bool intersects(const AABB& other) const;
 };
 
-struct ShaderBinder {
-    GLuint prevProgramID;
-    ShaderBinder(const Shader& shader) {
-        GLint prevInt = 0;
-        glGetIntegerv(GL_CURRENT_PROGRAM, &prevInt);
-        prevProgramID = static_cast<GLuint>(prevInt);
-        shader.use();
+class ShaderCarousel {
+    int currentIndex = 0;
+    std::vector<Shader> shaders;
+public:
+    ShaderCarousel() = default;
+    ShaderCarousel(std::vector<Shader> v)
+        : shaders(std::move(v)) {
+        if (!shaders.empty())
+            shaders[0].use();
     }
-    ~ShaderBinder() {
-        glUseProgram(prevProgramID);
+    ShaderCarousel& operator = (const ShaderCarousel& sc) = default;
+
+    void next() {
+        ++currentIndex;
+        if (currentIndex == shaders.size()) currentIndex = 0;
+        shaders[currentIndex].use();
+    }
+    const Shader& get() const { return shaders.at(currentIndex); }
+    const Shader& getNext() {
+        next();
+        return get();
     }
 };

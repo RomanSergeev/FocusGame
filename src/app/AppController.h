@@ -4,7 +4,6 @@
 #include "InputHandler.h"
 #include "controller/CameraController.h"
 #include "shapes/Line.h"
-#include "shapes/Tetrahedron.h"
 
 class AppController {
     static const int WIDTH = 800;
@@ -18,15 +17,14 @@ class AppController {
     GLWindow window;
     InputHandler inputHandler;
     CameraController cameraController;
-    Shader shader;
-    Shader shader2D;
+    ShaderCarousel shaders;
 
     bool toggledFullscreenLastFrame = false;
     float currentTime;
     float timeDelta;
     float TEMPhitDistance = 0;
     int frameCounter = 0;
-    bool drawCameraRay = false;
+    bool drawCameraRay = true;
     Line rayLine;
 
     std::vector<std::unique_ptr<OpenGLShape>> gameBoard; // TODO move to model, replace setupDefaultBoard with appropriate setup

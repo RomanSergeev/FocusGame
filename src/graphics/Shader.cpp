@@ -114,6 +114,19 @@ Shader::Shader(const char* vertexSrc, const char* fragmentSrc) {
     glDeleteShader(shaderIDFragments);
 }
 
+Shader::Shader(Shader&& s) noexcept {
+    ID = s.ID;
+    s.ID = 0;
+}
+
+Shader& Shader::operator = (Shader&& s) noexcept {
+    if (this == &s) return *this;
+    glDeleteProgram(ID);
+    ID = s.ID;
+    s.ID = 0;
+    return *this;
+}
+
 Shader::~Shader() {
     glDeleteProgram(ID);
 }

@@ -40,13 +40,17 @@ AppController::AppController() :
     window(WIDTH, HEIGHT, "Focus Game"),
     inputHandler(),
     cameraController(WIDTH, HEIGHT),
-    shader(shaderCodeVertices.c_str(), shaderCodeFragments.c_str()),
-    shader2D(shaderCodeVertices2D.c_str(), shaderCodeFragments2D.c_str()),
+    shaders([] {
+        std::vector<Shader> shaders;
+        shaders.emplace_back(Shader(shaderCodeVertices.c_str(), shaderCodeFragments.c_str())); // shader3D
+        shaders.emplace_back(Shader(shaderCodeVertices2D.c_str(), shaderCodeFragments2D.c_str())); // shader2D
+        return shaders;
+    }()),
     rayLine(SPACE_ORIGIN, SPACE_ORIGIN) {
 
     registerCallbacks();
 
-    shader.use();
+    const Shader& shader = shaders.get();
     shader.setVec3(ShaderParams::LIGHT_DIR, -0.3f, -0.2f, -0.7f);
 
     rayLine.setColor(1.0f, 0.0f, 0.0f);
@@ -104,8 +108,8 @@ void AppController::setupDefaultBoard() {
             bool even = (i + j) & 1;
             float rgb = even ? 0.2 : 0.9;
             cell->setColor(rgb, rgb, rgb);
-            float x = (i - CELLS_X / 2 + 0.5) * CUBE_W;
-            float y = (j - CELLS_Y / 2 + 0.5) * CUBE_W;
+            float x = (i - CELLS_X / 2.0 + 0.5) * CUBE_W;
+            float y = (j - CELLS_Y / 2.0 + 0.5) * CUBE_W;
             cell->translate(x, y, 0);
             gameBoard.push_back(std::move(cell));
         }
@@ -169,6 +173,8 @@ void AppController::render() {
     cameraController.updateView(timeDelta);
     glm::mat4 view = cameraController.getCameraView();
     glm::mat4 projection = cameraController.getProjectionMatrix();
+
+    const Shader& shader = shaders.get();
     shader.setMat4(ShaderParams::VIEW, view);
     shader.setMat4(ShaderParams::PROJECTION, projection);
 
@@ -187,14 +193,15 @@ void AppController::render() {
     });*/
 
     if (drawCameraRay) {
-        ShaderBinder binder(shader2D); // uses shader2D instead of shader, uses shader back on destruction
-        shader2D.setMat4(ShaderParams::VIEW, view);
-        shader2D.setMat4(ShaderParams::PROJECTION, projection);
+        const Shader& shader2 = shaders.getNext();
+        shader2.setMat4(ShaderParams::VIEW, view);
+        shader2.setMat4(ShaderParams::PROJECTION, projection);
         updateRayLine();
-        //rayLine.update(SPACE_ORIGIN, {3*cos(currentTime), 3*sin(currentTime), 6}); // just make it spin now
+        // rayLine.update(SPACE_ORIGIN, {3*cos(currentTime), 3*sin(currentTime), 6}); // just make it spin now
 
-        rayLine.setUniforms(shader2D, currentTime);
+        rayLine.setUniforms(shader2, currentTime); // registers GL error 1282 here, but only once
         rayLine.draw();
+        shaders.next();
     }
 
     window.swapBuffers();

@@ -29,6 +29,10 @@ class Shader {
     void checkForCompilationErrors(GLuint objectID, ShaderType type);
 public:
     Shader(const char* vertexSrc, const char* fragmentSrc);
+    Shader(const Shader& s) = delete;
+    Shader& operator = (const Shader& s) = delete;
+    Shader(Shader&& s) noexcept;
+    Shader& operator = (Shader&& s) noexcept;
     ~Shader();
 
     void use() const;
