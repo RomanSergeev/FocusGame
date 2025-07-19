@@ -1,6 +1,8 @@
 #include <iostream>
 #include "AppController.h"
+#include "glm/ext/matrix_transform.hpp"
 #include "shapes/Cuboid.h"
+#include "view/GLWindow.h"
 #define EVERY_N_FRAMES_DO(n, code) do { if ((frameCounter % (n)) == 0) code; } while(0)
 
 // these identical callbacks cannot be generalized because of the way GLFW (in C) obtains function pointers
@@ -38,8 +40,8 @@ void AppController::resizeCallback(GLFWwindow* window, int width, int height) {
 
 std::vector<Shader> AppController::createShaders() {
     std::vector<Shader> result;
-    result.emplace_back(Shader(shaderCodeVertices.c_str(), shaderCodeFragments.c_str())); // shader3D
-    result.emplace_back(Shader(shaderCodeVertices2D.c_str(), shaderCodeFragments2D.c_str())); // shader2D
+    result.emplace_back(shaderCodeVertices.c_str(), shaderCodeFragments.c_str()); // shader3D
+    result.emplace_back(shaderCodeVertices2D.c_str(), shaderCodeFragments2D.c_str()); // shader2D
     return result;
 }
 
@@ -48,13 +50,16 @@ AppController::AppController() :
     inputHandler(),
     cameraController(WIDTH, HEIGHT),
     shaders(createShaders()),
-    rayLine(SPACE_ORIGIN, SPACE_ORIGIN) {
+    rayLine(SPACE_ORIGIN, SPACE_ORIGIN),
+    TEMPcylinder(1, 1, .2, 32, true) {
 
     registerCallbacks();
 
     const Shader& shader = shaders.get();
     shader.setVec3(ShaderParams::LIGHT_DIR, -0.3f, -0.2f, -0.7f);
 
+    TEMPcylinder.translate(0, 0, 3);
+    TEMPcylinder.setColor(0.2, 0.2, 0.2);
     rayLine.setColor(1.0f, 0.0f, 0.0f);
 
     CameraController::CameraSettings settings;
@@ -186,6 +191,11 @@ void AppController::render() {
         shape->setUniforms(shader, currentTime);
         shape->draw();
     }
+
+    // rotation:
+    TEMPcylinder.setModel(glm::rotate(TEMPcylinder.getBaseModel(), currentTime, glm::vec3(0.3f, 1.0f, 0.0f)));
+    TEMPcylinder.setUniforms(shader, currentTime);
+    TEMPcylinder.draw();
 
     //EVERY_N_FRAMES_DO(60, {std::cout << "1\n";});
     /*EVERY_N_FRAMES_DO(60, {

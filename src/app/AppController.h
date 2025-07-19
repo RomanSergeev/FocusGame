@@ -3,6 +3,7 @@
 #include <vector>
 #include "InputHandler.h"
 #include "controller/CameraController.h"
+#include "shapes/Cylinder.h"
 #include "shapes/Line.h"
 
 class AppController {
@@ -27,6 +28,7 @@ class AppController {
     int frameCounter = 0;
     bool drawCameraRay = true;
     Line rayLine;
+    Cylinder TEMPcylinder;
 
     std::vector<std::unique_ptr<OpenGLShape>> gameBoard; // TODO move to model, replace setupDefaultBoard with appropriate setup
 

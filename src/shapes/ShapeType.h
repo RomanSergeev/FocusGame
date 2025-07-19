@@ -5,5 +5,6 @@ enum class ShapeType {
     Triangle,
     Tetrahedron,
     Cuboid,
+    Cylinder,
     Line
 };

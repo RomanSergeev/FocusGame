@@ -1,7 +1,5 @@
 #include "Cuboid.h"
 
-/********** External constants **********/
-
 Cuboid::Cuboid(float sizex, float sizey, float sizez) : OpenGLShape(6), wx(sizex), wy(sizey), wz(sizez) {
     pointsPerAttribute = {
         { AttributeType::Position, 3 },
