@@ -1,6 +1,6 @@
 #include <cmath>
 #include "Camera.h"
-#include "Utils.h"
+#include "utility/Utils.h"
 #include "glm/ext/matrix_clip_space.hpp"
 #include "glm/ext/matrix_transform.hpp"
 

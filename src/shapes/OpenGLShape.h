@@ -4,13 +4,16 @@
 #include "ShapeType.h"
 #include "glew/glew.h"
 #include "graphics/Shader.h"
-#include "Utils.h"
+#include "utility/Ray.h"
 
 class OpenGLShape {
     std::vector<float> vertices; // list of all shape's points
+    glm::mat4 invProduct = glm::mat4(1.0f);
+
     void setupVBO();
     void setupVAO();
     void updateBuffer(int oldVerticesLength) const;
+    void calcInvProduct();
 protected:
     std::vector<std::pair<AttributeType, int>> pointsPerAttribute; // how many attributes there are and how many floats does each attribute take (position, normale, color)
     unsigned int floatsPerAttribute; // how many floats does each (x, y, z) point carry (3 is minimal)
@@ -22,6 +25,10 @@ protected:
     bool selected = false;
     mutable AABB boundingBox;
     mutable bool boxIsValid = false;
+    bool hasMathModel = false;
+    // Note: intersection check after transforming Ray into object space by multiplying it by (model*baseModel)^-1
+    bool intersectsMathematically(const Ray& ray, float& distance) const;
+    virtual bool intersectsMathModel(const Ray& ray, float& distance) const { return true; }
 
     void setVertices(const std::vector<float>& newVertices);
     void setupBuffer(); // internal - should be called once after object is created
@@ -45,8 +52,8 @@ public:
     const AABB& getBoundingBox() const;
     bool isSelected() const { return selected; }
 
-    void setBaseModel(const glm::mat4& mat) { baseModel = mat; boxIsValid = false; }
-    void setModel(const glm::mat4& mat) { model = mat; boxIsValid = false; }
+    void setBaseModel(const glm::mat4& mat) { baseModel = mat; calcInvProduct(); boxIsValid = false; }
+    void setModel(const glm::mat4& mat) { model = mat; calcInvProduct(); boxIsValid = false; }
     void setColor(const glm::vec3& color) { baseColor = color; }
     inline void setColor(float r, float g, float b) { setColor(glm::vec3(r, g, b)); }
     void select() { selected = true; }
@@ -61,6 +68,7 @@ public:
     virtual ShapeType getType() const = 0;
     virtual DrawMode getDrawMode() const = 0;
 
+    bool intersectionTest(const Ray& ray, float& distance) const;
     void translate(const glm::vec3& center);
     inline void translate(float x, float y, float z) { translate(glm::vec3(x, y, z)); }
     virtual void draw() const;

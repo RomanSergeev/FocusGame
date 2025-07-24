@@ -51,14 +51,14 @@ AppController::AppController() :
     cameraController(WIDTH, HEIGHT),
     shaders(createShaders()),
     rayLine(SPACE_ORIGIN, SPACE_ORIGIN),
-    TEMPcylinder(1, 1, .2, 32, true) {
+    TEMPcylinder(1, 1, 1, 32, true) {
 
     registerCallbacks();
 
     const Shader& shader = shaders.get();
     shader.setVec3(ShaderParams::LIGHT_DIR, -0.3f, -0.2f, -0.7f);
 
-    TEMPcylinder.translate(0, 0, 3);
+    //TEMPcylinder.translate(0, 0, 3);
     TEMPcylinder.setColor(0.2, 0.2, 0.2);
     rayLine.setColor(1.0f, 0.0f, 0.0f);
 
@@ -126,16 +126,19 @@ void AppController::setupDefaultBoard() {
 void AppController::TEMPselectBoardIndex(const Ray& ray) {
     TEMPhitDistance = FLT_MAX;
     int hitIndex = -1;
+    float dist;
 
+    if (TEMPcylinder.intersectionTest(ray, dist)) {
+        TEMPcylinder.select();
+        TEMPhitDistance = dist;
+    } else TEMPcylinder.deselect();
     for (int i = 0; i < gameBoard.size(); ++i) {
-        float dist;
-        if (ray.intersects(gameBoard[i]->getBoundingBox(), dist) /*&& TEMPrayIntersectsShape(ray, gameBoard[i], dist)*/) {
-            if (dist < TEMPhitDistance) {
-                TEMPhitDistance = dist;
-                hitIndex = i;
-            }
-        }
         gameBoard[i]->deselect();
+        if (!gameBoard[i]->intersectionTest(ray, dist)) continue;
+        if (dist < TEMPhitDistance) {
+            TEMPhitDistance = dist;
+            hitIndex = i;
+        }
     }
 
     if (hitIndex >= 0) gameBoard[hitIndex]->select();
@@ -193,7 +196,7 @@ void AppController::render() {
     }
 
     // rotation:
-    TEMPcylinder.setModel(glm::rotate(TEMPcylinder.getBaseModel(), currentTime, glm::vec3(0.3f, 1.0f, 0.0f)));
+    //TEMPcylinder.setModel(glm::rotate(TEMPcylinder.getBaseModel(), currentTime, glm::vec3(0.3f, 1.0f, 0.0f)));
     TEMPcylinder.setUniforms(shader, currentTime);
     TEMPcylinder.draw();
 

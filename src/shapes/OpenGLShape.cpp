@@ -37,7 +37,17 @@ void OpenGLShape::updateBuffer(int oldVerticesLength) const {
         glBufferSubData(GL_ARRAY_BUFFER, 0, newVerticesLength * sizeof(float), vertices.data());
 }
 
+void OpenGLShape::calcInvProduct() {
+    invProduct = glm::inverse(baseModel * model);
+}
+
 /********** protected **********/
+
+bool OpenGLShape::intersectsMathematically(const Ray& ray, float& distance) const {
+    glm::vec3 transformedOrigin = glm::vec3(invProduct * glm::vec4(ray.getOrigin(), 1.0f));
+    glm::vec3 transformedDirection = glm::normalize(glm::vec3(invProduct * glm::vec4(ray.getDirection(), 0.0f)));
+    return intersectsMathModel(Ray(transformedOrigin, transformedDirection, false), distance);
+}
 
 void OpenGLShape::setVertices(const std::vector<float>& newVertices) {
     boxIsValid = false;
@@ -98,7 +108,7 @@ void OpenGLShape::recalculateAABB() const {
     glm::vec3 minPoint = glm::vec3(std::numeric_limits<float>::max());
     glm::vec3 maxPoint = glm::vec3(std::numeric_limits<float>::lowest());
 
-    glm::mat4 transform = model * baseModel;
+    glm::mat4 transform = baseModel * model;
 
     for (const glm::vec3& corner : corners) {
         glm::vec4 transformed = transform * glm::vec4(corner, 1.0f);
@@ -144,6 +154,13 @@ std::ostream& operator << (std::ostream& out, const OpenGLShape& shape) {
 const AABB& OpenGLShape::getBoundingBox() const {
     if (!boxIsValid) recalculateAABB();
     return boundingBox;
+}
+
+bool OpenGLShape::intersectionTest(const Ray& ray, float& distance) const {
+    return ray.intersects(getBoundingBox(), distance)
+    // && ray.intersects(getOrientedBoundingBox())
+    && intersectsMathModel(ray, distance);
+    // && ray.intersectsMesh(vertices);
 }
 
 void OpenGLShape::translate(const glm::vec3& center) {

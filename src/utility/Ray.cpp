@@ -1,11 +1,12 @@
 #include "Ray.h"
+#include "Constants.h"
 
 bool Ray::intersects(const AABB& boundingBox, float& distance) const {
     float tMin = 0.0f;
     float tMax = std::numeric_limits<float>::max();
 
     for (int i = 0; i < 3; ++i) {
-        if (glm::abs(direction[i]) < 1e-8f) {
+        if (glm::abs(direction[i]) < TRACE_PRECISION) {
             // Ray is parallel to slab. No hit if origin not within slab.
             if (origin[i] < boundingBox.min[i] || origin[i] > boundingBox.max[i])
                 return false;
