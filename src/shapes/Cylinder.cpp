@@ -3,10 +3,6 @@
 #include "glm/common.hpp"
 #include "shapes/OpenGLShape.h"
 
-void PR(bool res, int _case) {
-    std::cout << (res ? "T " : "F  ") << _case << '\n';
-}
-
 bool Cylinder::intersectsMathModel(const Ray& ray, float& distance) const {
     glm::vec3 o = ray.getOrigin(), d = ray.getDirection();
     float a = wy*d[0],
@@ -20,35 +16,20 @@ bool Cylinder::intersectsMathModel(const Ray& ray, float& distance) const {
         distance = 1; // TODO proper distance calculation in all places
         bool result = bb*o[0]*o[0] + aa*o[1]*o[1] <= e; // inside the infinite cylinder
         result = result && ((o[2] > -wz && d[2] < 0) || (o[2] < wz && d[2] > 0)); // and pointed towards its wz-bound part
-        PR(result, 1);
         return result;
     }
     float A = a*a + b*b,
           B = a*c + b*_d,
-          C = c*c + _d*_d - e,
           sq = a*_d - b*c,
-          D = A*e - sq*sq;
-    if (D < 0) { PR(false ,2); return false; } // whole ray XY projection doesn't intersect the infinite cylinder
-    if (abs(d[2]) < TRACE_PRECISION) { bool result = abs(o[2]) <= wz; PR(result, 3); return result; } // ray belongs to the XY plane
+          D = A*e - sq*sq; // C coefficient is redundant (built in here)
+    if (D < 0) return false; // whole ray XY projection doesn't intersect the infinite cylinder
+    if (abs(d[2]) < TRACE_PRECISION) return abs(o[2]) <= wz; // ray belongs to the XY plane
     float t1 = (-B + sqrt(D)) / A,
           t2 = (-B - sqrt(D)) / A; // intersections with infinite cylinder
     float z1 = o[2] + t1 * d[2],
           z2 = o[2] + t2 * d[2];
     // both intersections with infinite cylinder are on one side of its wz-bound part
-    if (glm::sign(z1) == glm::sign(z2) && abs(z1) > wz && abs(z2) > wz) { PR(false, 4); return false; }
-    //bool bothInside = abs(z1) <= wz || abs(z2) <= wz;
-    // if (abs(z1) <= wz || abs(z2) <= wz) { std::cout << "T 2\n"; return true; }
-    t1 = (z1 - o[2]) / d[2]; // edge cases - additional check
-    float x = o[0] + t1 * d[0],
-          y = o[1] + t1 * d[1];
-    if (bb*x*x + aa*y*y <= e) { PR(true, 5); return true; }
-    t1 = (z2 - o[2]) / d[2];
-    x = o[0] + t1 * d[0];
-    y = o[1] + t1 * d[1];
-    if (bb*x*x + aa*y*y <= e) { PR(true, 6); return true; }
-    //PR(bothInside, 7);
-    //return bothInside;
-    return true;
+    return glm::sign(z1) != glm::sign(z2) || abs(z1) <= wz || abs(z2) <= wz;
 }
 
 Cylinder::Cylinder(float sizex, float sizey, float sizez, unsigned int facets, bool altering) :

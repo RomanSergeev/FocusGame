@@ -157,10 +157,9 @@ const AABB& OpenGLShape::getBoundingBox() const {
 }
 
 bool OpenGLShape::intersectionTest(const Ray& ray, float& distance) const {
-    bool result = ray.intersects(getBoundingBox(), distance);
+    return ray.intersects(getBoundingBox(), distance)
     // && ray.intersects(getOrientedBoundingBox())
-    bool v2 = intersectsMathematically(ray, distance);
-    return result && v2;
+    && intersectsMathematically(ray, distance);
     // && ray.intersectsMesh(vertices);
 }
 
