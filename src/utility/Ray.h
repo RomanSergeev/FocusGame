@@ -6,7 +6,7 @@ class Ray {
     glm::vec3 direction;
     bool active;
 public:
-    Ray(const glm::vec3& origin, const glm::vec3& direction, bool active) : origin(origin), direction(direction), active(active) {}
+    Ray(const glm::vec3& origin, const glm::vec3& direction, bool active) : origin(origin), direction(glm::normalize(direction)), active(active) {}
 
     const glm::vec3& getOrigin() const { return origin; }
     const glm::vec3& getDirection() const { return direction; }

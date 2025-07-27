@@ -51,15 +51,15 @@ AppController::AppController() :
     cameraController(WIDTH, HEIGHT),
     shaders(createShaders()),
     rayLine(SPACE_ORIGIN, SPACE_ORIGIN),
-    TEMPcylinder(1, 1, 1, 32, true) {
+    TEMPcylinder(1.5, 1.5, .2, 32, true) {
 
     registerCallbacks();
 
     const Shader& shader = shaders.get();
     shader.setVec3(ShaderParams::LIGHT_DIR, -0.3f, -0.2f, -0.7f);
 
-    //TEMPcylinder.translate(0, 0, 3);
-    TEMPcylinder.setColor(0.2, 0.2, 0.2);
+    TEMPcylinder.translate(0, 0, 3);
+    TEMPcylinder.setColor(0.8, 0.2, 0.2);
     rayLine.setColor(1.0f, 0.0f, 0.0f);
 
     CameraController::CameraSettings settings;
@@ -190,13 +190,13 @@ void AppController::render() {
 
     window.clearBuffer();
 
-    for (const auto& shape : gameBoard) {
+    /*for (const auto& shape : gameBoard) {
         shape->setUniforms(shader, currentTime);
         shape->draw();
-    }
+    }*/
 
     // rotation:
-    //TEMPcylinder.setModel(glm::rotate(TEMPcylinder.getBaseModel(), currentTime, glm::vec3(0.3f, 1.0f, 0.0f)));
+    TEMPcylinder.setModel(glm::rotate(TEMPcylinder.getBaseModel(), currentTime, glm::vec3(0.3f, 1.0f, 0.0f)));
     TEMPcylinder.setUniforms(shader, currentTime);
     TEMPcylinder.draw();
 

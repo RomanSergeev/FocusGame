@@ -22,6 +22,8 @@ set(CMAKE_SHARED_LINKER_FLAGS_INIT "-fuse-ld=E:/Programs/CLang/bin/ld.lld.exe" C
 set(CMAKE_CXX_LINK_EXECUTABLE "<CMAKE_CXX_COMPILER> -o <TARGET> <OBJECTS> ${CMAKE_EXE_LINKER_FLAGS_INIT} <LINK_LIBRARIES>")
 set(CMAKE_C_LINK_EXECUTABLE "<CMAKE_C_COMPILER> -o <TARGET> <OBJECTS> ${CMAKE_EXE_LINKER_FLAGS_INIT} <LINK_LIBRARIES>")
 
+set(CMAKE_BUILD_TYPE Debug)
+
 # NEW iostream issue: explicit paths
 include_directories(
     E:/Programs/CMinGW/include
