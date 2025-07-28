@@ -11,11 +11,17 @@ bool Cylinder::intersectsMathModel(const Ray& ray, float& distance) const {
           _d = wx*o[1],
           aa = wx*wx,
           bb = wy*wy,
-          e = aa*bb;
+          e = aa*bb,
+          z = o[2];
+    if (c*c + _d*_d <= e && abs(z) <= wz) { // already inside the cylinder, direction is irrelevant
+        distance = 0;
+        return true;
+    }
     if (abs(d[0]*d[0] + d[1]*d[1]) < TRACE_PRECISION) { // ray parallel to Z axis
-        distance = 1; // TODO proper distance calculation in all places
         bool result = bb*o[0]*o[0] + aa*o[1]*o[1] <= e; // inside the infinite cylinder
-        result = result && ((o[2] > -wz && d[2] < 0) || (o[2] < wz && d[2] > 0)); // and pointed towards its wz-bound part
+        float z = o[2];
+        result = result && ((z > -wz && d[2] < 0) || (z < wz && d[2] > 0)); // and pointed towards its wz-bound part
+        if (result) distance = (d[2] > 0 ? -wz - z : z - wz);
         return result;
     }
     float A = a*a + b*b,
@@ -23,13 +29,19 @@ bool Cylinder::intersectsMathModel(const Ray& ray, float& distance) const {
           sq = a*_d - b*c,
           D = A*e - sq*sq; // C coefficient is redundant (built in here)
     if (D < 0) return false; // whole ray XY projection doesn't intersect the infinite cylinder
-    if (abs(d[2]) < TRACE_PRECISION) return abs(o[2]) <= wz; // ray belongs to the XY plane
     float t1 = (-B + sqrt(D)) / A,
           t2 = (-B - sqrt(D)) / A; // intersections with infinite cylinder
+    if (abs(d[2]) < TRACE_PRECISION) {
+        bool result = abs(o[2]) <= wz; // ray belongs to the XY plane
+        distance = std::min(abs(t1), abs(t2));
+        return result;
+    }
     float z1 = o[2] + t1 * d[2],
           z2 = o[2] + t2 * d[2];
     // both intersections with infinite cylinder are on one side of its wz-bound part
-    return glm::sign(z1) != glm::sign(z2) || abs(z1) <= wz || abs(z2) <= wz;
+    bool result = (glm::sign(z1) != glm::sign(z2) || abs(z1) <= wz || abs(z2) <= wz);
+    if (result) distance = std::min(abs(t1), abs(t2));
+    return result;
 }
 
 Cylinder::Cylinder(float sizex, float sizey, float sizez, unsigned int facets, bool altering) :
