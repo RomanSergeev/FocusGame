@@ -3,8 +3,10 @@
 #include <vector>
 #include "InputHandler.h"
 #include "controller/CameraController.h"
+#include "model/GameBoard.h"
 #include "shapes/Cylinder.h"
 #include "shapes/Line.h"
+#include "view/BoardView.h"
 
 class AppController {
     static const int WIDTH = 800;
@@ -30,13 +32,14 @@ class AppController {
     Line rayLine;
     Cylinder TEMPcylinder;
 
-    std::vector<std::unique_ptr<OpenGLShape>> gameBoard; // TODO move to model, replace setupDefaultBoard with appropriate setup
+    GameBoard gameBoard;//std::vector<std::unique_ptr<OpenGLShape>> gameBoard; // TODO move to model, replace setupDefaultBoard with appropriate setup
+    BoardView boardView;
 
     AppController();
 
     void registerCallbacks();
-    void setupDefaultBoard();
-    void TEMPselectBoardIndex(const Ray& ray);
+    //void setupDefaultBoard();
+    //void TEMPselectBoardIndex(const Ray& ray);
     void updateRayLine();
 public:
     static std::unique_ptr<AppController> create();

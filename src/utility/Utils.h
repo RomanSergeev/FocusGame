@@ -2,6 +2,7 @@
 #include <iostream>
 #include <utility>
 #include "glm/glm.hpp"
+#include "Constants.h"
 #include "glew/glew.h"
 #include "graphics/Shader.h"
 
@@ -47,3 +48,21 @@ public:
         return get();
     }
 };
+
+struct Color {
+    uint8_t r, g, b;
+
+    Color() = default;
+    Color(uint8_t r_, uint8_t g_, uint8_t b_) : r(r_), g(g_), b(b_) {}
+
+    glm::vec3 toVec3() const {
+        return glm::vec3(r / 255.0f, g / 255.0f, b / 255.0f);
+    }
+
+    bool operator == (const Color& other) const {
+        return r == other.r && g == other.g && b == other.b;
+    }
+};
+
+Color getDefaultColor(unsigned int index);
+int getPlayerOrdinal(PlayerPlaceholderID id);

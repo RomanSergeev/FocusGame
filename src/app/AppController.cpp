@@ -1,6 +1,7 @@
 #include <iostream>
 #include "AppController.h"
 #include "glm/ext/matrix_transform.hpp"
+#include "model/BoardEditor.h"
 #include "shapes/Cuboid.h"
 #include "view/GLWindow.h"
 #define EVERY_N_FRAMES_DO(n, code) do { if ((frameCounter % (n)) == 0) code; } while(0)
@@ -51,6 +52,8 @@ AppController::AppController() :
     cameraController(WIDTH, HEIGHT),
     shaders(createShaders()),
     rayLine(SPACE_ORIGIN, SPACE_ORIGIN),
+    gameBoard(BoardEditor::createBoard8x8Focus()),
+    boardView(gameBoard),
     TEMPcylinder(.5, .5, .1, 32, true) {
 
     registerCallbacks();
@@ -70,7 +73,7 @@ AppController::AppController() :
     cameraController.updateSettings(std::move(settings));
     cameraController.setZoomLimits(4.0f, 30.0f);
 
-    setupDefaultBoard();
+    //setupDefaultBoard();
 }
 
 void AppController::registerCallbacks() {
@@ -92,7 +95,7 @@ std::unique_ptr<AppController> AppController::create() {
     }
 }
 
-bool removeCondition(char sizeX, char sizeY, int i, int j) {
+/*bool removeCondition(char sizeX, char sizeY, int i, int j) {
     //return i != 4 || j != 4;
     float distX = sizeX / 2.0 - 0.5 - i;
     float distY = sizeY / 2.0 - 0.5 - j;
@@ -142,7 +145,7 @@ void AppController::TEMPselectBoardIndex(const Ray& ray) {
     }
 
     if (hitIndex >= 0) gameBoard[hitIndex]->select();
-}
+}*/
 
 void AppController::updateRayLine() {
     const Ray& ray = cameraController.getMouseRay();
@@ -165,7 +168,7 @@ void AppController::handleInputMouse() {
     const Ray& ray = cameraController.getMouseRay();
     if (!ray.isActive()) return;
 
-    TEMPselectBoardIndex(ray);
+    //TEMPselectBoardIndex(ray);
 }
 
 void AppController::handleInputKey() {
@@ -190,10 +193,11 @@ void AppController::render() {
 
     window.clearBuffer();
 
-    for (const auto& shape : gameBoard) {
+    boardView.draw(shader, currentTime);
+    /*for (const auto& shape : gameBoard) {
         shape->setUniforms(shader, currentTime);
         shape->draw();
-    }
+    }*/
 
     // rotation:
     TEMPcylinder.setModel(glm::rotate(TEMPcylinder.getBaseModel(), currentTime, glm::vec3(0.3f, 1.0f, 0.0f)));
