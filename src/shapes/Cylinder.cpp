@@ -1,3 +1,4 @@
+#include <algorithm>
 #include "Cylinder.h"
 #include "Constants.h"
 #include "glm/common.hpp"
@@ -12,16 +13,16 @@ bool Cylinder::intersectsMathModel(const Ray& ray, float& distance) const {
           aa = wx*wx,
           bb = wy*wy,
           e = aa*bb,
-          z = o[2];
+          z = o[2],
+          dz = d[2];
     if (c*c + _d*_d <= e && abs(z) <= wz) { // already inside the cylinder, direction is irrelevant
         distance = 0;
         return true;
     }
     if (abs(d[0]*d[0] + d[1]*d[1]) < TRACE_PRECISION) { // ray parallel to Z axis
         bool result = bb*o[0]*o[0] + aa*o[1]*o[1] <= e; // inside the infinite cylinder
-        float z = o[2];
-        result = result && ((z > -wz && d[2] < 0) || (z < wz && d[2] > 0)); // and pointed towards its wz-bound part
-        if (result) distance = (d[2] > 0 ? -wz - z : z - wz);
+        result = result && ((z > -wz && dz < 0) || (z < wz && dz > 0)); // and pointed towards its wz-bound part
+        if (result) distance = (dz > 0 ? -wz - z : z - wz);
         return result;
     }
     float A = a*a + b*b,
@@ -31,16 +32,31 @@ bool Cylinder::intersectsMathModel(const Ray& ray, float& distance) const {
     if (D < 0) return false; // whole ray XY projection doesn't intersect the infinite cylinder
     float t1 = (-B + sqrt(D)) / A,
           t2 = (-B - sqrt(D)) / A; // intersections with infinite cylinder
-    if (abs(d[2]) < TRACE_PRECISION) {
-        bool result = abs(o[2]) <= wz; // ray belongs to the XY plane
-        distance = std::min(abs(t1), abs(t2));
+    if (abs(dz) < TRACE_PRECISION) {
+        bool result = abs(z) <= wz; // ray belongs to the XY plane
+        distance = std::min(abs(t1), abs(t2)); // TODO fix distance calculation
         return result;
     }
-    float z1 = o[2] + t1 * d[2],
-          z2 = o[2] + t2 * d[2];
+    float z1 = z + t1 * dz,
+          z2 = z + t2 * dz;
     // both intersections with infinite cylinder are on one side of its wz-bound part
     bool result = (glm::sign(z1) != glm::sign(z2) || abs(z1) <= wz || abs(z2) <= wz);
-    if (result) distance = std::min(abs(t1), abs(t2));
+    if (result) {
+        float t3 = ( wz - z) / dz,
+              t4 = (-wz - z) / dz;
+        std::vector<float> v { t1, t2, t3, t4 };
+        v.erase(
+            std::remove_if(v.begin(), v.end(), [](float x) { return x <= 0.0f; }),
+            v.end()
+        );
+        std::sort(v.begin(), v.end());
+        for (int i = 0; i < v.size(); ++i)
+            if (pointOnSurface(ray.pointAt(v[i]))) {
+                    distance = v[i];
+                    return true;
+                }
+        // distance = std::min(abs(t1), abs(t2));
+    }
     return result;
 }
 
@@ -75,4 +91,15 @@ Cylinder::Cylinder(float sizex, float sizey, float sizez, unsigned int facets, b
     }
 
     setupBuffer();
+}
+
+bool Cylinder::pointOnSurface(const glm::vec3& point) const {
+    float xx = point.x*point.x,
+          yy = point.y*point.y,
+          aa = wx*wx,
+          bb = wy*wy,
+          diff1 = abs(point.z) - wz,
+          diff2 = bb*xx + aa*yy - aa*bb;
+    return ( abs(diff1) < TRACE_PRECISION && (diff2 <= 0) ) || // on the bases
+           ( diff1 <= 0 && (abs(diff2) < TRACE_PRECISION) ); // or on the side surface
 }

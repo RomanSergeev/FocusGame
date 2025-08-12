@@ -53,4 +53,8 @@ public:
     BoardView& operator = (const BoardView& bv) = delete;
 
     void draw(const Shader& shader, float currentTime);
+    void TEMPdeselectAll();
+    void TEMPselectDistinctCell(int i, int j);
+    void TEMPselectDistinctChecker(const Checker& c);
+    float TEMPselectShapeByIntersection(const Ray& ray);
 };

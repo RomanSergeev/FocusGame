@@ -4,6 +4,17 @@
 #include <memory>
 #include "shapes/Cuboid.h"
 #include "shapes/Cylinder.h"
+#include "shapes/OpenGLShape.h"
+
+void checkShapeIntersection(const Ray& ray, OpenGLShape* shape, OpenGLShape* &selectedShape, float& minDist) {
+    if (shape == nullptr) return;
+    float dist;
+    bool intersects = shape->intersectionTest(ray, dist);
+    shape->deselect();
+    if (!intersects || dist >= minDist) return;
+    minDist = dist;
+    selectedShape = shape;
+}
 
 void BoardView::fillDisplayedBoard() {
     int rows = board.getRows(),
@@ -45,12 +56,10 @@ void BoardView::fillDisplayedBoard() {
 }
 
 BoardView::BoardView(GameBoard& gb) : board(gb), type(BoardShapeType::Flat) {
-    displayedBoard.resize(gb.getRows()); // TODO fix the error here
+    displayedBoard.resize(gb.getRows());
     for (auto& row : displayedBoard) {
         row.resize(gb.getColumns());
     }
-    std::cout << "BoardView size: " << displayedBoard.size() 
-          << " x " << displayedBoard[0].size() << "\n";
     fillDisplayedBoard();
 }
 
@@ -67,4 +76,37 @@ void BoardView::draw(const Shader& shader, float currentTime) {
         dchecker.shape->setUniforms(shader, currentTime);
         dchecker.shape->draw();
     }
+}
+
+void BoardView::TEMPdeselectAll() {
+    for (const auto& row : displayedBoard) {
+        for (const auto& dcell : row) {
+            if (dcell.shape != nullptr) dcell.shape->deselect();
+        }
+    }
+    for (const auto& dchecker : displayedCheckers) {
+        if (dchecker.shape != nullptr) dchecker.shape->deselect();
+    }
+}
+
+void BoardView::TEMPselectDistinctCell(int i, int j) {
+    displayedBoard[i][j].shape->select();
+}
+
+void BoardView::TEMPselectDistinctChecker(const Checker& c) {
+    for (const auto& dchecker : displayedCheckers) {
+        if (dchecker.checkerRef == &c) { dchecker.shape->select(); return; }
+    }
+}
+
+float BoardView::TEMPselectShapeByIntersection(const Ray& ray) {
+    float minDist = FLT_MAX;
+    OpenGLShape* selectedShape = nullptr;
+    for (const auto& row : displayedBoard)
+        for (const auto& dcell : row)
+            checkShapeIntersection(ray, dcell.shape.get(), selectedShape, minDist);
+    for (const auto& dchecker : displayedCheckers)
+        checkShapeIntersection(ray, dchecker.shape.get(), selectedShape, minDist);
+    if (selectedShape) selectedShape->select();
+    return minDist;
 }

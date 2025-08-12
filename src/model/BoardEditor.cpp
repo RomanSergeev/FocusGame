@@ -20,6 +20,7 @@ GameBoard BoardEditor::createBoard8x8Focus() {
         for (int j = 1; j < 7; ++j) {
             PlayerPlaceholderID playerId = ((((j+1)>>1)+i)&1) ? PlayerPlaceholderID::Player1 : PlayerPlaceholderID::Player2;
             result.place(key, i, j, Checker(playerId));
+            //result.place(key, i, j, Checker(playerId));
         }
 
     return result;

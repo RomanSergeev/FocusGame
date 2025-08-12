@@ -168,6 +168,8 @@ void AppController::handleInputMouse() {
     const Ray& ray = cameraController.getMouseRay();
     if (!ray.isActive()) return;
 
+    /*float distance = */boardView.TEMPselectShapeByIntersection(ray);
+    //EVERY_N_FRAMES_DO(60, std::cout << distance << '\n');
     //TEMPselectBoardIndex(ray);
 }
 

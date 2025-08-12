@@ -68,6 +68,7 @@ public:
     virtual ShapeType getType() const = 0;
     virtual DrawMode getDrawMode() const = 0;
 
+    virtual bool pointOnSurface(const glm::vec3& point) const { return false; }
     bool intersectionTest(const Ray& ray, float& distance) const;
     void translate(const glm::vec3& center);
     inline void translate(float x, float y, float z) { translate(glm::vec3(x, y, z)); }
