@@ -8,18 +8,19 @@ extern const std::string shaderCodeVertices2D;
 extern const std::string shaderCodeFragments2D;
 
 namespace ShaderParams {
-    inline constexpr const char* V_POS      = "aPos";
-    inline constexpr const char* V_NORMAL   = "aNormal";
-    inline constexpr const char* F_POS      = "FragPos";
-    inline constexpr const char* F_NORMAL   = "Normal";
-    inline constexpr const char* BASE_COLOR = "baseColor";
-    inline constexpr const char* F_COLOR    = "FragColor";
-    inline constexpr const char* LIGHT_DIR  = "lightDir";
-    inline constexpr const char* MODEL      = "model";
-    inline constexpr const char* VIEW       = "view";
-    inline constexpr const char* PROJECTION = "projection";
-    inline constexpr const char* TIME       = "time";
-    inline constexpr const char* SELECTED   = "isSelected";
+    inline constexpr const char* V_POS       = "aPos";
+    inline constexpr const char* V_NORMAL    = "aNormal";
+    inline constexpr const char* F_POS       = "FragPos";
+    inline constexpr const char* F_NORMAL    = "Normal";
+    inline constexpr const char* BASE_COLOR  = "baseColor";
+    inline constexpr const char* F_COLOR     = "FragColor";
+    inline constexpr const char* LIGHT_DIR   = "lightDir";
+    inline constexpr const char* MODEL       = "model";
+    inline constexpr const char* VIEW        = "view";
+    inline constexpr const char* PROJECTION  = "projection";
+    inline constexpr const char* TIME        = "time";
+    inline constexpr const char* SELECTED    = "isSelected";
+    inline constexpr const char* BLINK_COLOR = "blinkColor";
 }
 
 class Shader {

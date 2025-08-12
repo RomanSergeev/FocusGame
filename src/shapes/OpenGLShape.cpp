@@ -173,10 +173,11 @@ void OpenGLShape::draw() const {
 }
 
 void OpenGLShape::setUniforms(const Shader& shader, float time) const {
-    shader.setMat4 (ShaderParams::MODEL     , baseModel * model);
-    shader.setVec3 (ShaderParams::BASE_COLOR, baseColor);
-    shader.setFloat(ShaderParams::TIME      , time);
-    shader.setBool (ShaderParams::SELECTED  , selected);
+    shader.setMat4 (ShaderParams::MODEL      , baseModel * model);
+    shader.setVec3 (ShaderParams::BASE_COLOR , baseColor);
+    shader.setFloat(ShaderParams::TIME       , time);
+    shader.setBool (ShaderParams::SELECTED   , selected != SelectionType::NoSelection);
+    shader.setVec3 (ShaderParams::BLINK_COLOR, selectionColors.at(selected));
 }
 
 void OpenGLShape::print(std::ostream& out) const {

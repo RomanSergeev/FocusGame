@@ -3,6 +3,7 @@
 #include <vector>
 #include "ShapeType.h"
 #include "glew/glew.h"
+#include "graphics/RenderEnums.h"
 #include "graphics/Shader.h"
 #include "utility/Ray.h"
 
@@ -22,7 +23,7 @@ protected:
     glm::mat4 baseModel = glm::mat4(1.0f);
     glm::mat4 model = glm::mat4(1.0f);
     glm::vec3 baseColor = glm::vec3(1.0f);
-    bool selected = false;
+    SelectionType selected = SelectionType::NoSelection;
     mutable AABB boundingBox;
     mutable bool boxIsValid = false;
     bool hasMathModel = false;
@@ -50,14 +51,15 @@ public:
     const glm::mat4& getModel() const { return model; }
     const glm::vec3& getColor() const { return baseColor; }
     const AABB& getBoundingBox() const;
-    bool isSelected() const { return selected; }
+    SelectionType getSelectedType() const { return selected; }
 
     void setBaseModel(const glm::mat4& mat) { baseModel = mat; calcInvProduct(); boxIsValid = false; }
     void setModel(const glm::mat4& mat) { model = mat; calcInvProduct(); boxIsValid = false; }
     void setColor(const glm::vec3& color) { baseColor = color; }
     inline void setColor(float r, float g, float b) { setColor(glm::vec3(r, g, b)); }
-    void select() { selected = true; }
-    void deselect() { selected = false; }
+    void select() { selected = SelectionType::Selected; }
+    void stageSelection() { selected = SelectionType::ForSelection; }
+    void deselect() { selected = SelectionType::NoSelection; }
 
     inline unsigned int getVerticeCount() const {
         unsigned int fpa = floatsPerAttribute;

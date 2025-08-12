@@ -56,5 +56,6 @@ public:
     void TEMPdeselectAll();
     void TEMPselectDistinctCell(int i, int j);
     void TEMPselectDistinctChecker(const Checker& c);
+    void TEMPstageCheckerSelection(const Checker& c);
     float TEMPselectShapeByIntersection(const Ray& ray);
 };

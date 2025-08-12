@@ -99,6 +99,12 @@ void BoardView::TEMPselectDistinctChecker(const Checker& c) {
     }
 }
 
+void BoardView::TEMPstageCheckerSelection(const Checker& c) {
+    for (const auto& dchecker : displayedCheckers) {
+        if (dchecker.checkerRef == &c) { dchecker.shape->stageSelection(); return; }
+    }
+}
+
 float BoardView::TEMPselectShapeByIntersection(const Ray& ray) {
     float minDist = FLT_MAX;
     OpenGLShape* selectedShape = nullptr;
