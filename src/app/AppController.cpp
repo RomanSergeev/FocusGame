@@ -72,8 +72,6 @@ AppController::AppController() :
     settings.invertedVerticalMouse = true;
     cameraController.updateSettings(std::move(settings));
     cameraController.setZoomLimits(4.0f, 30.0f);
-
-    //setupDefaultBoard();
 }
 
 void AppController::registerCallbacks() {
@@ -94,58 +92,6 @@ std::unique_ptr<AppController> AppController::create() {
         return nullptr;
     }
 }
-
-/*bool removeCondition(char sizeX, char sizeY, int i, int j) {
-    //return i != 4 || j != 4;
-    float distX = sizeX / 2.0 - 0.5 - i;
-    float distY = sizeY / 2.0 - 0.5 - j;
-    float distance = distX*distX + distY*distY;
-    float removeDist = 2 * (sizeX / 2.0 - 1.5) * (sizeX / 2.0 - 1.5) + 2.5;
-    return distance >= removeDist;
-}
-
-void AppController::setupDefaultBoard() {
-    const char CELLS_X = 8;
-    const char CELLS_Y = 8;
-    const float CUBE_W = 2.0f;
-    const float CUBE_D = 0.3f; // ratio
-
-    gameBoard.clear();
-    for (int i = 0; i < CELLS_X; ++i) {
-        for (int j = 0; j < CELLS_Y; ++j) {
-            if (removeCondition(CELLS_X, CELLS_Y, i, j)) continue;
-            std::unique_ptr<OpenGLShape> cell = std::make_unique<Cuboid>(CUBE_W, CUBE_W, CUBE_W * CUBE_D);
-            bool even = (i + j) & 1;
-            float rgb = even ? 0.2 : 0.9;
-            cell->setColor(rgb, rgb, rgb);
-            float x = (i - CELLS_X / 2.0 + 0.5) * CUBE_W;
-            float y = (j - CELLS_Y / 2.0 + 0.5) * CUBE_W;
-            cell->translate(x, y, 0);
-            gameBoard.push_back(std::move(cell));
-        }
-    }
-}
-
-void AppController::TEMPselectBoardIndex(const Ray& ray) {
-    TEMPhitDistance = FLT_MAX;
-    int hitIndex = -1;
-    float dist;
-
-    if (TEMPcylinder.intersectionTest(ray, dist)) {
-        TEMPcylinder.select();
-        TEMPhitDistance = dist;
-    } else TEMPcylinder.deselect();
-    for (int i = 0; i < gameBoard.size(); ++i) {
-        gameBoard[i]->deselect();
-        if (!gameBoard[i]->intersectionTest(ray, dist)) continue;
-        if (dist < TEMPhitDistance) {
-            TEMPhitDistance = dist;
-            hitIndex = i;
-        }
-    }
-
-    if (hitIndex >= 0) gameBoard[hitIndex]->select();
-}*/
 
 void AppController::updateRayLine() {
     const Ray& ray = cameraController.getMouseRay();
@@ -168,9 +114,7 @@ void AppController::handleInputMouse() {
     const Ray& ray = cameraController.getMouseRay();
     if (!ray.isActive()) return;
 
-    /*float distance = */boardView.TEMPselectShapeByIntersection(ray);
-    //EVERY_N_FRAMES_DO(60, std::cout << distance << '\n');
-    //TEMPselectBoardIndex(ray);
+    boardView.TEMPselectShapeByIntersection(ray);
 }
 
 void AppController::handleInputKey() {
@@ -196,17 +140,12 @@ void AppController::render() {
     window.clearBuffer();
 
     boardView.draw(shader, currentTime);
-    /*for (const auto& shape : gameBoard) {
-        shape->setUniforms(shader, currentTime);
-        shape->draw();
-    }*/
 
     // rotation:
     TEMPcylinder.setModel(glm::rotate(TEMPcylinder.getBaseModel(), currentTime, glm::vec3(0.3f, 1.0f, 0.0f)));
     TEMPcylinder.setUniforms(shader, currentTime);
     TEMPcylinder.draw();
 
-    //EVERY_N_FRAMES_DO(60, {std::cout << "1\n";});
     /*EVERY_N_FRAMES_DO(60, {
         std::cout << "RAY:\n" << rayLine;
         glm::vec3 cp = cameraController.getCameraPosition();

@@ -32,14 +32,12 @@ class AppController {
     Line rayLine;
     Cylinder TEMPcylinder;
 
-    GameBoard gameBoard;//std::vector<std::unique_ptr<OpenGLShape>> gameBoard; // TODO move to model, replace setupDefaultBoard with appropriate setup
+    GameBoard gameBoard;
     BoardView boardView;
 
     AppController();
 
     void registerCallbacks();
-    //void setupDefaultBoard();
-    //void TEMPselectBoardIndex(const Ray& ray);
     void updateRayLine();
 public:
     static std::unique_ptr<AppController> create();

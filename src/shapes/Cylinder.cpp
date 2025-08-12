@@ -34,30 +34,29 @@ bool Cylinder::intersectsMathModel(const Ray& ray, float& distance) const {
           t2 = (-B - sqrt(D)) / A; // intersections with infinite cylinder
     if (abs(dz) < TRACE_PRECISION) {
         bool result = abs(z) <= wz; // ray belongs to the XY plane
-        distance = std::min(abs(t1), abs(t2)); // TODO fix distance calculation
+        distance = std::min(abs(t1), abs(t2));
         return result;
     }
     float z1 = z + t1 * dz,
           z2 = z + t2 * dz;
     // both intersections with infinite cylinder are on one side of its wz-bound part
     bool result = (glm::sign(z1) != glm::sign(z2) || abs(z1) <= wz || abs(z2) <= wz);
-    if (result) {
-        float t3 = ( wz - z) / dz,
-              t4 = (-wz - z) / dz;
-        std::vector<float> v { t1, t2, t3, t4 };
-        v.erase(
-            std::remove_if(v.begin(), v.end(), [](float x) { return x <= 0.0f; }),
-            v.end()
-        );
-        std::sort(v.begin(), v.end());
-        for (int i = 0; i < v.size(); ++i)
-            if (pointOnSurface(ray.pointAt(v[i]))) {
-                    distance = v[i];
-                    return true;
-                }
-        // distance = std::min(abs(t1), abs(t2));
+    if (!result) return false;
+    
+    float t3 = ( wz - z) / dz,
+          t4 = (-wz - z) / dz;
+    std::vector<float> v { t1, t2, t3, t4 };
+    v.erase(
+        std::remove_if(v.begin(), v.end(), [](float x) { return x <= 0.0f; }),
+        v.end()
+    );
+    std::sort(v.begin(), v.end());
+    for (int i = 0; i < v.size(); ++i) {
+        if (!pointOnSurface(ray.pointAt(v[i]))) continue;
+        distance = v[i];
+        return true;
     }
-    return result;
+    return true;
 }
 
 Cylinder::Cylinder(float sizex, float sizey, float sizez, unsigned int facets, bool altering) :
