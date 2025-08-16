@@ -3,17 +3,22 @@
 #include "Checker.h"
 
 class Cell {
+    static int count;
+
     std::vector<Checker> checkers;
     bool playable = true;
     bool jumpableOver = true;
     bool pole = false; // for spherical board in the future
 public:
-    Cell() : checkers() {}
+    static int getInstancesCount() { return count; }
+
+    Cell() : checkers() { ++count; }
     Cell(bool playable, bool jumpable) : checkers(), playable(playable), jumpableOver(jumpable) {}
     Cell(const Cell& c) = delete;
     Cell& operator = (const Cell& c) = delete;
-    Cell(Checker&& c) : checkers() { checkers.emplace_back(std::move(c)); }
-    Cell(Cell&& c) : checkers(std::move(c.checkers)) {}
+    Cell(Checker&& c) : checkers() { ++count; checkers.emplace_back(std::move(c)); }
+    Cell(Cell&& c) : checkers(std::move(c.checkers)), playable(c.playable), jumpableOver(c.jumpableOver), pole(c.pole) { ++count; }
+    ~Cell() { --count; }
 
     bool isPlayable() const { return playable; }
     bool isJumpableOver() const { return jumpableOver; }
