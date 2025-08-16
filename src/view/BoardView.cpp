@@ -1,10 +1,6 @@
 #include "BoardView.h"
-#include "Constants.h"
-#include "model/GameBoard.h"
-#include <memory>
 #include "shapes/Cuboid.h"
 #include "shapes/Cylinder.h"
-#include "shapes/OpenGLShape.h"
 
 void checkShapeIntersection(const Ray& ray, OpenGLShape* shape, OpenGLShape* &selectedShape, float& minDist) {
     if (shape == nullptr) return;
@@ -17,11 +13,11 @@ void checkShapeIntersection(const Ray& ray, OpenGLShape* shape, OpenGLShape* &se
 }
 
 void BoardView::fillDisplayedBoard() {
-    int rows = board.getRows(),
-        cols = board.getColumns();
+    int rows = model.getRows(),
+        cols = model.getColumns();
     for (int i = 0; i < rows; ++i)
         for (int j = 0; j < cols; ++j) {
-            const Cell& cell = board.getCellAt(i, j);
+            const Cell& cell = model.getCellAt(i, j);
             bool playable = cell.isPlayable();
             if (!playable) continue;
             bool jumpable = cell.isJumpableOver();
@@ -47,7 +43,7 @@ void BoardView::fillDisplayedBoard() {
                 dchecker.checkerRef = &checker;
                 dchecker.position = glm::vec3(dcell.anchorPoint + dcell.upVector * (CHECKER_HALF_HEIGHT * (2*k + 1)));
                 std::unique_ptr<OpenGLShape> newShape = std::make_unique<Cylinder>(CHECKER_HALF_WIDTH, CHECKER_HALF_WIDTH, CHECKER_HALF_HEIGHT, 32);
-                newShape->setColor(getDefaultColor(getPlayerOrdinal(checker.getPlaceholderID())).toVec3());
+                newShape->setColor(getDefaultColor(getPlayerOrdinal(checker.getPlayerReference()->getSlot())).toVec3());
                 newShape->translate(dchecker.position);
                 dchecker.shape = std::move(newShape);
                 displayedCheckers.push_back(std::move(dchecker));
@@ -55,10 +51,10 @@ void BoardView::fillDisplayedBoard() {
         }
 }
 
-BoardView::BoardView(GameBoard& gb) : board(gb), type(BoardShapeType::Flat) {
-    displayedBoard.resize(gb.getRows());
+BoardView::BoardView(GameModel& gm) : model(gm), type(BoardShapeType::Flat) {
+    displayedBoard.resize(gm.getRows());
     for (auto& row : displayedBoard) {
-        row.resize(gb.getColumns());
+        row.resize(gm.getColumns());
     }
     fillDisplayedBoard();
 }

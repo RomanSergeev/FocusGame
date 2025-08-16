@@ -1,14 +1,19 @@
 #include "BoardEditor.h"
 #include "Checker.h"
 #include "Constants.h"
-#include "GameBoard.h"
+#include "GameModel.h"
+#include "model/Player.h"
 
-GameBoard BoardEditor::createBoard8x8Focus() {
-    GameBoard result(8, 8);
-    BoardEditor instance(result);
+GameModel BoardEditor::createBoard8x8Focus() {
+    GameBoard resultBoard(8, 8);
+    BoardEditor instance(resultBoard);
     EditorKey key = instance.key;
+    std::vector<Player> players;
+    players.reserve(2);
+    players.emplace_back(key, PlayerSlot::Player1, TeamSlot::Team1, PlayerType::HUMAN_LOCAL);
+    players.emplace_back(key, PlayerSlot::Player2, TeamSlot::Team2, PlayerType::HUMAN_LOCAL);
 
-    result.markUnplayableByCondition(key, [](unsigned int sizeX, unsigned int sizeY, int i, int j) {
+    resultBoard.markUnplayableByCondition(key, [](unsigned int sizeX, unsigned int sizeY, int i, int j) {
         float distX = sizeX / 2.0 - 0.5 - i;
         float distY = sizeY / 2.0 - 0.5 - j;
         float distance = distX*distX + distY*distY;
@@ -18,26 +23,31 @@ GameBoard BoardEditor::createBoard8x8Focus() {
 
     for (int i = 1; i < 7; ++i)
         for (int j = 1; j < 7; ++j) {
-            PlayerPlaceholderID playerId = ((((j+1)>>1)+i)&1) ? PlayerPlaceholderID::Player1 : PlayerPlaceholderID::Player2;
-            result.place(key, i, j, Checker(playerId));
-            result.place(key, i, j, Checker(playerId));
+            Player* playerRef = ((((j+1)>>1)+i)&1) ? &players.at(0) : &players.at(1);
+            resultBoard.place(key, i, j, Checker(*playerRef));
         }
 
+    GameModel result(std::move(resultBoard), std::move(players));
     return result;
 }
 
-GameBoard BoardEditor::createBoard8x8Chess() {
-    GameBoard result(8, 8);
-    BoardEditor instance(result);
+GameModel BoardEditor::createBoard8x8Chess() {
+    GameBoard resultBoard(8, 8);
+    BoardEditor instance(resultBoard);
     EditorKey key = instance.key;
+    std::vector<Player> players;
+    players.reserve(2);
+    players.emplace_back(key, PlayerSlot::Player1, TeamSlot::Team1, PlayerType::HUMAN_LOCAL);
+    players.emplace_back(key, PlayerSlot::Player2, TeamSlot::Team2, PlayerType::HUMAN_LOCAL);
 
     for (int i = 0; i < 2; ++i)
         for (int j = 0; j < 8; ++j)
-            result.place(key, i, j, Checker(PlayerPlaceholderID::Player1));
+            resultBoard.place(key, i, j, Checker(players.at(0)));
 
     for (int i = 6; i < 8; ++i)
         for (int j = 0; j < 8; ++j)
-            result.place(key, i, j, Checker(PlayerPlaceholderID::Player2));
+            resultBoard.place(key, i, j, Checker(players.at(1)));
 
+    GameModel result(std::move(resultBoard), std::move(players));
     return result;
 }

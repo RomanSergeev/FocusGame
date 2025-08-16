@@ -18,8 +18,19 @@ const int DEFAULT_COLORS[MAX_PLAYERS * 3] {
     221,  34, 221  // magenta
 };
 
-enum class PlayerPlaceholderID {
+enum class PlayerSlot {
     Player1, Player2, Player3, Player4,
     Player5, Player6, Player7, Player8,
     Spectator
+};
+
+enum class TeamSlot {
+    Team1, Team2, Team3, Team4,
+    Team5, Team6, Team7, Team8,
+    Spectator
+};
+
+class EditorKey {
+    friend class BoardEditor;
+    EditorKey() = default;
 };

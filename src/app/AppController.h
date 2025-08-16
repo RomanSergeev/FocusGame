@@ -3,7 +3,7 @@
 #include <vector>
 #include "InputHandler.h"
 #include "controller/CameraController.h"
-#include "model/GameBoard.h"
+#include "model/GameModel.h"
 #include "shapes/Cylinder.h"
 #include "shapes/Line.h"
 #include "view/BoardView.h"
@@ -32,8 +32,8 @@ class AppController {
     Line rayLine;
     Cylinder TEMPcylinder;
 
-    GameBoard gameBoard;
-    BoardView boardView;
+    GameModel gameModel;
+    BoardView gameView;
 
     AppController();
 

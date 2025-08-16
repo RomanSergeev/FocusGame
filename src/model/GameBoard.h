@@ -6,10 +6,14 @@ class GameBoard {
     unsigned int columns;
     bool loopedHorizontally = false;
     bool loopedVertically = false;
-    Cell** board; // TODO move to vector
+    std::vector<std::vector<Cell>> board;
 public:
     GameBoard(unsigned int _rows, unsigned int _cols, bool loopedRows = false, bool loopedCols = false);
-    ~GameBoard();
+    GameBoard(const GameBoard& gb) = delete;
+    GameBoard& operator = (const GameBoard& gb) = delete;
+    GameBoard(GameBoard&& gb) = default;
+    GameBoard& operator = (GameBoard&& gb) = default;
+    ~GameBoard() {};
 
     unsigned int getRows() const { return rows; }
     unsigned int getColumns() const { return columns; }

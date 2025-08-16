@@ -1,6 +1,6 @@
 #pragma once
 #include <memory>
-#include "model/GameBoard.h"
+#include "model/GameModel.h"
 #include "shapes/OpenGLShape.h"
 
 class BoardView {
@@ -41,14 +41,14 @@ class BoardView {
     static constexpr float CHECKER_HALF_WIDTH = .8;
     static constexpr float CHECKER_HALF_HEIGHT = .1;
     
-    GameBoard& board;
+    GameModel& model;
     std::vector<std::vector<DisplayedCell>> displayedBoard;
     std::vector<DisplayedChecker> displayedCheckers;
     BoardShapeType type;
 
     void fillDisplayedBoard();
 public:
-    BoardView(GameBoard& gb);
+    BoardView(GameModel& gm);
     BoardView(const BoardView& bv) = delete;
     BoardView& operator = (const BoardView& bv) = delete;
 

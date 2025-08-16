@@ -1,7 +1,6 @@
-
-#include <optional>
 #pragma once
 #include <optional>
+#include "Constants.h"
 #include "User.h"
 #include "utility/Utils.h"
 
@@ -13,10 +12,18 @@ enum class PlayerType {
 
 class Player {
     std::optional<User> userRef;
-    unsigned int id; // local, assigned on game start
     std::string name;
+    PlayerSlot slot;
+    TeamSlot team;
     PlayerType type;
-    bool active; // either player or spectator
+    bool defeated = false;
 public:
-    unsigned int getID() const { return id; }
+    Player(const EditorKey& key, PlayerSlot slot, TeamSlot team, PlayerType type) : slot(slot), team(team), type(type) {}
+    Player(const Player& p) = delete;
+    Player& operator = (const Player& p) = delete;
+    Player(Player&& p) = default;
+    Player& operator = (Player&& p) = default;
+
+    PlayerSlot getSlot() const { return slot; }
+    TeamSlot getTeam() const { return team; }
 };

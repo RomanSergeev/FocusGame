@@ -65,4 +65,4 @@ struct Color {
 };
 
 Color getDefaultColor(unsigned int index);
-int getPlayerOrdinal(PlayerPlaceholderID id);
+int getPlayerOrdinal(PlayerSlot id);

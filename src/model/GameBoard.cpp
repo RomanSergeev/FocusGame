@@ -7,24 +7,9 @@ rows(_rows), columns(_cols), loopedHorizontally(loopedRows), loopedVertically(lo
     if (rows == 0 || columns == 0) {
         throw std::invalid_argument("GameBoard::GameBoard: attempt to create board of zero size");
     }
-    int i;
-    try {
-        board = new Cell*[rows];
-        for (i = 0; i < rows; ++i)
-            board[i] = new Cell[columns];
-    }
-    catch (std::bad_alloc) {
-        for (int j = 0; j < i; ++j)
-            delete[] board[j];
-        delete[] board;
-        throw;
-    }
-}
-
-GameBoard::~GameBoard() {
+    board.resize(rows);
     for (int i = 0; i < rows; ++i)
-        delete[] board[i];
-    delete[] board;
+        board[i].resize(columns);
 }
 
 const Cell& GameBoard::getCellAt(int i, int j) const {

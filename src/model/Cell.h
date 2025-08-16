@@ -10,8 +10,10 @@ class Cell {
 public:
     Cell() : checkers() {}
     Cell(bool playable, bool jumpable) : checkers(), playable(playable), jumpableOver(jumpable) {}
-    Cell(const Checker& c) : checkers(1, c) {}
-    Cell(const Cell& c) : checkers(c.checkers) {}
+    Cell(const Cell& c) = delete;
+    Cell& operator = (const Cell& c) = delete;
+    Cell(Checker&& c) : checkers() { checkers.emplace_back(std::move(c)); }
+    Cell(Cell&& c) : checkers(std::move(c.checkers)) {}
 
     bool isPlayable() const { return playable; }
     bool isJumpableOver() const { return jumpableOver; }
@@ -19,5 +21,5 @@ public:
     void setPlayable(const EditorKey& key, bool isPlayable) { playable = isPlayable; }
     void setJumpable(const EditorKey& key, bool isJumpable) { jumpableOver = isJumpable; }
 
-    void append(Checker&& c) { checkers.push_back(c); /* TODO add checks */ };
+    void append(Checker&& c) { checkers.push_back(std::move(c)); /* TODO add checks */ };
 };

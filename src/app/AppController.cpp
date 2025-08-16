@@ -52,8 +52,8 @@ AppController::AppController() :
     cameraController(WIDTH, HEIGHT),
     shaders(createShaders()),
     rayLine(SPACE_ORIGIN, SPACE_ORIGIN),
-    gameBoard(BoardEditor::createBoard8x8Focus()),
-    boardView(gameBoard),
+    gameModel(BoardEditor::createBoard8x8Focus()),
+    gameView(gameModel),
     TEMPcylinder(.5, .5, .1, 32, true) {
 
     registerCallbacks();
@@ -114,7 +114,7 @@ void AppController::handleInputMouse() {
     const Ray& ray = cameraController.getMouseRay();
     if (!ray.isActive()) return;
 
-    boardView.TEMPselectShapeByIntersection(ray);
+    gameView.TEMPselectShapeByIntersection(ray);
 }
 
 void AppController::handleInputKey() {
@@ -139,7 +139,7 @@ void AppController::render() {
 
     window.clearBuffer();
 
-    boardView.draw(shader, currentTime);
+    gameView.draw(shader, currentTime);
 
     // rotation:
     TEMPcylinder.setModel(glm::rotate(TEMPcylinder.getBaseModel(), currentTime, glm::vec3(0.3f, 1.0f, 0.0f)));

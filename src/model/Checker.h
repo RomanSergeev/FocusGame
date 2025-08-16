@@ -2,19 +2,19 @@
 #include "Constants.h"
 #include "Player.h"
 
-class EditorKey {
-    friend class BoardEditor;
-    EditorKey() = default;
-};
-
 class Checker {
-    static const PlayerPlaceholderID NO_PLACEHOLDER = PlayerPlaceholderID::Spectator;
     const Player* playerRef;
-    PlayerPlaceholderID placeholderId;
 public:
-    Checker(const Player& p) : playerRef(&p) { placeholderId = NO_PLACEHOLDER; }
-    Checker(const Checker& c) : playerRef(c.playerRef), placeholderId(c.placeholderId) {}
-    Checker(PlayerPlaceholderID playerPlaceholderId) : playerRef(nullptr), placeholderId(playerPlaceholderId) {}
+    Checker() : playerRef(nullptr) {}
+    Checker(const Player& p) : playerRef(&p) {}
+    Checker(const Checker& c) = delete;
+    Checker& operator = (const Checker& c) = delete;
+    Checker(Checker&& c) : playerRef(c.playerRef) { c.playerRef = nullptr; }
+    Checker& operator = (Checker&& c) {
+        playerRef = c.playerRef;
+        c.playerRef = nullptr;
+        return *this;
+    }
 
-    PlayerPlaceholderID getPlaceholderID() const { return placeholderId; }
+    const Player* getPlayerReference() const { return playerRef; }
 };

@@ -28,16 +28,16 @@ Color getDefaultColor(unsigned int index) {
     return Color(DEFAULT_COLORS[index*3], DEFAULT_COLORS[index*3 + 1], DEFAULT_COLORS[index*3 + 2]);
 }
 
-int getPlayerOrdinal(PlayerPlaceholderID id) {
+int getPlayerOrdinal(PlayerSlot id) {
     switch (id) {
-        case PlayerPlaceholderID::Player1  : return 0;
-        case PlayerPlaceholderID::Player2  : return 1;
-        case PlayerPlaceholderID::Player3  : return 2;
-        case PlayerPlaceholderID::Player4  : return 3;
-        case PlayerPlaceholderID::Player5  : return 4;
-        case PlayerPlaceholderID::Player6  : return 5;
-        case PlayerPlaceholderID::Player7  : return 6;
-        case PlayerPlaceholderID::Player8  : return 7;
-        case PlayerPlaceholderID::Spectator: return -1;
+        case PlayerSlot::Player1  : return 0;
+        case PlayerSlot::Player2  : return 1;
+        case PlayerSlot::Player3  : return 2;
+        case PlayerSlot::Player4  : return 3;
+        case PlayerSlot::Player5  : return 4;
+        case PlayerSlot::Player6  : return 5;
+        case PlayerSlot::Player7  : return 6;
+        case PlayerSlot::Player8  : return 7;
+        case PlayerSlot::Spectator: return -1;
     }
 }
