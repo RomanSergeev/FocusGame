@@ -34,3 +34,8 @@ class EditorKey {
     friend class BoardEditor;
     EditorKey() = default;
 };
+
+class SessionKey {
+    friend class GameController;
+    SessionKey() = default;
+};

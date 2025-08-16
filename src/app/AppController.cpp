@@ -57,8 +57,8 @@ AppController::AppController() :
     TEMPcylinder(.5, .5, .1, 32, true) {
 
     registerCallbacks();
-    std::cout << Checker::getInstancesCount() << '\n';
-    std::cout << Cell::getInstancesCount() << '\n';
+    // std::cout << Checker::getInstancesCount() << '\n';
+    // std::cout << Cell::getInstancesCount() << '\n';
 
     const Shader& shader = shaders.get();
     shader.setVec3(ShaderParams::LIGHT_DIR, -0.3f, -0.2f, -0.7f);

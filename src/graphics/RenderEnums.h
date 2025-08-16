@@ -32,13 +32,17 @@ enum class ShaderType {
 enum class SelectionType {
     NoSelection,
     ForSelection,
-    Selected
+    Selected,
+    CanAct,
+    CannotAct
 };
 
 const std::unordered_map<SelectionType, glm::vec3> selectionColors = {
-    { SelectionType::NoSelection, glm::vec3(1) },
-    { SelectionType::ForSelection, glm::vec3(1.0, 1.0, 0.5) },
-    { SelectionType::Selected, glm::vec3(1.0, 0.5, 0.5) }
+    { SelectionType::NoSelection , glm::vec3(1) },
+    { SelectionType::ForSelection, glm::vec3(1.0 , 1.0 , 0.5 ) },
+    { SelectionType::Selected    , glm::vec3(1.0 , 0.75, 0.0 ) },
+    { SelectionType::CanAct      , glm::vec3(0.25, 1.0 , 0.25) },
+    { SelectionType::CannotAct   , glm::vec3(1.0 , 0.25, 0.25) }
 };
 
 std::string getShaderTypeString(ShaderType type);

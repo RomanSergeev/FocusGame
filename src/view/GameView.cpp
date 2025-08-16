@@ -1,4 +1,4 @@
-#include "BoardView.h"
+#include "GameView.h"
 #include "shapes/Cuboid.h"
 #include "shapes/Cylinder.h"
 
@@ -12,7 +12,7 @@ void checkShapeIntersection(const Ray& ray, OpenGLShape* shape, OpenGLShape* &se
     selectedShape = shape;
 }
 
-void BoardView::fillDisplayedBoard() {
+void GameView::fillDisplayedBoard() {
     int rows = model.getRows(),
         cols = model.getColumns();
     for (int i = 0; i < rows; ++i)
@@ -23,7 +23,7 @@ void BoardView::fillDisplayedBoard() {
             bool jumpable = cell.isJumpableOver();
             
             // board
-            DisplayedCell& dcell = displayedBoard[i][j];
+            CellView& dcell = displayedBoard[i][j];
             dcell.upVector = axisToVec3(Axis::Z);
             float x = (i - rows / 2.0 + 0.5) * CUBIC_CELL_WIDTH;
             float y = (j - cols / 2.0 + 0.5) * CUBIC_CELL_WIDTH;
@@ -39,7 +39,7 @@ void BoardView::fillDisplayedBoard() {
             const auto& checkers = cell.getCheckers();
             for (int k = 0; k < checkers.size(); ++k) {
                 const Checker& checker = checkers.at(k);
-                DisplayedChecker dchecker;
+                CheckerView dchecker;
                 dchecker.checkerRef = &checker;
                 dchecker.position = glm::vec3(dcell.anchorPoint + dcell.upVector * (CHECKER_HALF_HEIGHT * (2*k + 1)));
                 std::unique_ptr<OpenGLShape> newShape = std::make_unique<Cylinder>(CHECKER_HALF_WIDTH, CHECKER_HALF_WIDTH, CHECKER_HALF_HEIGHT, 32);
@@ -51,7 +51,7 @@ void BoardView::fillDisplayedBoard() {
         }
 }
 
-BoardView::BoardView(GameModel& gm) : model(gm), type(BoardShapeType::Flat) {
+GameView::GameView(GameModel& gm) : model(gm), type(BoardShapeType::Flat) {
     displayedBoard.resize(gm.getRows());
     for (auto& row : displayedBoard) {
         row.resize(gm.getColumns());
@@ -59,7 +59,7 @@ BoardView::BoardView(GameModel& gm) : model(gm), type(BoardShapeType::Flat) {
     fillDisplayedBoard();
 }
 
-void BoardView::draw(const Shader& shader, float currentTime) {
+void GameView::draw(const Shader& shader, float currentTime) {
     for (const auto& row : displayedBoard) {
         for (const auto& dcell : row) {
             if (dcell.shape == nullptr) continue;
@@ -74,7 +74,7 @@ void BoardView::draw(const Shader& shader, float currentTime) {
     }
 }
 
-void BoardView::TEMPdeselectAll() {
+void GameView::TEMPdeselectAll() {
     for (const auto& row : displayedBoard) {
         for (const auto& dcell : row) {
             if (dcell.shape != nullptr) dcell.shape->deselect();
@@ -85,23 +85,23 @@ void BoardView::TEMPdeselectAll() {
     }
 }
 
-void BoardView::TEMPselectDistinctCell(int i, int j) {
+void GameView::TEMPselectDistinctCell(int i, int j) {
     displayedBoard[i][j].shape->select();
 }
 
-void BoardView::TEMPselectDistinctChecker(const Checker& c) {
+void GameView::TEMPselectDistinctChecker(const Checker& c) {
     for (const auto& dchecker : displayedCheckers) {
         if (dchecker.checkerRef == &c) { dchecker.shape->select(); return; }
     }
 }
 
-void BoardView::TEMPstageCheckerSelection(const Checker& c) {
+void GameView::TEMPstageCheckerSelection(const Checker& c) {
     for (const auto& dchecker : displayedCheckers) {
         if (dchecker.checkerRef == &c) { dchecker.shape->stageSelection(); return; }
     }
 }
 
-float BoardView::TEMPselectShapeByIntersection(const Ray& ray) {
+float GameView::TEMPselectShapeByIntersection(const Ray& ray) {
     float minDist = FLT_MAX;
     OpenGLShape* selectedShape = nullptr;
     for (const auto& row : displayedBoard)

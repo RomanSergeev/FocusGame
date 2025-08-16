@@ -3,37 +3,37 @@
 #include "model/GameModel.h"
 #include "shapes/OpenGLShape.h"
 
-class BoardView {
+class GameView {
     enum class BoardShapeType {
         Flat,
         Toroid,
         Sphere
     };
 
-    struct DisplayedCell {
+    struct CellView {
         std::unique_ptr<OpenGLShape> shape;
         glm::vec3 anchorPoint;
         glm::vec3 upVector;
 
-        DisplayedCell() = default;
-        DisplayedCell(const DisplayedCell& dc) = delete;
-        DisplayedCell& operator = (const DisplayedCell& dc) = delete;
-        DisplayedCell(DisplayedCell&& dc) noexcept = default;
-        DisplayedCell& operator = (DisplayedCell&& dc) noexcept = default;
+        CellView() = default;
+        CellView(const CellView& dc) = delete;
+        CellView& operator = (const CellView& dc) = delete;
+        CellView(CellView&& dc) noexcept = default;
+        CellView& operator = (CellView&& dc) noexcept = default;
     };
 
-    struct DisplayedChecker {
+    struct CheckerView {
         std::unique_ptr<OpenGLShape> shape;
         glm::vec3 position;
         glm::vec3 targetPosition;
         float animationProgress = 0.0f;
         const Checker* checkerRef;
 
-        DisplayedChecker() = default;
-        DisplayedChecker(const DisplayedChecker& dc) = delete;
-        DisplayedChecker& operator = (const DisplayedChecker& dc) = delete;
-        DisplayedChecker(DisplayedChecker&& dc) noexcept = default;
-        DisplayedChecker& operator = (DisplayedChecker&& dc) noexcept = default;
+        CheckerView() = default;
+        CheckerView(const CheckerView& dc) = delete;
+        CheckerView& operator = (const CheckerView& dc) = delete;
+        CheckerView(CheckerView&& dc) noexcept = default;
+        CheckerView& operator = (CheckerView&& dc) noexcept = default;
     };
 
     static constexpr float CUBIC_CELL_WIDTH = 2;
@@ -42,15 +42,15 @@ class BoardView {
     static constexpr float CHECKER_HALF_HEIGHT = .1;
     
     GameModel& model;
-    std::vector<std::vector<DisplayedCell>> displayedBoard;
-    std::vector<DisplayedChecker> displayedCheckers;
+    std::vector<std::vector<CellView>> displayedBoard;
+    std::vector<CheckerView> displayedCheckers;
     BoardShapeType type;
 
     void fillDisplayedBoard();
 public:
-    BoardView(GameModel& gm);
-    BoardView(const BoardView& bv) = delete;
-    BoardView& operator = (const BoardView& bv) = delete;
+    GameView(GameModel& gm);
+    GameView(const GameView& bv) = delete;
+    GameView& operator = (const GameView& bv) = delete;
 
     void draw(const Shader& shader, float currentTime);
     void TEMPdeselectAll();

@@ -6,7 +6,7 @@
 #include "model/GameModel.h"
 #include "shapes/Cylinder.h"
 #include "shapes/Line.h"
-#include "view/BoardView.h"
+#include "view/GameView.h"
 
 class AppController {
     static const int WIDTH = 800;
@@ -33,7 +33,7 @@ class AppController {
     Cylinder TEMPcylinder;
 
     GameModel gameModel;
-    BoardView gameView;
+    GameView gameView;
 
     AppController();
 
