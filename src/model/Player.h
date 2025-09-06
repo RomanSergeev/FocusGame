@@ -11,6 +11,8 @@ enum class PlayerType {
 };
 
 class Player {
+    friend class GameModel;
+
     std::optional<User> userRef;
     std::string name;
     PlayerSlot slot;
@@ -26,4 +28,6 @@ public:
 
     PlayerSlot getSlot() const { return slot; }
     TeamSlot getTeam() const { return team; }
+    bool isDefeated() const { return defeated; }
+    bool isActive() const { return slot != PlayerSlot::Spectator; }
 };

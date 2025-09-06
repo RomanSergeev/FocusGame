@@ -2,9 +2,14 @@
 #include "glm/ext/scalar_constants.hpp"
 #include "glm/glm.hpp"
 
+using idxtype = unsigned char;
+
 inline const glm::vec3 SPACE_ORIGIN(0.0f);
 inline const float PI = glm::pi<float>();
 const float TRACE_PRECISION = 1e-6f;
+
+const int MAX_BOARD_SIZE = 100;
+const int OVERLIMIT_SIZE = 101; // anything >= MAX_BOARD_SIZE
 
 const int MAX_PLAYERS = 8;
 const int DEFAULT_COLORS[MAX_PLAYERS * 3] {

@@ -23,6 +23,43 @@ bool AABB::intersects(const AABB& other) const {
            (min.z <= other.max.z && max.z >= other.min.z);
 }
 
+int getDeltaX(JumpDirection jd) {
+    switch (jd) {
+        case JumpDirection::Up   : return -1;
+        case JumpDirection::Down : return  1;
+        case JumpDirection::Left : return  0;
+        case JumpDirection::Right: return  0;
+    }
+    return 0;
+}
+
+int getDeltaY(JumpDirection jd) {
+    switch (jd) {
+        case JumpDirection::Up   : return  0;
+        case JumpDirection::Down : return  0;
+        case JumpDirection::Left : return -1;
+        case JumpDirection::Right: return  1;
+    }
+    return 0;
+}
+
+bool isHorizontal(JumpDirection jd) {
+    return jd == JumpDirection::Left || jd == JumpDirection::Right;
+}
+
+bool isVertical(JumpDirection jd) {
+    return jd == JumpDirection::Down || jd == JumpDirection::Up;
+}
+
+JumpDirection reverseDirection(JumpDirection jd) {
+    switch (jd) {
+        case JumpDirection::Up   : return JumpDirection::Down ;
+        case JumpDirection::Down : return JumpDirection::Up   ;
+        case JumpDirection::Left : return JumpDirection::Right;
+        case JumpDirection::Right: return JumpDirection::Left ;
+    }
+}
+
 Color getDefaultColor(unsigned int index) {
     if (index < 0 || index >= MAX_PLAYERS) throw std::invalid_argument("getDefaultColor: argument index is out of range.");
     return Color(DEFAULT_COLORS[index*3], DEFAULT_COLORS[index*3 + 1], DEFAULT_COLORS[index*3 + 2]);

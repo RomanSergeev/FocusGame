@@ -1,4 +1,5 @@
 #pragma once
+#include <algorithm>
 #include <iostream>
 #include <utility>
 #include "glm/glm.hpp"
@@ -8,6 +9,10 @@
 
 void clampValue(float& value, float from, float to);
 void clampValue(float& value, const std::pair<float, float>& pair);
+template<typename T>
+bool vectorContains(const std::vector<T>& v, const T& value) {
+    return std::find(v.begin(), v.end(), value) != v.end();
+}
 
 struct AABB { // Axis-Aligned Bounding Box
     glm::vec3 min;
@@ -62,6 +67,25 @@ struct Color {
     bool operator == (const Color& other) const {
         return r == other.r && g == other.g && b == other.b;
     }
+};
+
+enum class JumpDirection {
+    Up, Down, Left, Right
+};
+int getDeltaX(JumpDirection jd);
+int getDeltaY(JumpDirection jd);
+bool isHorizontal(JumpDirection jd);
+bool isVertical(JumpDirection jd);
+JumpDirection reverseDirection(JumpDirection jd);
+
+struct Coord { // board coordinates wrapper
+    idxtype x, y;
+    Coord() = default;
+    Coord(idxtype x, idxtype y) : x(x), y(y) {}
+    Coord(const Coord& c) = default;
+    Coord& operator = (const Coord& c) = default;
+    bool operator == (const Coord& c) const { return x == c.x && y == c.y; }
+    bool operator != (const Coord& c) const { return x != c.x || y != c.y; }
 };
 
 Color getDefaultColor(unsigned int index);

@@ -13,11 +13,11 @@ void checkShapeIntersection(const Ray& ray, OpenGLShape* shape, OpenGLShape* &se
 }
 
 void GameView::fillDisplayedBoard() {
-    int rows = model.getRows(),
+    idxtype rows = model.getRows(),
         cols = model.getColumns();
-    for (int i = 0; i < rows; ++i)
-        for (int j = 0; j < cols; ++j) {
-            const Cell& cell = model.getCellAt(i, j);
+    for (idxtype i = 0; i < rows; ++i)
+        for (idxtype j = 0; j < cols; ++j) {
+            const Cell& cell = model.getCellAt({i, j});
             bool playable = cell.isPlayable();
             if (!playable) continue;
             bool jumpable = cell.isJumpableOver();

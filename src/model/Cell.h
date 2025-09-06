@@ -22,9 +22,13 @@ public:
 
     bool isPlayable() const { return playable; }
     bool isJumpableOver() const { return jumpableOver; }
+    bool isPole() const { return pole; }
     const std::vector<Checker>& getCheckers() const { return checkers; }
+    int getTowerHeight() const { return checkers.size(); }
+    
     void setPlayable(const EditorKey& key, bool isPlayable) { playable = isPlayable; }
     void setJumpable(const EditorKey& key, bool isJumpable) { jumpableOver = isJumpable; }
 
     void append(Checker&& c) { checkers.push_back(std::move(c)); /* TODO add checks */ };
+    const Player* getOwnership() const;
 };

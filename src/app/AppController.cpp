@@ -146,7 +146,7 @@ void AppController::render() {
     // rotation:
     TEMPcylinder.setModel(glm::rotate(TEMPcylinder.getBaseModel(), currentTime, glm::vec3(0.3f, 1.0f, 0.0f)));
     TEMPcylinder.setUniforms(shader, currentTime);
-    TEMPcylinder.draw();
+    // TEMPcylinder.draw();
 
     /*EVERY_N_FRAMES_DO(60, {
         std::cout << "RAY:\n" << rayLine;

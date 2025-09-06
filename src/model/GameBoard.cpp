@@ -2,38 +2,54 @@
 #include "GameBoard.h"
 #include "Checker.h"
 
-GameBoard::GameBoard(unsigned int _rows, unsigned int _cols, bool loopedRows, bool loopedCols) :
-rows(_rows), columns(_cols), loopedHorizontally(loopedRows), loopedVertically(loopedCols) {
-    if (rows == 0 || columns == 0) {
+void GameBoard::placeChecker(const Coord& cd, Checker&& c) {
+    if (!validCoordinate(cd)) throw std::invalid_argument("GameBoard::place: coordinate out of range");
+    // TODO add checks
+    at(cd).append(std::move(c));
+}
+
+GameBoard::GameBoard(const Coord& dimensions, bool loopedRows, bool loopedCols) :
+sizes(dimensions), loopedHorizontally(loopedRows), loopedVertically(loopedCols) {
+    if (sizes.x == 0 || sizes.y == 0) {
         throw std::invalid_argument("GameBoard::GameBoard: attempt to create board of zero size");
     }
-    board.resize(rows);
-    for (int i = 0; i < rows; ++i)
-        board[i].resize(columns);
+    board.resize(sizes.x);
+    for (idxtype i = 0; i < sizes.x; ++i)
+        board[i].resize(sizes.y);
 }
 
-const Cell& GameBoard::getCellAt(int i, int j) const {
-    if (i < 0 || i >= rows)
-        throw std::invalid_argument("GameBoard::getCellAt: argument i out of range");
-    if (j < 0 || j >= columns)
-        throw std::invalid_argument("GameBoard::getCellAt: argument j out of range");
-    return board[i][j];
+const Cell& GameBoard::operator [] (const Coord& cd) const {
+    if (!validCoordinate(cd)) throw std::invalid_argument("GameBoard::operator[]: coordinate out of range");
+    return board[cd.x][cd.y];
 }
 
-void GameBoard::place(const EditorKey& key, unsigned int i, unsigned int j, Checker&& c) {
-    if (i < 0 || i >= rows)
-        throw std::invalid_argument("GameBoard::place: argument i out of range");
-    if (j < 0 || j >= columns)
-        throw std::invalid_argument("GameBoard::place: argument j out of range");
-    // TODO add checks
-    board[i][j].append(std::move(c));
+bool GameBoard::validCoordinate(const Coord& cd) const {
+    return cd.x >= 0 && cd.x < sizes.x && cd.y >= 0 && cd.y < sizes.y;
 }
 
-void GameBoard::markCell(const EditorKey& key, unsigned int i, unsigned int j, bool flagPlayable, bool flagJumpable) {
-    if (i < 0 || i >= rows)
-        throw std::invalid_argument("GameBoard::markCell: argument i out of range");
-    if (j < 0 || j >= columns)
-        throw std::invalid_argument("GameBoard::markCell: argument j out of range");
-    board[i][j].setPlayable(key, flagPlayable);
-    board[i][j].setJumpable(key, flagJumpable);
+bool GameBoard::nextCoordinate(Coord& cd, JumpDirection jd, idxtype tetheredColumn) const {
+    int dx = getDeltaX(jd), dy = getDeltaY(jd);
+    int nextX = cd.x + dx, nextY = cd.y + dy;
+    if (!validX(nextX)) {
+        if (!loopedHorizontally) return false;
+        nextX = (nextX + sizes.x) % sizes.x;
+    }
+    if (!validY(nextY)) {
+        if (!loopedVertically) return false;
+        nextY = (nextY + sizes.y) % sizes.y;
+    }
+    if (at(cd).isPole()) {
+        if (isHorizontal(jd)) return false;
+        nextY = tetheredColumn; // two poles cannot stand together
+    }
+    if (board[nextX][0].isPole()) nextY = 0;
+    cd.x = nextX;
+    cd.y = nextY;
+    return true;
+}
+
+void GameBoard::markCell(const EditorKey& key, const Coord& cd, bool flagPlayable, bool flagJumpable) {
+    if (!validCoordinate(cd)) throw std::invalid_argument("GameBoard::markCell: coordinate out of range");
+    at(cd).setPlayable(key, flagPlayable);
+    at(cd).setJumpable(key, flagJumpable);
 }
