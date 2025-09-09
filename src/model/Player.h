@@ -26,8 +26,12 @@ public:
     Player(Player&& p) = default;
     Player& operator = (Player&& p) = default;
 
+    bool operator == (const Player& p) const { return userRef == p.userRef && slot == p.slot; }
+    bool operator != (const Player& p) const { return !(*this == p); }
+
     PlayerSlot getSlot() const { return slot; }
     TeamSlot getTeam() const { return team; }
     bool isDefeated() const { return defeated; }
-    bool isActive() const { return slot != PlayerSlot::Spectator; }
+    bool isSpectator() const { return slot == PlayerSlot::Spectator; }
+    bool sameTeam(const Player& player) const { return team == player.team && team != TeamSlot::Spectator; }
 };

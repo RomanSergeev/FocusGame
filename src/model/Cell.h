@@ -24,6 +24,7 @@ public:
     bool isJumpableOver() const { return jumpableOver; }
     bool isPole() const { return pole; }
     const std::vector<Checker>& getCheckers() const { return checkers; }
+    std::vector<Checker>& getCheckers(const SessionKey& key) { return checkers; }
     int getTowerHeight() const { return checkers.size(); }
     
     void setPlayable(const EditorKey& key, bool isPlayable) { playable = isPlayable; }

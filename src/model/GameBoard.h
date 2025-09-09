@@ -1,6 +1,5 @@
 #pragma once
 #include "Cell.h"
-#include "Constants.h"
 
 class GameBoard {
     friend class GameModel; // always direct ownership
@@ -28,6 +27,8 @@ public:
     bool validY(int y) const { return y >= 0 && y < sizes.y; }
     bool validCoordinate(const Coord& cd) const;
     bool nextCoordinate(Coord& cd, JumpDirection jd, idxtype tetheredColumn = OVERLIMIT_SIZE) const; // returns false if cannot advance
+    int getCappedJumpDistanceInDirection(const Coord& cFrom, const Coord& cTo, JumpDirection jd, int maxDistance) const;
+    int testMovementInDirectionWithTether(const Coord& cFrom, const Coord& cTo, JumpDirection jd, int maxDistance, idxtype tether) const;
     void place(const EditorKey& key, const Coord& cd, Checker&& c) { placeChecker(cd, std::move(c)); }
     void place(const SessionKey& key, const Coord& cd, Checker&& c) { placeChecker(cd, std::move(c)); }
     void markCell(const EditorKey& key, const Coord& cd, bool flagPlayable, bool flagJumpable);

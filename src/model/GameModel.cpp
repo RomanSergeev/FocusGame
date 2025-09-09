@@ -1,91 +1,125 @@
 #include "GameModel.h"
-#include "Cell.h"
-#include "Constants.h"
-#include "utility/Utils.h"
+#include <iterator>
 
-/*
-bool isPlayerDefeated(PlayerSlot player) const;
-bool canMove(int iFrom, int jFrom, int iTo, int jTo) const;
-bool move(const SessionKey& key, int iFrom, int jFrom, int iTo, int jTo);
-*/
-
-void GameModel::fillAlliances() {
-    for (const auto& player : players) {
-        if (!player.isActive()) continue;
+/*void GameModel::fillAlliances() {
+    for (const Player& player : players) {
+        if (player.isSpectator()) continue;
         alliances[player.team].push_back(player.slot);
     }
+}*/
+
+const Player* GameModel::getPlayerBySlot(PlayerSlot slot) const {
+    for (const Player& player : players) {
+        if (player.slot == slot) return &player;
+    }
+    return nullptr;
 }
 
-void GameModel::updateDefeatedPlayers() {
-    for (int i = 0; i < players.size(); ++i) {
-        Player& p = players[i];
-        if (p.defeated) continue; // already defeated
-        if (isPlayerDefeated(p)) p.defeated = true;
+bool GameModel::hasActiveAlly(const Player& player) const {
+    if (player.isSpectator()) return false;
+    for (const Player& p : players) {
+        if (p != player && p.sameTeam(player) && !p.defeated) return true;
     }
+    return false;
 }
 
 bool GameModel::isPlayerDefeated(const Player& player) const {
-    if (!player.isActive()) return false; // skip spectator
-
-    for (const auto& pair : trays) {
-        PlayerSlot whose = pair.first;
-        if (whose == player.slot) return false;//false is TEMP -> (!canPlaceAnywhere() && );
-        if (!vectorContains(alliances.at(player.team), whose)) continue;
-        //TODO continue
-    }
-
-    idxtype rows = board.getRows();
-    idxtype cols = board.getColumns();
-    for (idxtype i = 0; i < rows; ++i)
-        for (idxtype j = 0; j < cols; ++j) {
-            
-        }
+    if (player.isSpectator()) return false; // skip spectator
+    return !canTransferAnything(player) && !canPlaceAnywhere(player) && !canPerformAnyMove(player);
+    //TODO add check - a team should perform a move affecting the board at least once per cycle
 }
 
-bool GameModel::canPlaceReserve(const Coord& cd, const Player& fromPlayer, int amount) const {
-    if (fromPlayer.slot == PlayerSlot::Spectator) return false;
+bool GameModel::canPlaceReserve(const Coord& cd, const Player& ofPlayer, int amount) const {
+    if (ofPlayer.isSpectator()) return false;
     if (amount < 1 || amount > rules.maxReservePlaced) return false;
     if (!board.validCoordinate(cd)) return false;
     
-    const Player& currentPlayer = players.at(activePlayerIndex);
-    if (fromPlayer.team != currentPlayer.team) return false;
-    if (!rules.canPlaceAlliedReserve && fromPlayer.slot != currentPlayer.slot) return false;
+    const Player& currentPlayer = getCurrentPlayer();
+    if (!ofPlayer.sameTeam(currentPlayer)) return false;
+    if (!rules.canPlaceAlliedReserve && ofPlayer != currentPlayer) return false;
 
     const Cell& cell = board[cd];
     if (!cell.isPlayable()) return false;
-    if (!rules.canPlaceOnPoles && cell.isPole()) return false;
+    if (cell.isPole() && !rules.canPlaceOnPoles) return false;
     const Player* owner = cell.getOwnership();
     if (!( // can place vs cell owner
         owner == nullptr ||
         (owner == &currentPlayer && rules.canPlaceOnOwnTowers) ||
-        (owner->team == currentPlayer.team && rules.canPlaceOnAllyTowers) ||
-        (owner->team != currentPlayer.team && rules.canPlaceOnEnemyTowers) 
+        ( currentPlayer.sameTeam(*owner) && rules.canPlaceOnAllyTowers) ||
+        (!currentPlayer.sameTeam(*owner) && rules.canPlaceOnEnemyTowers) 
     )) return false;
     if (!( // can place vs cell tower height
         rules.canExceedByPlacing ||
         amount <= (rules.maxTowerHeight - cell.getTowerHeight()) 
     )) return false;
     if ( // can place vs own reserve size
-        getTraySize(currentPlayer.slot, fromPlayer.slot) < amount
+        getTraySize(currentPlayer.slot, ofPlayer.slot) < amount
     ) return false;
     return true;
 }
 
-bool GameModel::placeReserve(const SessionKey& key, const Coord& cd, const Player& fromPlayer, int amount) {
-    if (!canPlaceReserve(cd, fromPlayer, amount)) return false;
-    int toPlace = amount;
-    const Player& currentPlayer = players.at(activePlayerIndex);
-    std::vector<Checker>& tray = trays.at(currentPlayer.slot);
-    for (auto iter = tray.begin(); toPlace > 0 && iter != tray.end(); ) {
-        if (iter->getPlayerReference()->slot == fromPlayer.slot) {
-            board.place(key, cd, std::move(*iter));
-            iter = tray.erase(iter);
-            --toPlace;
-        } else {
-            ++iter;
+bool GameModel::canPerformAnyMove(const Player& player) const {
+    for (idxtype i = 0; i < board.sizes.x; ++i)
+        for (idxtype j = 0; j < board.sizes.y; ++j) {
+            Coord cd = {i, j};
+            const Cell& cell = board.at(cd);
+            if (cell.isPole()) j = board.sizes.y;
+            // simplified for now - assume any player's tower can go at least somewhere
+            // not true, generally speaking
+            if (cell.getOwnership() == &player) return true;
+        }
+    return false;
+}
+
+bool GameModel::canPlaceAnywhere(const Player& player) const {
+    bool anyReserve = false;
+    const std::vector<Checker>& tray = trays.at(player.slot);
+    for (const Checker& c : tray) {
+        const Player* p = c.getPlayerReference();
+        if (p == nullptr) {
+            std::cerr << "GameModel::canPlaceAnywhere: found Cell's null Player reference" << std::endl;
+            continue;
+        }
+        if (p == &player || (rules.canPlaceAlliedReserve && player.sameTeam(*p))) {
+            anyReserve = true;
+            break;
         }
     }
-    return true;
+    if (!anyReserve) return false;
+
+    // check if we can place our reserve anywhere
+    for (idxtype i = 0; i < board.sizes.x; ++i)
+        for (idxtype j = 0; j < board.sizes.y; ++j) {
+            const Cell& cell = board.at({i, j});
+            if (cell.isPole()) {
+                j = board.sizes.y; // crutchy way to skip the entire row, if its first element is a pole
+                if (!rules.canPlaceOnPoles) continue;
+            }
+            if (!cell.isPlayable()) continue;
+            const Player* owner = cell.getOwnership();
+            if (owner == nullptr) return true; // cell is free
+            int height = cell.getTowerHeight();
+            if (height >= rules.maxTowerHeight) continue; // cannot place regardless of rules below
+            if (owner == &player && rules.canPlaceOnOwnTowers) return true;
+            if ( player.sameTeam(*owner) && rules.canPlaceOnAllyTowers) return true;
+            if (!player.sameTeam(*owner) && rules.canPlaceOnEnemyTowers) return true;
+        }
+    return false;
+}
+
+bool GameModel::canTransferAnything(const Player& player) const {
+    if (!rules.canTransferToAlly()) return false;
+    const std::vector<Checker>& tray = trays.at(player.slot);
+    for (const Checker& c : tray) {
+        const Player* p = c.getPlayerReference();
+        if (p == nullptr) {
+            std::cerr << "GameModel::canTransferAnything: found Cell's null Player reference" << std::endl;
+            continue;
+        }
+        if (p == &player) continue; // skip our own
+        if (player.sameTeam(*p) && !p->defeated) return true;
+    }
+    return false;
 }
 
 int GameModel::canMove(const Coord& cFrom, const Coord& cTo) const {
@@ -93,7 +127,7 @@ int GameModel::canMove(const Coord& cFrom, const Coord& cTo) const {
     if (cFrom == cTo) return CANNOT_MOVE;
     const Cell& from = board[cFrom];
     const Player* owner = from.getOwnership();
-    const Player& currentPlayer = players.at(activePlayerIndex);
+    const Player& currentPlayer = getCurrentPlayer();
     if (owner != &currentPlayer) return CANNOT_MOVE;
     const Cell& to = board[cTo];
     int count = from.getTowerHeight();
@@ -102,23 +136,23 @@ int GameModel::canMove(const Coord& cFrom, const Coord& cTo) const {
     int smallestJumpDistance = OVERLIMIT_SIZE, distance = OVERLIMIT_SIZE;
     JumpDirection direction;
 
-    distance = getCappedJumpDistanceInDirection(cFrom, cTo, JumpDirection::Up   , count);
+    distance = board.getCappedJumpDistanceInDirection(cFrom, cTo, JumpDirection::Up   , count);
     if (distance < smallestJumpDistance) { smallestJumpDistance = distance; direction = JumpDirection::Up   ; }
-    distance = getCappedJumpDistanceInDirection(cFrom, cTo, JumpDirection::Down , count);
+    distance = board.getCappedJumpDistanceInDirection(cFrom, cTo, JumpDirection::Down , count);
     if (distance < smallestJumpDistance) { smallestJumpDistance = distance; direction = JumpDirection::Down ; }
-    distance = getCappedJumpDistanceInDirection(cFrom, cTo, JumpDirection::Left , count);
+    distance = board.getCappedJumpDistanceInDirection(cFrom, cTo, JumpDirection::Left , count);
     if (distance < smallestJumpDistance) { smallestJumpDistance = distance; direction = JumpDirection::Left ; }
-    distance = getCappedJumpDistanceInDirection(cFrom, cTo, JumpDirection::Right, count);
+    distance = board.getCappedJumpDistanceInDirection(cFrom, cTo, JumpDirection::Right, count);
     if (distance < smallestJumpDistance) { smallestJumpDistance = distance; direction = JumpDirection::Right; }
     if (distance == OVERLIMIT_SIZE) return CANNOT_MOVE;
     return distance;
 }
 
 bool GameModel::canTransferCheckers(const Player& toPlayer, int amount) const {
-    const Player& activePlayer = players.at(activePlayerIndex);
+    const Player& currentPlayer = getCurrentPlayer();
     if (amount < 1 || amount > rules.allyReserveTransferLimit) return false;
-    if (toPlayer.slot == activePlayer.slot || toPlayer.team != activePlayer.team) return false;
-    int traySize = getTraySize(activePlayer.slot, toPlayer.slot);
+    if (toPlayer == currentPlayer || !toPlayer.sameTeam(currentPlayer)) return false;
+    int traySize = getTraySize(currentPlayer.slot, toPlayer.slot);
     return traySize >= amount;
 }
 
@@ -130,66 +164,48 @@ int GameModel::getTraySize(PlayerSlot ownedByPlayer, PlayerSlot ofPlayer) const 
     return result;
 }
 
-int GameModel::getCappedJumpDistanceInDirection(const Coord& cFrom, const Coord& cTo, JumpDirection jd, int maxDistance) const {
-    /*auto nextCell = [&](const Coord& c) -> Coord {
-        // returns Coord
-    };*/
-    
-    // from is owned by currentPlayer and has checkers on it; from and to are playable; indices are valid and different
-    if (!board[cFrom].isPole()) return testMovementInDirectionWithTether(cFrom, cTo, jd, maxDistance, cFrom.y);
-    if (isHorizontal(jd)) return OVERLIMIT_SIZE; // poles can only be horizontal - thus, horizontal movement is forbidden
-    for (idxtype j = 0; j < board.sizes.y; ++j) {
-        int distance = testMovementInDirectionWithTether(cFrom, cTo, jd, maxDistance, j);
-        if (distance < OVERLIMIT_SIZE) return distance;
+void GameModel::updateDefeatedPlayers() {
+    for (int i = 0; i < players.size(); ++i) {
+        Player& p = players[i];
+        if (p.defeated) continue; // already defeated
+        if (isPlayerDefeated(p)) p.defeated = true;
     }
-    // we've scanned through all the columns and couldn't reach the destination
-    return OVERLIMIT_SIZE;
 }
 
-int GameModel::testMovementInDirectionWithTether(const Coord& cFrom, const Coord& cTo, JumpDirection jd, int maxDistance, idxtype tether) const {
-    Coord c = cFrom;
-    int totalDistance = 0;
-    while (totalDistance < maxDistance) {
-        bool canAdvance = board.nextCoordinate(c, jd, tether); // coord changes (tries to advance)
-        if (!canAdvance) return OVERLIMIT_SIZE;
-        ++totalDistance;
-        if (c == cTo) return totalDistance; // if we've reached the destination
-        if (!board[c].isJumpableOver()) return OVERLIMIT_SIZE; // cell to travel through is not jumpable over
-        if (board[c].isPole()) jd = reverseDirection(jd);
-    }
-    return OVERLIMIT_SIZE;
-}
-
-/*bool GameModel::hasJumpableLineBetween(idxtype iFrom, idxtype iTo, idxtype idx, bool vertically) const {
-    if (iFrom == iTo) return true;
-    bool asc = (iFrom < iTo);
-    int d = asc ? 1 : -1;
-    for (idxtype i = iFrom + d; i != iTo; i += d) {
-        if ( vertically && board.loopedVertically  ) {
-            if ( asc && i == board.rows   ) i = 0;
-            if (!asc && i == -1           ) i = board.rows - 1;
+bool GameModel::placeReserve(const SessionKey& key, const Coord& cd, const Player& ofPlayer, int amount) {
+    if (!canPlaceReserve(cd, ofPlayer, amount)) return false;
+    int toPlace = amount;
+    const Player& currentPlayer = getCurrentPlayer();
+    std::vector<Checker>& tray = trays.at(currentPlayer.slot);
+    for (auto iter = tray.begin(); toPlace > 0 && iter != tray.end(); ) {
+        if (iter->getPlayerReference() == &ofPlayer) {
+            board.place(key, cd, std::move(*iter));
+            iter = tray.erase(iter);
+            --toPlace;
+        } else {
+            ++iter;
         }
-        if (!vertically && board.loopedHorizontally) {
-            if ( asc && i == board.columns) i = 0;
-            if (!asc && i == -1           ) i = board.columns - 1;
-        }
-        idxtype I = vertically ? i : idx, // vertically -> i is iterated
-                J = vertically ? idx : i; // horizontally -> j is iterated
-        if (vertically && board.board[i][0].isPole()) J = 0; // 
-        const Cell& cell = board.board[I][J];
-        if (vertically && cell.isPole() && !rules.canJumpThroughPoles) return false;
-        if (!cell.isJumpableOver()) return false;
     }
     return true;
-}*/
+}
+
+bool GameModel::move(const SessionKey& key, const Coord& from, const Coord& to) {
+    int amount = canMove(from, to);
+    if (amount == CANNOT_MOVE) return false;
+    std::vector<Checker>& vFrom = board.at(from).getCheckers(key);
+    std::vector<Checker>& vTo = board.at(to).getCheckers(key);
+    vTo.insert(vTo.begin(), std::make_move_iterator(vFrom.end() - amount), std::make_move_iterator(vFrom.end()));
+    vFrom.erase(vFrom.end() - amount, vFrom.end());
+    return true;
+}
 
 bool GameModel::transferCheckers(const SessionKey& key, const Player& toPlayer, int amount) {
     if (!canTransferCheckers(toPlayer, amount)) return false;
     int toPlace = amount;
-    const Player& currentPlayer = players.at(activePlayerIndex);
+    const Player& currentPlayer = getCurrentPlayer();
     std::vector<Checker>& tray = trays.at(currentPlayer.slot);
     for (auto iter = tray.begin(); toPlace > 0 && iter != tray.end(); ) {
-        if (iter->getPlayerReference()->slot == toPlayer.slot) {
+        if (iter->getPlayerReference() == &toPlayer) {
             trays.at(toPlayer.slot).push_back(std::move(*iter));
             iter = tray.erase(iter);
             --toPlace;
@@ -202,9 +218,10 @@ bool GameModel::transferCheckers(const SessionKey& key, const Player& toPlayer, 
 
 void GameModel::transferMove(const SessionKey& key) {
     // important: game should not be over if transferMove is called
+    int startIndex = activePlayerIndex;
     do {
-        ++activePlayerIndex;
-        if (activePlayerIndex == players.size())
-            activePlayerIndex = 0;
-    } while (players[activePlayerIndex].isDefeated() || !players[activePlayerIndex].isActive());
+        activePlayerIndex = (activePlayerIndex + 1) % players.size();
+        const Player& currentPlayer = getCurrentPlayer();
+        if (!currentPlayer.isSpectator() && !currentPlayer.defeated) return;
+    } while (activePlayerIndex != startIndex); // fallback in case of all returns skipped somehow
 }

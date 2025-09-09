@@ -1,6 +1,5 @@
 #include <stdexcept>
 #include "GameBoard.h"
-#include "Checker.h"
 
 void GameBoard::placeChecker(const Coord& cd, Checker&& c) {
     if (!validCoordinate(cd)) throw std::invalid_argument("GameBoard::place: coordinate out of range");
@@ -46,6 +45,32 @@ bool GameBoard::nextCoordinate(Coord& cd, JumpDirection jd, idxtype tetheredColu
     cd.x = nextX;
     cd.y = nextY;
     return true;
+}
+
+int GameBoard::getCappedJumpDistanceInDirection(const Coord& cFrom, const Coord& cTo, JumpDirection jd, int maxDistance) const {
+    // from is owned by currentPlayer and has checkers on it; from and to are playable; indices are valid and different
+    if (!at(cFrom).isPole()) return testMovementInDirectionWithTether(cFrom, cTo, jd, maxDistance, cFrom.y);
+    if (isHorizontal(jd)) return OVERLIMIT_SIZE; // poles can only be horizontal - thus, horizontal movement is forbidden
+    for (idxtype j = 0; j < sizes.y; ++j) {
+        int distance = testMovementInDirectionWithTether(cFrom, cTo, jd, maxDistance, j);
+        if (distance < OVERLIMIT_SIZE) return distance;
+    }
+    // we've scanned through all the columns and couldn't reach the destination
+    return OVERLIMIT_SIZE;
+}
+
+int GameBoard::testMovementInDirectionWithTether(const Coord& cFrom, const Coord& cTo, JumpDirection jd, int maxDistance, idxtype tether) const {
+    Coord c = cFrom;
+    int totalDistance = 0;
+    while (totalDistance < maxDistance) {
+        bool canAdvance = nextCoordinate(c, jd, tether); // coord changes (tries to advance)
+        if (!canAdvance) return OVERLIMIT_SIZE;
+        ++totalDistance;
+        if (c == cTo) return totalDistance; // if we've reached the destination
+        if (!at(c).isJumpableOver()) return OVERLIMIT_SIZE; // cell to travel through is not jumpable over
+        if (at(c).isPole()) jd = reverseDirection(jd);
+    }
+    return OVERLIMIT_SIZE;
 }
 
 void GameBoard::markCell(const EditorKey& key, const Coord& cd, bool flagPlayable, bool flagJumpable) {
