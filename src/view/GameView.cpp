@@ -2,6 +2,10 @@
 #include "shapes/Cuboid.h"
 #include "shapes/Cylinder.h"
 
+const float GameView::FB_CELL_HEIGHT[2] = { FB_CELL_HEIGHT_NJ, FB_CELL_HEIGHT_J };
+const float GameView::FB_CELL_ORIGIN[2] = { (FB_CELL_HEIGHT[0] - FB_CELL_HEIGHT[1]) / 2, 0 };
+const float GameView::FB_CELL_ANCHOR[2] = { FB_CELL_HEIGHT[0] / 2 + FB_CELL_ORIGIN[0], FB_CELL_HEIGHT[1] / 2 + FB_CELL_ORIGIN[1] };
+
 void checkShapeIntersection(const Ray& ray, OpenGLShape* shape, OpenGLShape* &selectedShape, float& minDist) {
     if (shape == nullptr) return;
     float dist;
@@ -14,25 +18,28 @@ void checkShapeIntersection(const Ray& ray, OpenGLShape* shape, OpenGLShape* &se
 
 void GameView::fillDisplayedBoard() {
     idxtype rows = model.getRows(),
-        cols = model.getColumns();
+            cols = model.getColumns();
     for (idxtype i = 0; i < rows; ++i)
         for (idxtype j = 0; j < cols; ++j) {
             const Cell& cell = model.getCellAt({i, j});
             bool playable = cell.isPlayable();
             if (!playable) continue;
             bool jumpable = cell.isJumpableOver();
+            float cellHeight = FB_CELL_HEIGHT[jumpable];
+            float cellOrigin = FB_CELL_ORIGIN[jumpable];
+            float cellAnchor = FB_CELL_ANCHOR[jumpable];
             
             // board
             CellView& dcell = displayedBoard[i][j];
             dcell.upVector = axisToVec3(Axis::Z);
-            float x = (i - rows / 2.0 + 0.5) * CUBIC_CELL_WIDTH;
-            float y = (j - cols / 2.0 + 0.5) * CUBIC_CELL_WIDTH;
-            dcell.anchorPoint = glm::vec3(x, y, jumpable ? CUBIC_CELL_DEPTH / 2 : CUBIC_CELL_WIDTH / 2);
-            std::unique_ptr<OpenGLShape> newShape = std::make_unique<Cuboid>(CUBIC_CELL_WIDTH, CUBIC_CELL_WIDTH, jumpable ? CUBIC_CELL_DEPTH : CUBIC_CELL_WIDTH);
+            float x = (i - rows / 2.0 + 0.5) * FB_CELL_WIDTH;
+            float y = (j - cols / 2.0 + 0.5) * FB_CELL_WIDTH;
+            dcell.anchorPoint = glm::vec3(x, y, cellAnchor);
+            std::unique_ptr<OpenGLShape> newShape = std::make_unique<Cuboid>(FB_CELL_WIDTH, FB_CELL_WIDTH, cellHeight);
             bool even = (i + j) & 1;
             float rgb = even ? 0.2 : 0.9;
             newShape->setColor(rgb, rgb, rgb);
-            newShape->translate(x, y, 0);
+            newShape->translate(x, y, cellOrigin);
             dcell.shape = std::move(newShape);
 
             // checkers

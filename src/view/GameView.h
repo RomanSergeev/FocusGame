@@ -36,10 +36,14 @@ class GameView {
         CheckerView& operator = (CheckerView&& dc) noexcept = default;
     };
 
-    static constexpr float CUBIC_CELL_WIDTH = 2;
-    static constexpr float CUBIC_CELL_DEPTH = .6;
+    static constexpr float FB_CELL_WIDTH = 2; // flat board
+    static constexpr float FB_CELL_HEIGHT_J = .6;
+    static constexpr float FB_CELL_HEIGHT_NJ = 2;
     static constexpr float CHECKER_HALF_WIDTH = .8;
     static constexpr float CHECKER_HALF_HEIGHT = .1;
+    static const float FB_CELL_HEIGHT[2];
+    static const float FB_CELL_ORIGIN[2];
+    static const float FB_CELL_ANCHOR[2];
     
     GameModel& model;
     std::vector<std::vector<CellView>> displayedBoard;

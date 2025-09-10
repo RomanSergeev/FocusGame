@@ -9,6 +9,7 @@ GameModel BoardEditor::createBoard8x8Focus() {
     BoardEditor instance(resultBoard);
     EditorKey key = instance.key;
     std::vector<Player> players;
+    // resultBoard.markCell(key, {2,3}, true, false);
     players.reserve(2);
     players.emplace_back(key, PlayerSlot::Player1, TeamSlot::Team1, PlayerType::HUMAN_LOCAL);
     players.emplace_back(key, PlayerSlot::Player2, TeamSlot::Team2, PlayerType::HUMAN_LOCAL);
