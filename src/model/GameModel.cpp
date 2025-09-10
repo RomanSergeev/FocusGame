@@ -130,22 +130,16 @@ int GameModel::canMove(const Coord& cFrom, const Coord& cTo) const {
     const Player& currentPlayer = getCurrentPlayer();
     if (owner != &currentPlayer) return CANNOT_MOVE;
     const Cell& to = board[cTo];
-    int count = from.getTowerHeight();
-    if (count == 0) return CANNOT_MOVE;
+    int minDistance = from.getTowerHeight();
+    if (minDistance == 0) return CANNOT_MOVE;
     if (!from.isPlayable() || !to.isPlayable()) return CANNOT_MOVE;
-    int smallestJumpDistance = OVERLIMIT_SIZE, distance = OVERLIMIT_SIZE;
-    JumpDirection direction;
 
-    distance = board.getCappedJumpDistanceInDirection(cFrom, cTo, JumpDirection::Up   , count);
-    if (distance < smallestJumpDistance) { smallestJumpDistance = distance; direction = JumpDirection::Up   ; }
-    distance = board.getCappedJumpDistanceInDirection(cFrom, cTo, JumpDirection::Down , count);
-    if (distance < smallestJumpDistance) { smallestJumpDistance = distance; direction = JumpDirection::Down ; }
-    distance = board.getCappedJumpDistanceInDirection(cFrom, cTo, JumpDirection::Left , count);
-    if (distance < smallestJumpDistance) { smallestJumpDistance = distance; direction = JumpDirection::Left ; }
-    distance = board.getCappedJumpDistanceInDirection(cFrom, cTo, JumpDirection::Right, count);
-    if (distance < smallestJumpDistance) { smallestJumpDistance = distance; direction = JumpDirection::Right; }
-    if (distance == OVERLIMIT_SIZE) return CANNOT_MOVE;
-    return distance;
+    bool moveIsPossible = false;
+    moveIsPossible |= board.getCappedJumpDistanceInDirection(cFrom, cTo, JumpDirection::Up   , minDistance);
+    moveIsPossible |= board.getCappedJumpDistanceInDirection(cFrom, cTo, JumpDirection::Down , minDistance);
+    moveIsPossible |= board.getCappedJumpDistanceInDirection(cFrom, cTo, JumpDirection::Left , minDistance);
+    moveIsPossible |= board.getCappedJumpDistanceInDirection(cFrom, cTo, JumpDirection::Right, minDistance);
+    return moveIsPossible ? minDistance : CANNOT_MOVE;
 }
 
 bool GameModel::canTransferCheckers(const Player& toPlayer, int amount) const {

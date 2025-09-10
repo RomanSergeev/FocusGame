@@ -47,16 +47,16 @@ bool GameBoard::nextCoordinate(Coord& cd, JumpDirection jd, idxtype tetheredColu
     return true;
 }
 
-int GameBoard::getCappedJumpDistanceInDirection(const Coord& cFrom, const Coord& cTo, JumpDirection jd, int maxDistance) const {
+bool GameBoard::getCappedJumpDistanceInDirection(const Coord& cFrom, const Coord& cTo, JumpDirection jd, int& maxDistance) const {
     // from is owned by currentPlayer and has checkers on it; from and to are playable; indices are valid and different
     if (!at(cFrom).isPole()) return testMovementInDirectionWithTether(cFrom, cTo, jd, maxDistance, cFrom.y);
-    if (isHorizontal(jd)) return OVERLIMIT_SIZE; // poles can only be horizontal - thus, horizontal movement is forbidden
+    if (isHorizontal(jd)) return false; // poles can only be horizontal - thus, horizontal movement is forbidden
     for (idxtype j = 0; j < sizes.y; ++j) {
         int distance = testMovementInDirectionWithTether(cFrom, cTo, jd, maxDistance, j);
-        if (distance < OVERLIMIT_SIZE) return distance;
+        if (distance < maxDistance) { maxDistance = distance; return true; }
     }
     // we've scanned through all the columns and couldn't reach the destination
-    return OVERLIMIT_SIZE;
+    return false;
 }
 
 int GameBoard::testMovementInDirectionWithTether(const Coord& cFrom, const Coord& cTo, JumpDirection jd, int maxDistance, idxtype tether) const {
