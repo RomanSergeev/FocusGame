@@ -58,7 +58,7 @@ void GameView::fillDisplayedBoard() {
         }
 }
 
-GameView::GameView(GameModel& gm) : model(gm), type(BoardShapeType::Flat) {
+GameView::GameView(const GameModel& gm) : model(gm), type(BoardShapeType::Flat) {
     displayedBoard.resize(gm.getRows());
     for (auto& row : displayedBoard) {
         row.resize(gm.getColumns());

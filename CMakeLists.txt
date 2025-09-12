@@ -49,6 +49,11 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -nostdinc++ -isystem E:/Programs/CMinGW/
 file(GLOB_RECURSE SRC_FILES "src/*.cpp")
 add_executable(FocusGame ${SRC_FILES})
 
+# Change created executable location
+set_target_properties(FocusGame PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/../app"
+)
+
 # To avoid warnings and usage of relative paths (../) - warnings still remain
 target_include_directories(FocusGame
     PRIVATE

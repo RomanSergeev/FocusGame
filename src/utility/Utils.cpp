@@ -5,6 +5,11 @@
 
 void clampValue(float& value, float from, float to) { value = std::clamp(value, from, to); }
 void clampValue(float& value, const std::pair<float, float>& pair) { value = std::clamp(value, pair.first, pair.second); }
+std::string toLowerCase(std::string s) {
+    std::transform(s.begin(), s.end(), s.begin(),
+                   [](unsigned char c){ return std::tolower(c); });
+    return s;
+}
 
 std::ostream& operator << (std::ostream& out, const AABB& box) {
     out <<  box.min.x << ' ' << box.min.y << ' ' << box.min.z << '\n' <<
@@ -63,6 +68,12 @@ JumpDirection reverseDirection(JumpDirection jd) {
 Color getDefaultColor(unsigned int index) {
     if (index < 0 || index >= MAX_PLAYERS) throw std::invalid_argument("getDefaultColor: argument index is out of range.");
     return Color(DEFAULT_COLORS[index*3], DEFAULT_COLORS[index*3 + 1], DEFAULT_COLORS[index*3 + 2]);
+}
+
+Color getNamedColor(const std::string& str) {
+    auto iter = Color::namedColors.find(toLowerCase(str));
+    if (iter == Color::namedColors.end()) return Color::BLACK;
+    return iter->second;
 }
 
 int getPlayerOrdinal(PlayerSlot id) {

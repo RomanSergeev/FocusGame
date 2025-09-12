@@ -1,5 +1,6 @@
 #pragma once
 #include <memory>
+#include <unordered_map>
 #include "model/GameModel.h"
 #include "shapes/OpenGLShape.h"
 
@@ -45,16 +46,17 @@ class GameView {
     static const float FB_CELL_ORIGIN[2];
     static const float FB_CELL_ANCHOR[2];
     
-    GameModel& model;
+    const GameModel& model;
     std::vector<std::vector<CellView>> displayedBoard;
     std::vector<CheckerView> displayedCheckers;
+    std::unordered_map<PlayerSlot, Color> displayedPlayerColors;
     BoardShapeType type;
 
     void fillDisplayedBoard();
 public:
-    GameView(GameModel& gm);
-    GameView(const GameView& bv) = delete;
-    GameView& operator = (const GameView& bv) = delete;
+    GameView(const GameModel& gm);
+    GameView(const GameView& gv) = delete;
+    GameView& operator = (const GameView& gv) = delete;
 
     void draw(const Shader& shader, float currentTime);
     void TEMPdeselectAll();
@@ -62,4 +64,5 @@ public:
     void TEMPselectDistinctChecker(const Checker& c);
     void TEMPstageCheckerSelection(const Checker& c);
     float TEMPselectShapeByIntersection(const Ray& ray);
+    void updatePlayerColors(const SessionKey& key, const std::unordered_map<PlayerSlot, Color>& colors) { displayedPlayerColors = colors; }
 };
