@@ -65,9 +65,9 @@ JumpDirection reverseDirection(JumpDirection jd) {
     }
 }
 
-Color getDefaultColor(unsigned int index) {
-    if (index < 0 || index >= MAX_PLAYERS) throw std::invalid_argument("getDefaultColor: argument index is out of range.");
-    return Color(DEFAULT_COLORS[index*3], DEFAULT_COLORS[index*3 + 1], DEFAULT_COLORS[index*3 + 2]);
+Color getDefaultColor(PlayerSlot slot) {
+    if (slot == PlayerSlot::Spectator) return Color::BLACK;
+    return defaultColors.at(slot);
 }
 
 Color getNamedColor(const std::string& str) {
@@ -76,7 +76,7 @@ Color getNamedColor(const std::string& str) {
     return iter->second;
 }
 
-int getPlayerOrdinal(PlayerSlot id) {
+/*int getPlayerOrdinal(PlayerSlot id) {
     switch (id) {
         case PlayerSlot::Player1  : return 0;
         case PlayerSlot::Player2  : return 1;
@@ -88,4 +88,4 @@ int getPlayerOrdinal(PlayerSlot id) {
         case PlayerSlot::Player8  : return 7;
         case PlayerSlot::Spectator: return -1;
     }
-}
+}*/

@@ -1,5 +1,4 @@
 #include "Color.h"
-#include <unordered_map>
 
 const Color Color::BLACK(0, 0, 0);
 

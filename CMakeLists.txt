@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.20)
 
 # Project name and language settings
-project(FocusGame LANGUAGES CXX)
+project(FocusGame LANGUAGES C CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -33,6 +33,13 @@ include_directories(
     include/glfw
     include/glew
 )
+
+# inih extension for reading ini files:
+add_library(inih
+    include/ini/ini.c
+    include/ini/INIReader.cpp
+)
+target_include_directories(inih PUBLIC include/ini)
 
 # OpenGL links:
 link_directories(
@@ -66,4 +73,5 @@ target_link_libraries(
     glfw3
     glew32
     opengl32
+    inih
 )

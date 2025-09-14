@@ -50,7 +50,7 @@ void GameView::fillDisplayedBoard() {
                 dchecker.checkerRef = &checker;
                 dchecker.position = glm::vec3(dcell.anchorPoint + dcell.upVector * (CHECKER_HALF_HEIGHT * (2*k + 1)));
                 std::unique_ptr<OpenGLShape> newShape = std::make_unique<Cylinder>(CHECKER_HALF_WIDTH, CHECKER_HALF_WIDTH, CHECKER_HALF_HEIGHT, 32);
-                newShape->setColor(getDefaultColor(getPlayerOrdinal(checker.getPlayerReference()->getSlot())).toVec3());
+                newShape->setColor(getDefaultColor(checker.getPlayerReference()->getSlot()).toVec3());
                 newShape->translate(dchecker.position);
                 dchecker.shape = std::move(newShape);
                 displayedCheckers.push_back(std::move(dchecker));
