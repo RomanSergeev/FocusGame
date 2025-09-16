@@ -13,7 +13,7 @@ public:
     static int getInstancesCount() { return count; }
 
     Cell() : checkers() { ++count; }
-    Cell(bool playable, bool jumpable) : checkers(), playable(playable), jumpableOver(jumpable) {}
+    Cell(bool playable, bool jumpable) : checkers(), playable(playable), jumpableOver(jumpable) { ++count; }
     Cell(const Cell& c) = delete;
     Cell& operator = (const Cell& c) = delete;
     Cell(Checker&& c) : checkers() { ++count; checkers.emplace_back(std::move(c)); }

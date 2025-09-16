@@ -13,13 +13,6 @@ template<typename T>
 bool vectorContains(const std::vector<T>& v, const T& value) {
     return std::find(v.begin(), v.end(), value) != v.end();
 }
-/*template <typename K, typename V>
-void fuseMap(const std::unordered_map<K, V>& source, std::unordered_map<K, V>& target) {
-    for (const auto& [k, v] : source) {
-        // insert only if key is not present in target
-        target.emplace(k, v);  
-    }
-}*/
 
 struct AABB { // Axis-Aligned Bounding Box
     glm::vec3 min;
@@ -83,4 +76,3 @@ struct Coord { // board coordinates wrapper
 Color getDefaultColor(PlayerSlot slot);
 Color getNamedColor(const std::string& str);
 std::string toLowerCase(std::string s);
-//int getPlayerOrdinal(PlayerSlot id);

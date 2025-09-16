@@ -60,7 +60,7 @@ UserConfiguration UserConfigurationManager::loadConfiguration(const std::string&
 
     // TODO fill in a loop, move all section names to namespace (or this cpp) constants
     for (PlayerSlot slot : allPlayers) {
-        std::string colorString = reader.Get("Default Colors", configPlayerNames.at(slot), "");
+        std::string colorString = reader.Get(sectionNameDefaultColors, configPlayerNames.at(slot), "");
         Color playerColor = parseColor(colorString, parseOK);
         if (!parseOK) playerColor = defaultColors.at(slot);
         playerColors[slot] = playerColor;
@@ -71,7 +71,7 @@ UserConfiguration UserConfigurationManager::loadConfiguration(const std::string&
 
 void UserConfigurationManager::saveConfiguration(const UserConfiguration& config, const std::string& filename) {
     std::ostringstream oss;
-    writeSection(oss, "Default Colors");
+    writeSection(oss, sectionNameDefaultColors);
     const auto& colors = config.getDefaultColors();
     for (auto iter = colors.begin(); iter != colors.end(); ++iter) {
         writePair(oss, configPlayerNames.at(iter->first), iter->second.toString());

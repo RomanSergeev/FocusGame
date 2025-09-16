@@ -20,6 +20,14 @@ struct GameRules {
     bool canTransferToAlly() const { return allyReserveTransferLimit > 0; }
 };
 
+struct Turn {
+    TurnType type; // Move, Place, Transfer
+    PlayerSlot assocPlayer; // Place, Transfer
+    int checkerAmount; // Place, Transfer
+    Coord from; // Move
+    Coord to; // Move, Place
+};
+
 class GameModel {
     static const int CANNOT_MOVE = -1;
 
@@ -28,21 +36,24 @@ class GameModel {
     std::unordered_map<PlayerSlot, std::vector<Checker>> trays;
     GameRules rules;
     int activePlayerIndex;
-    //std::unordered_map<TeamSlot, std::vector<PlayerSlot>> alliances;
-
-    //void fillAlliances();
+    
     const Player* getPlayerBySlot(PlayerSlot slot) const;
     bool hasActiveAlly(const Player& player) const;
     bool isPlayerDefeated(const Player& player) const;
-    bool canPlaceReserve(const Coord& cd, const Player& ofPlayer, int amount) const;
     bool canPerformAnyMove(const Player& player) const;
     bool canPlaceAnywhere(const Player& player) const;
     bool canTransferAnything(const Player& player) const;
     int canMove(const Coord& cFrom, const Coord& cTo) const; // shortest possible path length between the cells, or CANNOT_MOVE otherwise
+    bool canPlaceReserve(const Coord& cd, const Player& ofPlayer, int amount) const;
     bool canTransferCheckers(const Player& toPlayer, int amount) const;
     int getTraySize(PlayerSlot ownedByPlayer, PlayerSlot ofPlayer) const;
     const Player& getCurrentPlayer() const { return players.at(activePlayerIndex); }
     //bool hasJumpableLineBetween(const Coord& from, const Coord& to, bool vertically = true) const;
+
+    bool move(const SessionKey& key, const Coord& from, const Coord& to);
+    bool placeReserve(const SessionKey& key, const Coord& cd, const Player& ofPlayer, int amount);
+    bool transferCheckers(const SessionKey& key, const Player& toPlayer, int amount);
+    void transferMove();
 public:
     GameModel(GameBoard&& board, std::vector<Player> players) : board(std::move(board)), players(std::move(players)) { /*fillAlliances();*/ }
 
@@ -51,8 +62,6 @@ public:
     const Cell& getCellAt(const Coord& cd) const { return board[cd]; }
 
     void updateDefeatedPlayers();
-    bool placeReserve(const SessionKey& key, const Coord& cd, const Player& ofPlayer, int amount);
-    bool move(const SessionKey& key, const Coord& from, const Coord& to);
-    bool transferCheckers(const SessionKey& key, const Player& toPlayer, int amount);
-    void transferMove(const SessionKey& key);
+    bool makeTurn(const SessionKey& key, const Turn& turn);
+    bool isGameOver() const;
 };

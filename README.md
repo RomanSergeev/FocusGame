@@ -6,8 +6,9 @@ So far, nothing is drawn, it's just a black screen window. This is another incre
 
 ## TODO
 
-- Move GLWindowFunctions into GLWindow class, add fullscreen, resize
-- Move Shader into a class, add custom colors/params to individual shapes
+- Add view selection support
+- Add map files save/load
+- Add replay files save/load
+- Add user settings sections: game rule defaults (GameRules), camera defaults (CameraSettings), window defaults (GLWindow), key bindings
+- Organize all defaults into defaults.h
 - Reconfigure clang++.cfg to lighten CMakeLists.txt
-- Potentially remove some include_directories
-- Add basic board drawing

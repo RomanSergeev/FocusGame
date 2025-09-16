@@ -59,6 +59,12 @@ enum class TeamSlot {
     Spectator
 };
 
+enum class TurnType {
+    Move,
+    Place,
+    Transfer
+};
+
 class EditorKey {
     friend class BoardEditor;
     EditorKey() = default;

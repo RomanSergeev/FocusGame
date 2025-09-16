@@ -1,5 +1,4 @@
 #include <algorithm>
-#include <stdexcept>
 #include "Utils.h"
 #include "Constants.h"
 
@@ -75,17 +74,3 @@ Color getNamedColor(const std::string& str) {
     if (iter == Color::namedColors.end()) return Color::BLACK;
     return iter->second;
 }
-
-/*int getPlayerOrdinal(PlayerSlot id) {
-    switch (id) {
-        case PlayerSlot::Player1  : return 0;
-        case PlayerSlot::Player2  : return 1;
-        case PlayerSlot::Player3  : return 2;
-        case PlayerSlot::Player4  : return 3;
-        case PlayerSlot::Player5  : return 4;
-        case PlayerSlot::Player6  : return 5;
-        case PlayerSlot::Player7  : return 6;
-        case PlayerSlot::Player8  : return 7;
-        case PlayerSlot::Spectator: return -1;
-    }
-}*/
