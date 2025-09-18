@@ -1,5 +1,4 @@
 #pragma once
-#include "Color.h"
 #include "glm/ext/scalar_constants.hpp"
 #include "glm/glm.hpp"
 
@@ -29,28 +28,6 @@ constexpr std::array<PlayerSlot, MAX_PLAYERS> allPlayers = {
     PlayerSlot::Player6,
     PlayerSlot::Player7,
     PlayerSlot::Player8
-};
-
-const std::unordered_map<PlayerSlot, Color> defaultColors {
-    { PlayerSlot::Player1, {204, 204, 204} }, // white
-    { PlayerSlot::Player2, { 51,  51,  51} }, // black
-    { PlayerSlot::Player3, {221,  34,  34} }, // red
-    { PlayerSlot::Player4, { 34,  34, 221} }, // blue
-    { PlayerSlot::Player5, { 34, 221,  34} }, // green
-    { PlayerSlot::Player6, { 34, 221, 221} }, // cyan
-    { PlayerSlot::Player7, {221, 221,  34} }, // yellow
-    { PlayerSlot::Player8, {221,  34, 221} }  // magenta
-};
-
-const std::unordered_map<PlayerSlot, std::string> configPlayerNames {
-    { PlayerSlot::Player1, "player1" },
-    { PlayerSlot::Player2, "player2" },
-    { PlayerSlot::Player3, "player3" },
-    { PlayerSlot::Player4, "player4" },
-    { PlayerSlot::Player5, "player5" },
-    { PlayerSlot::Player6, "player6" },
-    { PlayerSlot::Player7, "player7" },
-    { PlayerSlot::Player8, "player8" }
 };
 
 enum class TeamSlot {

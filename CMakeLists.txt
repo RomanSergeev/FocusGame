@@ -53,7 +53,7 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -nostdinc -isystem E:/Programs/CMinGW/includ
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -nostdinc++ -isystem E:/Programs/CMinGW/include/c++/14.2.0 -isystem E:/Programs/CMinGW/include/c++/14.2.0/x86_64-w64-mingw32 -isystem E:/Programs/CMinGW/x86_64-w64-mingw32/include")
 
 # Add source files
-file(GLOB_RECURSE SRC_FILES "src/*.cpp")
+file(GLOB_RECURSE SRC_FILES CONFIGURE_DEPENDS "src/*.cpp")
 add_executable(FocusGame ${SRC_FILES})
 
 # Change created executable location

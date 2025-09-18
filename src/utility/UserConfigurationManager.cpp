@@ -3,7 +3,7 @@
 #include <stdexcept>
 #include <unordered_map>
 #include "UserConfigurationManager.h"
-#include "Constants.h"
+#include "Defaults.h"
 #include "Utils.h"
 #include "ini/INIReader.h"
 
@@ -49,33 +49,54 @@ Color parseColor(const std::string& str, bool& ok) {
 }
 
 UserConfiguration UserConfigurationManager::loadConfiguration(const std::string& filename) {
-    std::unordered_map<PlayerSlot, Color> playerColors;
     INIReader reader(filename);
     int error = reader.ParseError();
     if (error < 0) {
         std::cerr << "UserConfigurationManager::loadConfiguration: can't load file " << filename << ", falling back to defaults." << std::endl;
-        return UserConfiguration(defaultColors);
+        return UserConfiguration(defaultColors, defaultCameraSettings);
     }
-    bool parseOK = false;
 
-    // TODO fill in a loop, move all section names to namespace (or this cpp) constants
+    std::unordered_map<PlayerSlot, Color> playerColors;
+    CamSettings cameraSettings;
+    bool parseOK = false;
     for (PlayerSlot slot : allPlayers) {
-        std::string colorString = reader.Get(sectionNameDefaultColors, configPlayerNames.at(slot), "");
+        std::string colorString = reader.Get(sectionNameDefaultColors, configNamesPlayer.at(slot), "");
         Color playerColor = parseColor(colorString, parseOK);
         if (!parseOK) playerColor = defaultColors.at(slot);
         playerColors[slot] = playerColor;
     }
+    for (const auto& iter : configNamesCameraFloat) {
+        const std::string& name = iter.first;
+        auto member = iter.second;
+        cameraSettings.*member = reader.GetReal(sectionNameDefaultCamera, name, defaultCameraSettings.*member);
+    }
+    for (const auto& iter : configNamesCameraBool) {
+        const std::string& name = iter.first;
+        auto member = iter.second;
+        cameraSettings.*member = reader.GetBoolean(sectionNameDefaultCamera, name, defaultCameraSettings.*member);
+    }
 
-    return UserConfiguration(playerColors);
+    return UserConfiguration(playerColors, cameraSettings);
 }
 
 void UserConfigurationManager::saveConfiguration(const UserConfiguration& config, const std::string& filename) {
     std::ostringstream oss;
+
+    // [Default Colors]
     writeSection(oss, sectionNameDefaultColors);
     const auto& colors = config.getDefaultColors();
-    for (auto iter = colors.begin(); iter != colors.end(); ++iter) {
-        writePair(oss, configPlayerNames.at(iter->first), iter->second.toString());
+    for (const auto& iter: colors) {
+        writePair(oss, configNamesPlayer.at(iter.first), iter.second.toString());
     }
+    oss << std::endl;
+
+    // [Default Camera Settings]
+    writeSection(oss, sectionNameDefaultCamera);
+    const CamSettings& map = config.getDefaultCameraSettings();
+    for (const auto& iter : configNamesCameraFloat)
+        writePair(oss, iter.first, toString(map.*(iter.second)));
+    for (const auto& iter : configNamesCameraBool)
+        writePair(oss, iter.first, toString(map.*(iter.second)));
 
     std::ofstream file(filename, std::ios::out | std::ios::trunc);
     if (!file) throw std::runtime_error("Could not open " + filename + " for writing");

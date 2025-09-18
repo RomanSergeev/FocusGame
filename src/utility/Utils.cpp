@@ -64,11 +64,6 @@ JumpDirection reverseDirection(JumpDirection jd) {
     }
 }
 
-Color getDefaultColor(PlayerSlot slot) {
-    if (slot == PlayerSlot::Spectator) return Color::BLACK;
-    return defaultColors.at(slot);
-}
-
 Color getNamedColor(const std::string& str) {
     auto iter = Color::namedColors.find(toLowerCase(str));
     if (iter == Color::namedColors.end()) return Color::BLACK;

@@ -1,4 +1,5 @@
 #include "GameView.h"
+#include "utility/Defaults.h" // TODO remove, use actual settings
 #include "shapes/Cuboid.h"
 #include "shapes/Cylinder.h"
 

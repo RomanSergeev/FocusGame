@@ -1,6 +1,8 @@
 #pragma once
 #include <algorithm>
+#include <iomanip>
 #include <iostream>
+#include <sstream>
 #include <utility>
 #include "Color.h"
 #include "Constants.h"
@@ -73,6 +75,15 @@ struct Coord { // board coordinates wrapper
     bool operator != (const Coord& c) const { return x != c.x || y != c.y; }
 };
 
-Color getDefaultColor(PlayerSlot slot);
-Color getNamedColor(const std::string& str);
+template<typename T>
+std::string toString(const T& value, int precision = 2) {
+    std::ostringstream oss;
+    if constexpr (std::is_floating_point_v<T>) { // constexpr - evaluating the condition at compile time
+        oss << std::fixed << std::setprecision(precision) << value;
+    } else {
+        oss << value; // ints, bools, etc.
+    }
+
+    return oss.str();
+}
 std::string toLowerCase(std::string s);
