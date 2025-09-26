@@ -206,6 +206,13 @@ void GameModel::transferMove() {
     } while (activePlayerIndex != startIndex); // fallback in case of all returns skipped somehow
 }
 
+GameModel::GameModel(GameBoard&& board, std::vector<Player> players) : board(std::move(board)), players(std::move(players)) {
+    for (const Player& player : this->players) {
+        if (player.isSpectator()) continue;
+        trays.insert({ player.slot, std::vector<Checker>{} });
+    }
+}
+
 void GameModel::updateDefeatedPlayers() {
     for (int i = 0; i < players.size(); ++i) {
         Player& p = players[i];

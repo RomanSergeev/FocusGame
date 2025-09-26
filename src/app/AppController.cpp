@@ -53,7 +53,7 @@ AppController::AppController() :
     shaders(createShaders()),
     rayLine(SPACE_ORIGIN, SPACE_ORIGIN),
     gameModel(BoardEditor::createBoard8x8Focus()),
-    gameView(gameModel),
+    gameView(gameModel, GameView::BoardShapeType::Flat),
     TEMPcylinder(.5, .5, .1, 32, true) {
 
     registerCallbacks();
@@ -141,7 +141,7 @@ void AppController::render() {
 
     window.clearBuffer();
 
-    gameView.draw(shader, currentTime);
+    gameView.draw(PlayerSlot::Player1, shader, currentTime); // TODO bake perspective into GameSession, actually use GameSession here
 
     // rotation:
     TEMPcylinder.setModel(glm::rotate(TEMPcylinder.getBaseModel(), currentTime, glm::vec3(0.3f, 1.0f, 0.0f)));

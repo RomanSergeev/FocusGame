@@ -1,5 +1,5 @@
 #pragma once
-#include <unordered_map>
+#include <map>
 #include "GameBoard.h"
 
 struct GameRules {
@@ -33,7 +33,7 @@ class GameModel {
 
     GameBoard board;
     std::vector<Player> players;
-    std::unordered_map<PlayerSlot, std::vector<Checker>> trays;
+    std::map<PlayerSlot, std::vector<Checker>> trays;
     GameRules rules;
     int activePlayerIndex;
     
@@ -55,11 +55,13 @@ class GameModel {
     bool transferCheckers(const SessionKey& key, const Player& toPlayer, int amount);
     void transferMove();
 public:
-    GameModel(GameBoard&& board, std::vector<Player> players) : board(std::move(board)), players(std::move(players)) { /*fillAlliances();*/ }
+    GameModel(GameBoard&& board, std::vector<Player> players);
 
+    const Coord& getSizes() const { return board.sizes; }
     idxtype getRows() const { return board.sizes.x; }
     idxtype getColumns() const { return board.sizes.y; }
     const Cell& getCellAt(const Coord& cd) const { return board[cd]; }
+    const auto& getTrayData() const { return trays; }
 
     void updateDefeatedPlayers();
     bool makeTurn(const SessionKey& key, const Turn& turn);
