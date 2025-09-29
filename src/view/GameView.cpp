@@ -186,7 +186,12 @@ void GameView::draw(PlayerSlot perspective, const Shader& shader, float currentT
     }
     for (const auto& dchecker : displayedCheckers) {
         if (dchecker.shape == nullptr) continue;
-        // TODO skip drawing of checkers that are on non-perspective players' trays
+        const Checker* ref = dchecker.checkerRef;
+        if (ref == nullptr) {
+            std::cerr << "GameView::draw: found dangling checker" << std::endl;
+            continue;
+        }
+        if (!ref->isOnBoard() && !ref->isInTrayOf(perspective)) continue;
         dchecker.shape->setUniforms(shader, currentTime);
         dchecker.shape->draw();
     }

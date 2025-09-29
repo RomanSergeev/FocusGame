@@ -63,6 +63,8 @@ public:
     const Cell& getCellAt(const Coord& cd) const { return board[cd]; }
     const auto& getTrayData() const { return trays; }
 
+    void TEMPputCheckerIntoTray(const EditorKey& key, const Player& p, Checker&& c);
+    const Player& TEMPgetPlayer(int index) const { return players.at(index); }
     void updateDefeatedPlayers();
     bool makeTurn(const SessionKey& key, const Turn& turn);
     bool isGameOver() const;

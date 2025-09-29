@@ -5,7 +5,7 @@
 class Cell {
     static int count;
 
-    std::vector<Checker> checkers;
+    std::vector<Checker> checkers; // begin == bottom checker, end-1 == top checker
     bool playable = true;
     bool jumpableOver = true;
     bool pole = false; // for spherical board in the future

@@ -29,6 +29,9 @@ GameModel BoardEditor::createBoard8x8Focus() {
         }
 
     GameModel result(std::move(resultBoard), std::move(players));
+    const Player& p = result.TEMPgetPlayer(0);
+    const Player& q = result.TEMPgetPlayer(1);
+    result.TEMPputCheckerIntoTray(key, q, Checker(p)); // should not be displayed at game start
     return result;
 }
 

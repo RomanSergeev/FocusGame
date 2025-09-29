@@ -42,12 +42,17 @@ enum class TurnType {
     Transfer
 };
 
-class EditorKey {
-    friend class BoardEditor;
-    EditorKey() = default;
+class AccessKey {
+protected:
+    AccessKey() {};
 };
 
-class SessionKey {
+class EditorKey : public AccessKey {
+    friend class BoardEditor;
+    EditorKey() {};
+};
+
+class SessionKey : public AccessKey {
     friend class GameController;
-    SessionKey() = default;
+    SessionKey() {};
 };

@@ -2,6 +2,7 @@
 #include <algorithm>
 #include <iomanip>
 #include <iostream>
+#include <iterator>
 #include <sstream>
 #include <utility>
 #include "Color.h"
@@ -14,6 +15,11 @@ void clampValue(float& value, const std::pair<float, float>& pair);
 template<typename T>
 bool vectorContains(const std::vector<T>& v, const T& value) {
     return std::find(v.begin(), v.end(), value) != v.end();
+}
+template<typename Container>
+void moveAndAppend(Container& src, Container& dest, typename Container::iterator srcFrom, typename Container::iterator srcTo) {
+    dest.insert(dest.end(), std::make_move_iterator(srcFrom), std::make_move_iterator(srcTo));
+    src.erase(srcFrom, srcTo);
 }
 
 struct AABB { // Axis-Aligned Bounding Box

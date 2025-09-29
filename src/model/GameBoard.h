@@ -8,7 +8,7 @@ class GameBoard {
     bool loopedHorizontally = false;
     bool loopedVertically = false;
     std::vector<std::vector<Cell>> board;
-    void placeChecker(const Coord& cd, Checker&& c);
+    void placeChecker(const AccessKey& key, const Coord& cd, Checker&& c);
     const Cell& at(const Coord& cd) const { return operator[](cd); }
     Cell& at(const Coord& cd) { return board[cd.x][cd.y]; }
 public:
@@ -29,8 +29,7 @@ public:
     bool nextCoordinate(Coord& cd, JumpDirection jd, idxtype tetheredColumn = OVERLIMIT_SIZE) const; // returns false if cannot advance
     bool getCappedJumpDistanceInDirection(const Coord& cFrom, const Coord& cTo, JumpDirection jd, int& maxDistance) const;
     int testMovementInDirectionWithTether(const Coord& cFrom, const Coord& cTo, JumpDirection jd, int maxDistance, idxtype tether) const;
-    void place(const EditorKey& key, const Coord& cd, Checker&& c) { placeChecker(cd, std::move(c)); }
-    void place(const SessionKey& key, const Coord& cd, Checker&& c) { placeChecker(cd, std::move(c)); }
+    void place(const AccessKey& key, const Coord& cd, Checker&& c) { placeChecker(key, cd, std::move(c)); }
     void markCell(const EditorKey& key, const Coord& cd, bool flagPlayable, bool flagJumpable);
     template<typename Condition>
     void markUnplayableByCondition(const EditorKey& key, Condition c) {
