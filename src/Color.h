@@ -13,6 +13,7 @@ struct Color {
 
     Color() = default;
     Color(uint8_t r_, uint8_t g_, uint8_t b_) : r(r_), g(g_), b(b_) {}
+    Color(const std::string& name);
 
     bool operator == (const Color& other) const {
         return r == other.r && g == other.g && b == other.b;

@@ -11,7 +11,6 @@
 const float GameView::TRAY_DIMENSIONS[3] = { CHECKER_HALF_WIDTH * 5, CHECKER_HALF_WIDTH * 3, CHECKER_HALF_HEIGHT * 4 };
 const float GameView::FB_CELL_HEIGHT[2] = { FB_CELL_HEIGHT_NJ, FB_CELL_HEIGHT_J };
 const float GameView::FB_CELL_ORIGIN[2] = { (FB_CELL_HEIGHT[0] - FB_CELL_HEIGHT[1]) / 2, 0 };
-const float GameView::FB_CELL_ANCHOR[2] = { FB_CELL_HEIGHT[0] / 2 + FB_CELL_ORIGIN[0], FB_CELL_HEIGHT[1] / 2 + FB_CELL_ORIGIN[1] };
 
 void checkShapeIntersection(const Ray& ray, OpenGLShape* shape, OpenGLShape* &selectedShape, float& minDist) {
     if (shape == nullptr) return;
@@ -44,69 +43,74 @@ glm::vec3 GameView::calculateTrayPosition(const Coord& boardSizes, int totalTray
     return { x, y, 0 };
 }
 
-/*int GameView::getTrayIndex(PlayerSlot slot) const {
-    for (int i = 0; i < displayedTrays.size(); ++i)
-        if (displayedTrays[i].ofPlayer == slot) return i;
-    return NO_SUCH_TRAY;
-}*/
-
-void GameView::fillDisplayedBoard() {
-    idxtype rows = model.getRows(),
-            cols = model.getColumns();
-    for (idxtype i = 0; i < rows; ++i)
-        for (idxtype j = 0; j < cols; ++j) {
-            const Cell& cell = model.getCellAt({i, j});
-            bool playable = cell.isPlayable();
-            if (!playable) continue;
-            bool jumpable = cell.isJumpableOver();
-            float cellHeight = FB_CELL_HEIGHT[jumpable];
-            float cellOrigin = FB_CELL_ORIGIN[jumpable];
-            float cellAnchor = FB_CELL_ANCHOR[jumpable];
-            
-            // board
-            CellView& dcell = displayedBoard[i][j];
-            dcell.upVector = axisToVec3(Axis::Z);
-            float x = (i - rows / 2.0 + 0.5) * FB_CELL_WIDTH;
-            float y = (j - cols / 2.0 + 0.5) * FB_CELL_WIDTH;
-            dcell.anchorPoint = glm::vec3(x, y, cellAnchor);
-            std::unique_ptr<OpenGLShape> newShape = std::make_unique<Cuboid>(FB_CELL_WIDTH, FB_CELL_WIDTH, cellHeight);
-            bool even = (i + j) & 1;
-            float rgb = even ? 0.2 : 0.9;
-            newShape->setColor(rgb, rgb, rgb);
-            newShape->translate(x, y, cellOrigin);
-            dcell.shape = std::move(newShape);
-
-            // checkers
-            const auto& checkers = cell.getCheckers();
-            for (int k = 0; k < checkers.size(); ++k) {
-                const Checker& checker = checkers.at(k);
-                CheckerView dchecker = createCheckerView(checker, dcell.anchorPoint + dcell.upVector * (CHECKER_HALF_HEIGHT * (2*k + 1)));
-                displayedCheckers.push_back(std::move(dchecker));
-            }
-        }
+GameView::CellView GameView::createCellView(const Cell& c, const glm::vec3& position, const glm::vec3& dimensions, const Color& color) {
+    CellView dCell;
+    dCell.cellRef = &c;
+    dCell.upVector = axisToVec3(Axis::Z);
+    dCell.anchorPoint = position + dCell.upVector * (dimensions.z / 2);
+    std::unique_ptr<OpenGLShape> shape = std::make_unique<Cuboid>(dimensions.x, dimensions.y, dimensions.z);
+    shape->setColor(color.toVec3());
+    shape->translate(position);
+    dCell.shape = std::move(shape);
+    return dCell;
 }
 
 GameView::CheckerView GameView::createCheckerView(const Checker& c, const glm::vec3& position) {
     CheckerView dChecker;
     dChecker.checkerRef = &c;
     dChecker.position = position;
-    std::unique_ptr<OpenGLShape> newShape = std::make_unique<Cylinder>(CHECKER_HALF_WIDTH, CHECKER_HALF_WIDTH, CHECKER_HALF_HEIGHT, 32);
-    newShape->setColor(getDefaultColor(c.getPlayerReference()->getSlot()).toVec3());
-    newShape->translate(dChecker.position);
-    dChecker.shape = std::move(newShape);
+    std::unique_ptr<OpenGLShape> shape = std::make_unique<Cylinder>(CHECKER_HALF_WIDTH, CHECKER_HALF_WIDTH, CHECKER_HALF_HEIGHT, 32);
+    shape->setColor(getDefaultColor(c.getPlayerReference()->getSlot()).toVec3());
+    shape->translate(dChecker.position);
+    dChecker.shape = std::move(shape);
     return dChecker;
 }
 
 GameView::TrayView GameView::createTrayView(PlayerSlot owner, PlayerSlot ofPlayer, const glm::vec3& position) {
     TrayView dTray(owner, ofPlayer);
     dTray.upVector = axisToVec3(Axis::Z);
-    dTray.anchorPoint = glm::vec3(position.x, position.y, position.z + TRAY_DIMENSIONS[2] / 2);
+    dTray.anchorPoint = position + dTray.upVector * (TRAY_DIMENSIONS[2] / 2);
     dTray.position = position;
-    std::unique_ptr<OpenGLShape> newShape = std::make_unique<Cuboid>(TRAY_DIMENSIONS[0], TRAY_DIMENSIONS[1], TRAY_DIMENSIONS[2]);
-    newShape->setColor(getDefaultColor(dTray.ofPlayer).toVec3());
-    newShape->translate(dTray.position);
-    dTray.shape = std::move(newShape);
+    std::unique_ptr<OpenGLShape> shape = std::make_unique<Cuboid>(TRAY_DIMENSIONS[0], TRAY_DIMENSIONS[1], TRAY_DIMENSIONS[2]);
+    shape->setColor(getDefaultColor(ofPlayer).toVec3());
+    shape->translate(dTray.position);
+    dTray.shape = std::move(shape);
     return dTray;
+}
+
+void GameView::createDisplayedBoard() {
+    idxtype rows = model.getRows(),
+            cols = model.getColumns();
+    displayedBoard.resize(rows);
+    for (idxtype i = 0; i < rows; ++i) {
+        displayedBoard[i].reserve(cols);
+        for (idxtype j = 0; j < cols; ++j) {
+            const Cell& cell = model.getCellAt({i, j});
+            bool playable = cell.isPlayable();
+            if (!playable) continue;
+            bool jumpable = cell.isJumpableOver();
+            float x = (i - rows / 2.0 + 0.5) * FB_CELL_WIDTH;
+            float y = (j - cols / 2.0 + 0.5) * FB_CELL_WIDTH;
+            bool even = (i + j) & 1;
+            float rgb = even ? 51 : 230;
+            glm::vec3 cellPosition = { x, y, FB_CELL_ORIGIN[jumpable] };
+            glm::vec3 cellDimensions = { FB_CELL_WIDTH, FB_CELL_WIDTH, FB_CELL_HEIGHT[jumpable] };
+            Color cellColor(rgb, rgb, rgb);
+
+            // board
+            CellView dCell = createCellView(cell, cellPosition, cellDimensions, cellColor);
+            displayedBoard[i].push_back(std::move(dCell));
+
+            // checkers
+            const std::vector<Checker>& checkers = cell.getCheckers();
+            const CellView& dCellNew = displayedBoard[i].back(); // cannot reference dCell anymore
+            for (int k = 0; k < checkers.size(); ++k) {
+                const Checker& checker = checkers.at(k);
+                CheckerView dChecker = createCheckerView(checker, dCellNew.anchorPoint + dCellNew.upVector * (CHECKER_HALF_HEIGHT * (2*k + 1)));
+                displayedCheckers.push_back(std::move(dChecker));
+            }
+        }
+    }
 }
 
 void GameView::createTrays() {
@@ -147,24 +151,12 @@ void GameView::createTrays() {
                 CheckerView dchecker = createCheckerView(checker, iter->anchorPoint + iter->upVector * (CHECKER_HALF_HEIGHT * (2*k + 1)));
                 displayedCheckers.push_back(std::move(dchecker));
             }
-            /*int trayIndex = getTrayIndex(ofPlayer);
-            if (trayIndex == NO_SUCH_TRAY) {
-                std::cerr << "GameView::createTrays: found stray checker." << std::endl;
-                continue;
-            }
-
-            TrayView& tray = displayedTrays.at(trayIndex);
-            int size = tray.size;*/
         }
     }
 }
 
 GameView::GameView(const GameModel& gm, BoardShapeType shapeType) : model(gm), type(shapeType) {
-    displayedBoard.resize(gm.getRows());
-    for (auto& row : displayedBoard) {
-        row.resize(gm.getColumns());
-    }
-    fillDisplayedBoard();
+    createDisplayedBoard();
     createTrays();
 }
 

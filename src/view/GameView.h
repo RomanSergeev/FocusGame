@@ -16,6 +16,7 @@ private:
         std::unique_ptr<OpenGLShape> shape;
         glm::vec3 anchorPoint;
         glm::vec3 upVector;
+        const Cell* cellRef;
 
         CellView() = default;
         CellView(const CellView& dc) = delete;
@@ -54,7 +55,6 @@ private:
         TrayView& operator = (TrayView&& dc) noexcept = delete; // only move assignment
     };
 
-    // static const int NO_SUCH_TRAY = -1;
     static constexpr float FB_CELL_WIDTH = 2; // flat board
     static constexpr float FB_CELL_HEIGHT_J = .6;
     static constexpr float FB_CELL_HEIGHT_NJ = 2;
@@ -64,9 +64,11 @@ private:
     static const float TRAY_DIMENSIONS[3];
     static const float FB_CELL_HEIGHT[2];
     static const float FB_CELL_ORIGIN[2];
-    static const float FB_CELL_ANCHOR[2];
 
     static glm::vec3 calculateTrayPosition(const Coord& boardSizes, int totalTrays, int trayIndex);
+    static CellView createCellView(const Cell& c, const glm::vec3& position, const glm::vec3& dimensions, const Color& color);
+    static CheckerView createCheckerView(const Checker& c, const glm::vec3& position);
+    static TrayView createTrayView(PlayerSlot owner, PlayerSlot ofPlayer, const glm::vec3& position);
     
     const GameModel& model;
     std::vector<std::vector<CellView>> displayedBoard;
@@ -75,10 +77,7 @@ private:
     std::unordered_map<PlayerSlot, Color> displayedPlayerColors;
     BoardShapeType type;
 
-    // int getTrayIndex(PlayerSlot slot) const;
-    void fillDisplayedBoard();
-    CheckerView createCheckerView(const Checker& c, const glm::vec3& position);
-    TrayView createTrayView(PlayerSlot owner, PlayerSlot ofPlayer, const glm::vec3& position);
+    void createDisplayedBoard();
     void createTrays();
 public:
     GameView(const GameModel& gm, BoardShapeType boardShapeType);

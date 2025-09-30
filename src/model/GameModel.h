@@ -50,6 +50,7 @@ class GameModel {
     const Player& getCurrentPlayer() const { return players.at(activePlayerIndex); }
     //bool hasJumpableLineBetween(const Coord& from, const Coord& to, bool vertically = true) const;
 
+    void putExcessToTray(const SessionKey& key, const Coord& from);
     bool move(const SessionKey& key, const Coord& from, const Coord& to);
     bool placeReserve(const SessionKey& key, const Coord& cd, const Player& ofPlayer, int amount);
     bool transferCheckers(const SessionKey& key, const Player& toPlayer, int amount);

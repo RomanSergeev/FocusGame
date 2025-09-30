@@ -154,23 +154,26 @@ int GameModel::getTraySize(PlayerSlot ownedByPlayer, PlayerSlot ofPlayer) const 
     return result;
 }
 
+void GameModel::putExcessToTray(const SessionKey& key, const Coord& from) {
+    std::vector<Checker>& stack = board.at(from).getCheckers(key);
+    if (stack.size() <= rules.maxTowerHeight) return;
+    const Player& currentPlayer = getCurrentPlayer();
+    auto start = stack.begin();
+    auto end = stack.begin() + (stack.size() - rules.maxTowerHeight);
+    for (auto iter = start; iter != end; ++iter) { // mark the chunk for display
+        iter->putInTrayOf(key, currentPlayer.slot);
+    }
+    std::vector<Checker>& tray = trays.at(getCurrentPlayer().slot);
+    moveAndAppend(stack, tray, start, end);
+}
+
 bool GameModel::move(const SessionKey& key, const Coord& from, const Coord& to) {
     int amount = canMove(from, to);
     if (amount == CANNOT_MOVE) return false;
     std::vector<Checker>& vFrom = board.at(from).getCheckers(key);
     std::vector<Checker>& vTo = board.at(to).getCheckers(key);
     moveAndAppend(vFrom, vTo, vFrom.end() - amount, vFrom.end());
-    if (vTo.size() > rules.maxTowerHeight) {
-        const Player& currentPlayer = getCurrentPlayer();
-        auto start = vTo.begin();
-        auto end = vTo.begin() + (vTo.size() - rules.maxTowerHeight);
-        for (auto iter = start; iter != end; ++iter) { // mark the chunk for display
-            iter->putInTrayOf(key, currentPlayer.slot);
-        }
-        std::vector<Checker>& tray = trays.at(getCurrentPlayer().slot);
-        // double move here
-        moveAndAppend(vTo, tray, start, end);
-    }
+    putExcessToTray(key, to);
     return true;
 }
 
@@ -179,7 +182,6 @@ bool GameModel::placeReserve(const SessionKey& key, const Coord& cd, const Playe
     int toPlace = amount;
     const Player& currentPlayer = getCurrentPlayer();
     std::vector<Checker>& tray = trays.at(currentPlayer.slot);
-    // TODO add rules.canExceedByPlacing check
     for (auto iter = tray.begin(); toPlace > 0 && iter != tray.end(); ) {
         if (iter->getPlayerReference() == &ofPlayer) {
             board.place(key, cd, std::move(*iter));
@@ -189,6 +191,7 @@ bool GameModel::placeReserve(const SessionKey& key, const Coord& cd, const Playe
             ++iter;
         }
     }
+    putExcessToTray(key, cd);
     return true;
 }
 

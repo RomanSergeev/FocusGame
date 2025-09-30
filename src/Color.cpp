@@ -154,3 +154,8 @@ const std::unordered_map<std::string, Color> Color::namedColors = {
     {"yellow"              , {255,255,  0}},
     {"yellowgreen"         , {154,205, 50}}
 };
+
+Color::Color(const std::string& name) {
+    auto iter = namedColors.find(name);
+    *this = (iter != namedColors.end()) ? iter->second : BLACK;
+}
