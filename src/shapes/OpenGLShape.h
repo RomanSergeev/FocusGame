@@ -23,7 +23,7 @@ protected:
     glm::mat4 baseModel = glm::mat4(1.0f);
     glm::mat4 model = glm::mat4(1.0f);
     glm::vec3 baseColor = glm::vec3(1.0f);
-    SelectionType selected = SelectionType::NoSelection;
+    SelectionType selected = SelectionType::NoSelection; // TODO retain only color - shape shouldn't know about this
     mutable AABB boundingBox;
     mutable bool boxIsValid = false;
     bool hasMathModel = false;
@@ -57,8 +57,7 @@ public:
     void setModel(const glm::mat4& mat) { model = mat; calcInvProduct(); boxIsValid = false; }
     void setColor(const glm::vec3& color) { baseColor = color; }
     inline void setColor(float r, float g, float b) { setColor(glm::vec3(r, g, b)); }
-    void select() { selected = SelectionType::Selected; }
-    void stageSelection() { selected = SelectionType::ForSelection; }
+    void select(SelectionType type) { selected = type; }
     void deselect() { selected = SelectionType::NoSelection; }
 
     inline unsigned int getVerticeCount() const {

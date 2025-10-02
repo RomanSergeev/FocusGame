@@ -34,6 +34,7 @@ class AppController {
 
     GameModel gameModel;
     GameView gameView;
+    GameView::SelectedView TEMPselectedShape;
 
     AppController();
 

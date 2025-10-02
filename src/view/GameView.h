@@ -1,6 +1,8 @@
 #pragma once
 #include <memory>
 #include "Constants.h"
+#include "graphics/RenderEnums.h"
+#include "model/Checker.h"
 #include "model/GameModel.h"
 #include "shapes/OpenGLShape.h"
 
@@ -80,15 +82,31 @@ private:
     void createDisplayedBoard();
     void createTrays();
 public:
+    // view switch: either a CellView or a CheckerView can be selected
+    struct SelectedView {
+        SelectedView() = default;
+        SelectedView(const CellView& c) { setCellView(c); }
+        SelectedView(const CheckerView& c) { setCheckerView(c); }
+
+        bool isEmpty() const { return cellPtr == nullptr && checkerPtr == nullptr; }
+        void setCellView(const CellView& c) { cellPtr = &c; checkerPtr = nullptr; }
+        void setCheckerView(const CheckerView& c) { checkerPtr = &c; cellPtr = nullptr; }
+        void drop() { cellPtr = nullptr; checkerPtr = nullptr; }
+        OpenGLShape* getShapePtr() { return cellPtr ? cellPtr->shape.get() : checkerPtr ? checkerPtr->shape.get() : nullptr; }
+        const OpenGLShape* getShapePtr() const { return cellPtr ? cellPtr->shape.get() : checkerPtr ? checkerPtr->shape.get() : nullptr; }
+        void select(SelectionType type) { OpenGLShape* ptr = getShapePtr(); if (ptr) ptr->select(type); }
+    private:
+        const CellView* cellPtr = nullptr;
+        const CheckerView* checkerPtr = nullptr;
+    };
     GameView(const GameModel& gm, BoardShapeType boardShapeType);
     GameView(const GameView& gv) = delete;
     GameView& operator = (const GameView& gv) = delete;
 
     void draw(PlayerSlot perspective, const Shader& shader, float currentTime);
-    void TEMPdeselectAll();
-    void TEMPselectDistinctCell(int i, int j);
-    void TEMPselectDistinctChecker(const Checker& c);
-    void TEMPstageCheckerSelection(const Checker& c);
-    float TEMPselectShapeByIntersection(const Ray& ray);
+    SelectedView TEMPselectShapeByIntersection(const Ray& ray);
     void updatePlayerColors(const SessionKey& key, const std::unordered_map<PlayerSlot, Color>& colors) { displayedPlayerColors = colors; }
+    void selectCell(const SessionKey& key, int i, int j, SelectionType type);
+    void selectChecker(const SessionKey& key, const Checker& c, SelectionType type);
+    void deselectAll();
 };

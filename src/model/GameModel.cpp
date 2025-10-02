@@ -43,10 +43,7 @@ bool GameModel::canPlaceAnywhere(const Player& player) const {
     const std::vector<Checker>& tray = trays.at(player.slot);
     for (const Checker& c : tray) {
         const Player* p = c.getPlayerReference();
-        if (p == nullptr) {
-            std::cerr << "GameModel::canPlaceAnywhere: found Cell's null Player reference" << std::endl;
-            continue;
-        }
+        if (isNull(p, "GameModel::canPlaceAnywhere: found Cell's null Player reference")) continue;
         if (p == &player || (rules.canPlaceAlliedReserve && player.sameTeam(*p))) {
             anyReserve = true;
             break;
@@ -79,10 +76,7 @@ bool GameModel::canTransferAnything(const Player& player) const {
     const std::vector<Checker>& tray = trays.at(player.slot);
     for (const Checker& c : tray) {
         const Player* p = c.getPlayerReference();
-        if (p == nullptr) {
-            std::cerr << "GameModel::canTransferAnything: found Cell's null Player reference" << std::endl;
-            continue;
-        }
+        if (isNull(p, "GameModel::canTransferAnything: found Cell's null Player reference")) continue;
         if (p == &player) continue; // skip our own
         if (player.sameTeam(*p) && !p->defeated) return true;
     }

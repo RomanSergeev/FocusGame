@@ -21,6 +21,14 @@ void moveAndAppend(Container& src, Container& dest, typename Container::iterator
     dest.insert(dest.end(), std::make_move_iterator(srcFrom), std::make_move_iterator(srcTo));
     src.erase(srcFrom, srcTo);
 }
+template <typename Ptr>
+bool isNull(const Ptr& p, const std::string& nullMessage) {
+    if (p == nullptr) {
+        std::cerr << nullMessage << std::endl;
+        return true;
+    }
+    return false;
+}
 
 struct AABB { // Axis-Aligned Bounding Box
     glm::vec3 min;

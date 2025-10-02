@@ -116,7 +116,10 @@ void AppController::handleInputMouse() {
     const Ray& ray = cameraController.getMouseRay();
     if (!ray.isActive()) return;
 
-    gameView.TEMPselectShapeByIntersection(ray);
+    GameView::SelectedView view = gameView.TEMPselectShapeByIntersection(ray);
+    TEMPselectedShape.select(SelectionType::NoSelection);
+    TEMPselectedShape = view;
+    TEMPselectedShape.select(SelectionType::Selected);
 }
 
 void AppController::handleInputKey() {
