@@ -25,6 +25,8 @@ private:
         CellView& operator = (const CellView& dc) = delete;
         CellView(CellView&& dc) noexcept = default;
         CellView& operator = (CellView&& dc) noexcept = default;
+
+        void select(SelectionType type);
     };
 
     struct CheckerView {
@@ -39,6 +41,8 @@ private:
         CheckerView& operator = (const CheckerView& dc) = delete;
         CheckerView(CheckerView&& dc) noexcept = default;
         CheckerView& operator = (CheckerView&& dc) noexcept = default;
+
+        void select(SelectionType type);
     };
 
     struct TrayView {
@@ -83,30 +87,28 @@ private:
     void createTrays();
 public:
     // view switch: either a CellView or a CheckerView can be selected
+    // changed from const reference to reference: SelectedView is used to select shapes, which is not const operation
     struct SelectedView {
         SelectedView() = default;
-        SelectedView(const CellView& c) { setCellView(c); }
-        SelectedView(const CheckerView& c) { setCheckerView(c); }
+        SelectedView(CellView& c) { setCellView(c); }
+        SelectedView(CheckerView& c) { setCheckerView(c); }
 
         bool isEmpty() const { return cellPtr == nullptr && checkerPtr == nullptr; }
-        void setCellView(const CellView& c) { cellPtr = &c; checkerPtr = nullptr; }
-        void setCheckerView(const CheckerView& c) { checkerPtr = &c; cellPtr = nullptr; }
+        void setCellView(CellView& c) { cellPtr = &c; checkerPtr = nullptr; }
+        void setCheckerView(CheckerView& c) { checkerPtr = &c; cellPtr = nullptr; }
         void drop() { cellPtr = nullptr; checkerPtr = nullptr; }
         OpenGLShape* getShapePtr() { return cellPtr ? cellPtr->shape.get() : checkerPtr ? checkerPtr->shape.get() : nullptr; }
         const OpenGLShape* getShapePtr() const { return cellPtr ? cellPtr->shape.get() : checkerPtr ? checkerPtr->shape.get() : nullptr; }
-        void select(SelectionType type) { OpenGLShape* ptr = getShapePtr(); if (ptr) ptr->select(type); }
+        void select(SelectionType type);
     private:
-        const CellView* cellPtr = nullptr;
-        const CheckerView* checkerPtr = nullptr;
+        CellView* cellPtr = nullptr;
+        CheckerView* checkerPtr = nullptr;
     };
     GameView(const GameModel& gm, BoardShapeType boardShapeType);
     GameView(const GameView& gv) = delete;
     GameView& operator = (const GameView& gv) = delete;
 
     void draw(PlayerSlot perspective, const Shader& shader, float currentTime);
-    SelectedView TEMPselectShapeByIntersection(const Ray& ray);
+    SelectedView TEMPselectShapeByIntersection(const SessionKey& key, const Ray& ray);
     void updatePlayerColors(const SessionKey& key, const std::unordered_map<PlayerSlot, Color>& colors) { displayedPlayerColors = colors; }
-    void selectCell(const SessionKey& key, int i, int j, SelectionType type);
-    void selectChecker(const SessionKey& key, const Checker& c, SelectionType type);
-    void deselectAll();
 };

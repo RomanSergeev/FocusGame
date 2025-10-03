@@ -53,6 +53,6 @@ class EditorKey : public AccessKey {
 };
 
 class SessionKey : public AccessKey {
-    friend class GameController;
+    friend class AppController; // TODO switch to GameSession
     SessionKey() {};
 };

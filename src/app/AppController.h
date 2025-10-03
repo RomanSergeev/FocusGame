@@ -22,6 +22,7 @@ class AppController {
     InputHandler inputHandler;
     CameraController cameraController;
     ShaderCarousel shaders;
+    SessionKey key;
 
     bool toggledFullscreenLastFrame = false;
     float currentTime;

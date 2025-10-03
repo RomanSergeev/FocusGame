@@ -3,7 +3,6 @@
 #include <iomanip>
 #include <iostream>
 #include <iterator>
-#include <sstream>
 #include <utility>
 #include "Color.h"
 #include "Constants.h"
@@ -12,6 +11,8 @@
 
 void clampValue(float& value, float from, float to);
 void clampValue(float& value, const std::pair<float, float>& pair);
+std::string toLowerCase(std::string s);
+
 template<typename T>
 bool vectorContains(const std::vector<T>& v, const T& value) {
     return std::find(v.begin(), v.end(), value) != v.end();
@@ -100,4 +101,3 @@ std::string toString(const T& value, int precision = 2) {
 
     return oss.str();
 }
-std::string toLowerCase(std::string s);

@@ -1,10 +1,6 @@
 #include <algorithm>
 #include <memory>
 #include "GameView.h"
-#include "Color.h"
-#include "Constants.h"
-#include "graphics/RenderEnums.h"
-#include "shapes/OpenGLShape.h"
 #include "utility/Defaults.h" // TODO remove, use actual settings
 #include "shapes/Cuboid.h"
 #include "shapes/Cylinder.h"
@@ -13,6 +9,13 @@
 const float GameView::TRAY_DIMENSIONS[3] = { CHECKER_HALF_WIDTH * 5, CHECKER_HALF_WIDTH * 3, CHECKER_HALF_HEIGHT * 4 };
 const float GameView::FB_CELL_HEIGHT[2] = { FB_CELL_HEIGHT_NJ, FB_CELL_HEIGHT_J };
 const float GameView::FB_CELL_ORIGIN[2] = { (FB_CELL_HEIGHT[0] - FB_CELL_HEIGHT[1]) / 2, 0 };
+
+void selectShape(OpenGLShape* shape, SelectionType type) {
+    if (shape == nullptr) return;
+    shape->setBlinkColor(selectionColors.at(type));
+    if (type == SelectionType::NoSelection) shape->deselect();
+    else shape->select();
+}
 
 void drawShape(OpenGLShape* shape, const Shader& shader, float currentTime) {
     if (shape == nullptr) return;
@@ -29,6 +32,13 @@ void checkShapeIntersection(const Ray& ray, const GameView::SelectedView& compar
     if (!intersects || distance >= minDist) return;
     minDist = distance;
     recordedView = comparedView;
+}
+
+void GameView::CellView::select(SelectionType type) { selectShape(shape.get(), type); }
+void GameView::CheckerView::select(SelectionType type) { selectShape(shape.get(), type); }
+void GameView::SelectedView::select(SelectionType type) {
+    if (cellPtr) cellPtr->select(type);
+    else if (checkerPtr) checkerPtr->select(type);
 }
 
 glm::vec3 GameView::calculateTrayPosition(const Coord& boardSizes, int totalTrays, int trayIndex) {
@@ -183,38 +193,13 @@ void GameView::draw(PlayerSlot perspective, const Shader& shader, float currentT
     }
 }
 
-// TODO remove, GameSession should handle the loop
-void GameView::deselectAll() {
-    for (const std::vector<CellView>& row : displayedBoard)
-        for (const CellView& dcell : row)
-            SelectedView(dcell).select(SelectionType::NoSelection);
-    for (const CheckerView& dchecker : displayedCheckers)
-        SelectedView(dchecker).select(SelectionType::NoSelection);
-}
-
-// deprecated
-void GameView::selectCell(const SessionKey& key, int i, int j, SelectionType type) {
-    if (displayedBoard[i][j].shape != nullptr)
-        displayedBoard[i][j].shape->select(type);
-}
-
-// deprecated
-void GameView::selectChecker(const SessionKey& key, const Checker& c, SelectionType type) {
-    // it's not so many checkers, and the function won't get invoked often, so looping through everything is fine
-    for (const CheckerView& dchecker : displayedCheckers) {
-        if (dchecker.checkerRef != &c || dchecker.shape == nullptr) continue;
-        dchecker.shape->select(type);
-        return;
-    }
-}
-
-GameView::SelectedView GameView::TEMPselectShapeByIntersection(const Ray& ray) {
+GameView::SelectedView GameView::TEMPselectShapeByIntersection(const SessionKey& key, const Ray& ray) {
     float minDist = FLT_MAX;
     SelectedView result;
-    for (const std::vector<CellView>& row : displayedBoard)
-        for (const CellView& dcell : row)
+    for (std::vector<CellView>& row : displayedBoard)
+        for (CellView& dcell : row)
             checkShapeIntersection(ray, dcell, result, minDist);
-    for (const CheckerView& dchecker : displayedCheckers)
+    for (CheckerView& dchecker : displayedCheckers)
         checkShapeIntersection(ray, dchecker, result, minDist);
     return result;
 }

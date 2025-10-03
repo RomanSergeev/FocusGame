@@ -23,7 +23,8 @@ protected:
     glm::mat4 baseModel = glm::mat4(1.0f);
     glm::mat4 model = glm::mat4(1.0f);
     glm::vec3 baseColor = glm::vec3(1.0f);
-    SelectionType selected = SelectionType::NoSelection; // TODO retain only color - shape shouldn't know about this
+    glm::vec3 blinkColor = glm::vec3(1.0f);
+    bool selected = false;
     mutable AABB boundingBox;
     mutable bool boxIsValid = false;
     bool hasMathModel = false;
@@ -50,15 +51,18 @@ public:
     const glm::mat4& getBaseModel() const { return baseModel; }
     const glm::mat4& getModel() const { return model; }
     const glm::vec3& getColor() const { return baseColor; }
+    const glm::vec3& getBlinkColor() const { return blinkColor; }
     const AABB& getBoundingBox() const;
-    SelectionType getSelectedType() const { return selected; }
+    bool isSelected() const { return selected; }
 
     void setBaseModel(const glm::mat4& mat) { baseModel = mat; calcInvProduct(); boxIsValid = false; }
     void setModel(const glm::mat4& mat) { model = mat; calcInvProduct(); boxIsValid = false; }
     void setColor(const glm::vec3& color) { baseColor = color; }
+    void setBlinkColor(const glm::vec3& color) { blinkColor = color; }
     inline void setColor(float r, float g, float b) { setColor(glm::vec3(r, g, b)); }
-    void select(SelectionType type) { selected = type; }
-    void deselect() { selected = SelectionType::NoSelection; }
+    inline void setBlinkColor(float r, float g, float b) { setBlinkColor(glm::vec3(r, g, b)); }
+    void select() { selected = true; }
+    void deselect() { selected = false; }
 
     inline unsigned int getVerticeCount() const {
         unsigned int fpa = floatsPerAttribute;
