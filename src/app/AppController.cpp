@@ -52,8 +52,7 @@ AppController::AppController() :
     cameraController(WIDTH, HEIGHT),
     shaders(createShaders()),
     rayLine(SPACE_ORIGIN, SPACE_ORIGIN),
-    gameModel(BoardEditor::createBoard8x8Focus()),
-    gameView(gameModel, GameView::BoardShapeType::Flat),
+    gameSession(BoardEditor::createBoard8x8Focus(), GameView::BoardShapeType::Flat),
     TEMPcylinder(.5, .5, .1, 32, true) {
 
     registerCallbacks();
@@ -115,11 +114,7 @@ void AppController::updateTime() {
 void AppController::handleInputMouse() {
     const Ray& ray = cameraController.getMouseRay();
     if (!ray.isActive()) return;
-
-    GameView::SelectedView view = gameView.TEMPselectShapeByIntersection(key, ray);
-    TEMPselectedShape.select(SelectionType::NoSelection);
-    TEMPselectedShape = view;
-    TEMPselectedShape.select(SelectionType::Selected);
+    gameSession.selectShapeFromCameraRay(ray);
 }
 
 void AppController::handleInputKey() {
@@ -144,7 +139,7 @@ void AppController::render() {
 
     window.clearBuffer();
 
-    gameView.draw(PlayerSlot::Player1, shader, currentTime); // TODO bake perspective into GameSession, actually use GameSession here
+    gameSession.drawBoard(shader, currentTime);
 
     // rotation:
     TEMPcylinder.setModel(glm::rotate(TEMPcylinder.getBaseModel(), currentTime, glm::vec3(0.3f, 1.0f, 0.0f)));

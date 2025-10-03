@@ -47,7 +47,6 @@ class GameModel {
     bool canPlaceReserve(const Coord& cd, const Player& ofPlayer, int amount) const;
     bool canTransferCheckers(const Player& toPlayer, int amount) const;
     int getTraySize(PlayerSlot ownedByPlayer, PlayerSlot ofPlayer) const;
-    const Player& getCurrentPlayer() const { return players.at(activePlayerIndex); }
     //bool hasJumpableLineBetween(const Coord& from, const Coord& to, bool vertically = true) const;
 
     void putExcessToTray(const SessionKey& key, const Coord& from);
@@ -63,6 +62,7 @@ public:
     idxtype getColumns() const { return board.sizes.y; }
     const Cell& getCellAt(const Coord& cd) const { return board[cd]; }
     const auto& getTrayData() const { return trays; }
+    const Player& getCurrentPlayer() const { return players.at(activePlayerIndex); }
 
     void TEMPputCheckerIntoTray(const EditorKey& key, const Player& p, Checker&& c);
     const Player& TEMPgetPlayer(int index) const { return players.at(index); }

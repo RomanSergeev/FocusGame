@@ -3,6 +3,7 @@
 #include <vector>
 #include "InputHandler.h"
 #include "controller/CameraController.h"
+#include "controller/GameSession.h"
 #include "model/GameModel.h"
 #include "shapes/Cylinder.h"
 #include "shapes/Line.h"
@@ -22,7 +23,7 @@ class AppController {
     InputHandler inputHandler;
     CameraController cameraController;
     ShaderCarousel shaders;
-    SessionKey key;
+    GameSession gameSession;
 
     bool toggledFullscreenLastFrame = false;
     float currentTime;
@@ -32,10 +33,6 @@ class AppController {
     bool drawCameraRay = true;
     Line rayLine;
     Cylinder TEMPcylinder;
-
-    GameModel gameModel;
-    GameView gameView;
-    GameView::SelectedView TEMPselectedShape;
 
     AppController();
 
