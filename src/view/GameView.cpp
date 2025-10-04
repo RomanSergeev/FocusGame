@@ -193,7 +193,7 @@ void GameView::draw(PlayerSlot perspective, const Shader& shader, float currentT
     }
 }
 
-GameView::SelectedView GameView::TEMPselectShapeByIntersection(const SessionKey& key, const Ray& ray) {
+GameView::SelectedView GameView::getHoveredShape(const SessionKey& key, const Ray& ray) {
     float minDist = FLT_MAX;
     SelectedView result;
     for (std::vector<CellView>& row : displayedBoard)

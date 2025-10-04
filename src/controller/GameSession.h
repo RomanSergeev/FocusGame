@@ -5,10 +5,14 @@
 class GameSession {
     GameModel model;
     GameView view;
-    GameView::SelectedView selectedShape;
+    GameView::SelectedView hoveredShape;
+    GameView::SelectedView shapeForSelection;
+    std::vector<GameView::SelectedView> selectedShapes = {};
     SessionKey key;
 public:
     GameSession(GameModel&& model, GameView::BoardShapeType type) : model(std::move(model)), view(this->model, type) {}
-    void selectShapeFromCameraRay(const Ray& ray);
+    void hoverShapeByCameraRay(const Ray& ray);
     void drawBoard(const Shader& shader, float currentTime);
+    void handleMouseDown(const Ray& ray);
+    void handleMouseUp(const Ray& ray);
 };

@@ -1,5 +1,6 @@
 #include <iostream>
 #include "AppController.h"
+#include "glfw3.h"
 #include "glm/ext/matrix_transform.hpp"
 #include "model/BoardEditor.h"
 #include "shapes/Cuboid.h"
@@ -8,11 +9,18 @@
 
 // these identical callbacks cannot be generalized because of the way GLFW (in C) obtains function pointers
 void AppController::mouseButtonCallback(GLFWwindow* window, int button, int action, int mods) {
-    if (button != GLFW_MOUSE_BUTTON_LEFT) return;
     auto* controller = static_cast<AppController*>(glfwGetWindowUserPointer(window));
     if (!controller) return;
-    if (action == GLFW_PRESS) controller->cameraController.setRotating(true);
-    else if (action == GLFW_RELEASE) controller->cameraController.setRotating(false);
+    if (button == GLFW_MOUSE_BUTTON_RIGHT) {
+        if (action == GLFW_PRESS) controller->cameraController.setRotating(true);
+        else if (action == GLFW_RELEASE) controller->cameraController.setRotating(false);
+    }
+    else if (button == GLFW_MOUSE_BUTTON_LEFT) {
+        const Ray& ray = controller->cameraController.getMouseRay();
+        if (!ray.isActive()) return;
+        if (action == GLFW_PRESS) controller->gameSession.handleMouseDown(ray);
+        else if (action == GLFW_RELEASE) controller->gameSession.handleMouseUp(ray);
+    }
 }
 
 void AppController::mousePositionCallback(GLFWwindow* window, double xpos, double ypos) {
@@ -114,7 +122,7 @@ void AppController::updateTime() {
 void AppController::handleInputMouse() {
     const Ray& ray = cameraController.getMouseRay();
     if (!ray.isActive()) return;
-    gameSession.selectShapeFromCameraRay(ray);
+    gameSession.hoverShapeByCameraRay(ray);
 }
 
 void AppController::handleInputKey() {

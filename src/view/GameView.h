@@ -93,7 +93,14 @@ public:
         SelectedView(CellView& c) { setCellView(c); }
         SelectedView(CheckerView& c) { setCheckerView(c); }
 
-        bool isEmpty() const { return cellPtr == nullptr && checkerPtr == nullptr; }
+        SelectedView(const SelectedView& sv) : cellPtr(sv.cellPtr), checkerPtr(sv.checkerPtr) {}
+
+        bool operator == (const SelectedView& sv) const { return cellPtr == sv.cellPtr && checkerPtr == sv.checkerPtr; }
+        bool operator != (const SelectedView& sv) const { return !(*this == sv); }
+
+        bool isEmpty() const { return !isCellView() && !isCheckerView(); }
+        bool isCellView() const { return cellPtr != nullptr; }
+        bool isCheckerView() const { return checkerPtr != nullptr; }
         void setCellView(CellView& c) { cellPtr = &c; checkerPtr = nullptr; }
         void setCheckerView(CheckerView& c) { checkerPtr = &c; cellPtr = nullptr; }
         void drop() { cellPtr = nullptr; checkerPtr = nullptr; }
@@ -109,6 +116,6 @@ public:
     GameView& operator = (const GameView& gv) = delete;
 
     void draw(PlayerSlot perspective, const Shader& shader, float currentTime);
-    SelectedView TEMPselectShapeByIntersection(const SessionKey& key, const Ray& ray);
+    SelectedView getHoveredShape(const SessionKey& key, const Ray& ray);
     void updatePlayerColors(const SessionKey& key, const std::unordered_map<PlayerSlot, Color>& colors) { displayedPlayerColors = colors; }
 };
