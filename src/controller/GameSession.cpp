@@ -1,9 +1,36 @@
 #include "GameSession.h"
+#include "Constants.h"
+#include "model/GameModel.h"
 #include "utility/Utils.h"
 #include "view/GameView.h"
 
+void GameSession::clearPossibleMoves() {
+    for (auto iter : allPossibleMoves)
+        iter.second.clear();
+}
+
+void GameSession::calculatePossibleMoves() {
+    clearPossibleMoves();
+    // if current player is remote and isn't us - return
+    const Player& currentPlayer = model.getCurrentPlayer();
+    for (idxtype i = 0; i < model.getRows(); ++i)
+        for (idxtype j = 0; j < model.getColumns(); ++j) {
+            Coord cd(i, j);
+            allPossibleMoves[cd] = model.getPossibleMovesFor(cd);
+        }
+}
+
+GameSession::GameSession(GameModel&& model, GameView::BoardShapeType type) :
+model(std::move(model)),
+view(this->model, type) {
+    for (idxtype i = 0; i < model.getRows(); ++i)
+        for (idxtype j = 0; j < model.getColumns(); ++j) {
+            allPossibleMoves.try_emplace({i, j}); // create default entries for each coordinate
+        }
+}
+
 void GameSession::hoverShapeByCameraRay(const Ray& ray) {
-    GameView::SelectedView newSelected = view.getHoveredShape(key, ray);
+    GameView::SelectableView newSelected = view.getHoveredShape(key, ray);
     bool wasSelected = vectorContains(selectedShapes, hoveredShape);
     hoveredShape.select(wasSelected ? SelectionType::Selected : SelectionType::NoSelection);
     hoveredShape = newSelected;
@@ -20,7 +47,7 @@ void GameSession::handleMouseDown(const Ray& ray) {
 }
 
 void GameSession::handleMouseUp(const Ray& ray) {
-    GameView::SelectedView copy = shapeForSelection;
+    GameView::SelectableView copy = shapeForSelection;
     shapeForSelection.drop();
     if (hoveredShape != copy || // we should release mouse hovering the same shape we pressed on
         !hoveredShape.isCheckerView()) return; // and it should be a checker (for now)

@@ -5,6 +5,7 @@
 #include "model/BoardEditor.h"
 #include "shapes/Cuboid.h"
 #include "view/GLWindow.h"
+#include "view/GameView.h"
 #define EVERY_N_FRAMES_DO(n, code) do { if ((frameCounter % (n)) == 0) code; } while(0)
 
 // these identical callbacks cannot be generalized because of the way GLFW (in C) obtains function pointers
@@ -60,8 +61,8 @@ AppController::AppController() :
     cameraController(WIDTH, HEIGHT),
     shaders(createShaders()),
     rayLine(SPACE_ORIGIN, SPACE_ORIGIN),
-    gameSession(BoardEditor::createBoard8x8Focus(), GameView::BoardShapeType::Flat),
-    TEMPcylinder(.5, .5, .1, 32, true) {
+    gameSession(BoardEditor::createBoard8x8Focus(), GameView::BoardShapeType::Flat)/*,
+    turnIdentifier(GameView::FB, .5, .1, 32, true)*/ {
 
     registerCallbacks();
     // std::cout << Checker::getInstancesCount() << '\n';
@@ -70,8 +71,8 @@ AppController::AppController() :
     const Shader& shader = shaders.get();
     shader.setVec3(ShaderParams::LIGHT_DIR, -0.3f, -0.2f, -0.7f);
 
-    TEMPcylinder.translate(0, 0, 3);
-    TEMPcylinder.setColor(0.2, 0.2, 0.2);
+    //turnIdentifier.translate(0, 0, 3);
+    //turnIdentifier.setColor(0.2, 0.2, 0.2);
     rayLine.setColor(1.0f, 0.0f, 0.0f);
 
     CameraController::CameraSettings settings;
@@ -150,9 +151,9 @@ void AppController::render() {
     gameSession.drawBoard(shader, currentTime);
 
     // rotation:
-    TEMPcylinder.setModel(glm::rotate(TEMPcylinder.getBaseModel(), currentTime, glm::vec3(0.3f, 1.0f, 0.0f)));
-    TEMPcylinder.setUniforms(shader, currentTime);
-    // TEMPcylinder.draw();
+    //turnIdentifier.setModel(glm::rotate(turnIdentifier.getBaseModel(), currentTime, glm::vec3(0.3f, 1.0f, 0.0f)));
+    //turnIdentifier.setUniforms(shader, currentTime);
+    // turnIdentifier.draw();
 
     /*EVERY_N_FRAMES_DO(60, {
         std::cout << "RAY:\n" << rayLine;

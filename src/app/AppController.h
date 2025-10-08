@@ -5,7 +5,6 @@
 #include "controller/CameraController.h"
 #include "controller/GameSession.h"
 #include "model/GameModel.h"
-#include "shapes/Cylinder.h"
 #include "shapes/Line.h"
 #include "view/GameView.h"
 
@@ -32,7 +31,6 @@ class AppController {
     int frameCounter = 0;
     bool drawCameraRay = true;
     Line rayLine;
-    Cylinder TEMPcylinder;
 
     AppController();
 

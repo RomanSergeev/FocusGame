@@ -22,7 +22,6 @@ bool GameModel::hasActiveAlly(const Player& player) const {
 bool GameModel::isPlayerDefeated(const Player& player) const {
     if (player.isSpectator()) return false; // skip spectator
     return !canTransferAnything(player) && !canPlaceAnywhere(player) && !canPerformAnyMove(player);
-    //TODO add check - a team should perform a move affecting the board at least once per cycle
 }
 
 bool GameModel::canPerformAnyMove(const Player& player) const {
@@ -269,4 +268,37 @@ bool GameModel::isGameOver() const {
         }
     }
     return true;
+}
+
+GameModel::MovePossibility GameModel::getPossibleMovesFor(const Coord& cd) const {
+    MovePossibility mp;
+    if (!board.validCoordinate(cd)) return mp;
+    const Cell& cell = board[cd];
+    const Player& currentPlayer = getCurrentPlayer();
+    int height = cell.getTowerHeight();
+    const Player* owner = cell.getOwnership();
+    bool own = false, enemy = false, allied = false;
+    if (owner != nullptr) {
+        own = owner == &currentPlayer;
+        enemy = !owner->sameTeam(currentPlayer);
+        allied = (!own && !enemy);
+    };
+    if (own && !rules.canPlaceOnOwnTowers ||
+        enemy && !rules.canPlaceOnEnemyTowers ||
+        allied && !rules.canPlaceOnAllyTowers) {
+        mp.maxReservePlaced = 0;
+    } else {
+        mp.maxReservePlaced = rules.canExceedByPlacing ? rules.maxTowerHeight : rules.maxTowerHeight - height;
+    }
+    if (cell.getOwnership() != &currentPlayer || height == 0) return mp;
+
+    // fill up all possible moves
+    for (idxtype i = 0; i < board.sizes.x; ++i)
+        for (idxtype j = 0; j < board.sizes.y; ++j) {
+            Coord dest(i, j);
+            int minDistance = canMove(cd, dest);
+            if (minDistance == CANNOT_MOVE) continue;
+            mp.canGoTo.push_back({ &board[dest], minDistance });
+        }
+    return mp;
 }

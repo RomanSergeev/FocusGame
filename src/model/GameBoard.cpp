@@ -3,7 +3,6 @@
 
 void GameBoard::placeChecker(const AccessKey& key, const Coord& cd, Checker&& c) {
     if (!validCoordinate(cd)) throw std::invalid_argument("GameBoard::place: coordinate out of range");
-    // TODO add checks
     c.removeFromTray(key);
     at(cd).append(std::move(c));
 }

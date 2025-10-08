@@ -25,7 +25,7 @@ GameModel BoardEditor::createBoard8x8Focus() {
     for (idxtype i = 1; i < 7; ++i)
         for (idxtype j = 1; j < 7; ++j) {
             Player* playerRef = ((((j+1)>>1)+i)&1) ? &players.at(0) : &players.at(1);
-            resultBoard.place(key, {i, j}, Checker(*playerRef));
+            resultBoard.place(key, {j, i}, Checker(*playerRef));
         }
 
     GameModel result(std::move(resultBoard), std::move(players));
@@ -46,11 +46,11 @@ GameModel BoardEditor::createBoard8x8Chess() {
 
     for (idxtype i = 0; i < 2; ++i)
         for (idxtype j = 0; j < 8; ++j)
-            resultBoard.place(key, {i, j}, Checker(players.at(0)));
+            resultBoard.place(key, {j, i}, Checker(players.at(0)));
 
     for (idxtype i = 6; i < 8; ++i)
         for (idxtype j = 0; j < 8; ++j)
-            resultBoard.place(key, {i, j}, Checker(players.at(1)));
+            resultBoard.place(key, {j, i}, Checker(players.at(1)));
 
     GameModel result(std::move(resultBoard), std::move(players));
     return result;

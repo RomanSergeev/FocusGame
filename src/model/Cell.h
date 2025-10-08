@@ -30,6 +30,6 @@ public:
     void setPlayable(const EditorKey& key, bool isPlayable) { playable = isPlayable; }
     void setJumpable(const EditorKey& key, bool isJumpable) { jumpableOver = isJumpable; }
 
-    void append(Checker&& c) { checkers.push_back(std::move(c)); /* TODO add checks */ };
+    void append(Checker&& c) { checkers.push_back(std::move(c)); };
     const Player* getOwnership() const;
 };

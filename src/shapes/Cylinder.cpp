@@ -4,7 +4,6 @@
 #include "glm/common.hpp"
 #include "shapes/OpenGLShape.h"
 
-// TODO ray from the side intersection distance seems to be that of the farthest plane
 bool Cylinder::intersectsMathModel(const Ray& ray, float& distance) const {
     glm::vec3 o = ray.getOrigin(), d = ray.getDirection();
     float a = wy*d[0],

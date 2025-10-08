@@ -1,7 +1,7 @@
 #include <algorithm>
 #include <memory>
 #include "GameView.h"
-#include "utility/Defaults.h" // TODO remove, use actual settings
+#include "utility/Defaults.h"
 #include "shapes/Cuboid.h"
 #include "shapes/Cylinder.h"
 #include "utility/Utils.h"
@@ -23,7 +23,7 @@ void drawShape(OpenGLShape* shape, const Shader& shader, float currentTime) {
     shape->draw();
 }
 
-void checkShapeIntersection(const Ray& ray, const GameView::SelectedView& comparedView, GameView::SelectedView& recordedView, float& minDist) {
+void checkShapeIntersection(const Ray& ray, const GameView::SelectableView& comparedView, GameView::SelectableView& recordedView, float& minDist) {
     if (comparedView.isEmpty()) return;
     const OpenGLShape* shape = comparedView.getShapePtr();
     if (shape == nullptr) return;
@@ -36,7 +36,7 @@ void checkShapeIntersection(const Ray& ray, const GameView::SelectedView& compar
 
 void GameView::CellView::select(SelectionType type) { selectShape(shape.get(), type); }
 void GameView::CheckerView::select(SelectionType type) { selectShape(shape.get(), type); }
-void GameView::SelectedView::select(SelectionType type) {
+void GameView::SelectableView::select(SelectionType type) {
     if (cellPtr) cellPtr->select(type);
     else if (checkerPtr) checkerPtr->select(type);
 }
@@ -130,6 +130,8 @@ void GameView::createDisplayedBoard() {
             }
         }
     }
+    // create turn identifier - rotating pseudo-checker
+    turnIdentifier.position = {0,0,0};
 }
 
 void GameView::createTrays() {
@@ -193,9 +195,9 @@ void GameView::draw(PlayerSlot perspective, const Shader& shader, float currentT
     }
 }
 
-GameView::SelectedView GameView::getHoveredShape(const SessionKey& key, const Ray& ray) {
+GameView::SelectableView GameView::getHoveredShape(const SessionKey& key, const Ray& ray) {
     float minDist = FLT_MAX;
-    SelectedView result;
+    SelectableView result;
     for (std::vector<CellView>& row : displayedBoard)
         for (CellView& dcell : row)
             checkShapeIntersection(ray, dcell, result, minDist);

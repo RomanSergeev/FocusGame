@@ -81,22 +81,23 @@ private:
     std::vector<CheckerView> displayedCheckers;
     std::map<PlayerSlot, std::vector<TrayView>> displayedTrays;
     std::unordered_map<PlayerSlot, Color> displayedPlayerColors;
+    CheckerView turnIdentifier;
     BoardShapeType type;
 
     void createDisplayedBoard();
     void createTrays();
 public:
     // view switch: either a CellView or a CheckerView can be selected
-    // changed from const reference to reference: SelectedView is used to select shapes, which is not const operation
-    struct SelectedView {
-        SelectedView() = default;
-        SelectedView(CellView& c) { setCellView(c); }
-        SelectedView(CheckerView& c) { setCheckerView(c); }
+    // changed from const reference to reference: SelectableView is used to select shapes, which is not const operation
+    struct SelectableView {
+        SelectableView() = default;
+        SelectableView(CellView& c) { setCellView(c); }
+        SelectableView(CheckerView& c) { setCheckerView(c); }
 
-        SelectedView(const SelectedView& sv) : cellPtr(sv.cellPtr), checkerPtr(sv.checkerPtr) {}
+        SelectableView(const SelectableView& sv) : cellPtr(sv.cellPtr), checkerPtr(sv.checkerPtr) {}
 
-        bool operator == (const SelectedView& sv) const { return cellPtr == sv.cellPtr && checkerPtr == sv.checkerPtr; }
-        bool operator != (const SelectedView& sv) const { return !(*this == sv); }
+        bool operator == (const SelectableView& sv) const { return cellPtr == sv.cellPtr && checkerPtr == sv.checkerPtr; }
+        bool operator != (const SelectableView& sv) const { return !(*this == sv); }
 
         bool isEmpty() const { return !isCellView() && !isCheckerView(); }
         bool isCellView() const { return cellPtr != nullptr; }
@@ -116,6 +117,6 @@ public:
     GameView& operator = (const GameView& gv) = delete;
 
     void draw(PlayerSlot perspective, const Shader& shader, float currentTime);
-    SelectedView getHoveredShape(const SessionKey& key, const Ray& ray);
+    SelectableView getHoveredShape(const SessionKey& key, const Ray& ray);
     void updatePlayerColors(const SessionKey& key, const std::unordered_map<PlayerSlot, Color>& colors) { displayedPlayerColors = colors; }
 };

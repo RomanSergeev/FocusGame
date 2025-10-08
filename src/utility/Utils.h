@@ -1,5 +1,6 @@
 #pragma once
 #include <algorithm>
+#include <functional>
 #include <iomanip>
 #include <iostream>
 #include <iterator>
@@ -89,6 +90,16 @@ struct Coord { // board coordinates wrapper
     bool operator == (const Coord& c) const { return x == c.x && y == c.y; }
     bool operator != (const Coord& c) const { return x != c.x || y != c.y; }
 };
+
+// Coord is used as a key of GameSession::allPossibleMoves map, so it needs its hash defined
+namespace std {
+    template<>
+    struct hash<Coord> {
+        std::size_t operator() (const Coord& c) const noexcept {
+            return std::hash<int>()(c.x ^ (c.y << 16));
+        }
+    };
+}
 
 template<typename T>
 std::string toString(const T& value, int precision = 2) {
