@@ -1,11 +1,8 @@
 #include <iostream>
 #include "AppController.h"
 #include "glfw3.h"
-#include "glm/ext/matrix_transform.hpp"
 #include "model/BoardEditor.h"
-#include "shapes/Cuboid.h"
 #include "view/GLWindow.h"
-#include "view/GameView.h"
 #define EVERY_N_FRAMES_DO(n, code) do { if ((frameCounter % (n)) == 0) code; } while(0)
 
 // these identical callbacks cannot be generalized because of the way GLFW (in C) obtains function pointers
@@ -61,8 +58,7 @@ AppController::AppController() :
     cameraController(WIDTH, HEIGHT),
     shaders(createShaders()),
     rayLine(SPACE_ORIGIN, SPACE_ORIGIN),
-    gameSession(BoardEditor::createBoard8x8Focus(), GameView::BoardShapeType::Flat)/*,
-    turnIdentifier(GameView::FB, .5, .1, 32, true)*/ {
+    gameSession(BoardEditor::createBoard8x8Focus(), GameView::BoardShapeType::Flat) {
 
     registerCallbacks();
     // std::cout << Checker::getInstancesCount() << '\n';
@@ -71,8 +67,6 @@ AppController::AppController() :
     const Shader& shader = shaders.get();
     shader.setVec3(ShaderParams::LIGHT_DIR, -0.3f, -0.2f, -0.7f);
 
-    //turnIdentifier.translate(0, 0, 3);
-    //turnIdentifier.setColor(0.2, 0.2, 0.2);
     rayLine.setColor(1.0f, 0.0f, 0.0f);
 
     CameraController::CameraSettings settings;

@@ -1,6 +1,3 @@
-## Finish turnIdentifier in GameView
-<hr>
-
 ## Add Highlight System
 <hr>
 

@@ -5,6 +5,7 @@
 #include "shapes/Cuboid.h"
 #include "shapes/Cylinder.h"
 #include "utility/Utils.h"
+#include "glm/ext/matrix_transform.hpp"
 
 const float GameView::TRAY_DIMENSIONS[3] = { CHECKER_HALF_WIDTH * 5, CHECKER_HALF_WIDTH * 3, CHECKER_HALF_HEIGHT * 4 };
 const float GameView::FB_CELL_HEIGHT[2] = { FB_CELL_HEIGHT_NJ, FB_CELL_HEIGHT_J };
@@ -131,7 +132,10 @@ void GameView::createDisplayedBoard() {
         }
     }
     // create turn identifier - rotating pseudo-checker
-    turnIdentifier.position = {0,0,0};
+    turnIdentifier.position = { 0, (rows*0.25 + 0.5) * (FB_CELL_WIDTH), FB_CELL_HEIGHT_NJ / 2 };
+    std::unique_ptr<OpenGLShape> shape = std::make_unique<Cylinder>(CHECKER_HALF_WIDTH, CHECKER_HALF_WIDTH, CHECKER_HALF_HEIGHT, 32);
+    shape->translate(turnIdentifier.position);
+    turnIdentifier.shape = std::move(shape);
 }
 
 void GameView::createTrays() {
@@ -178,6 +182,11 @@ GameView::GameView(const GameModel& gm, BoardShapeType shapeType) : model(gm), t
     createTrays();
 }
 
+void GameView::updateOnCurrentPlayerChange(PlayerSlot newCurrentPlayerSlot) {
+    if (turnIdentifier.shape == nullptr) return;
+    turnIdentifier.shape->setColor(getDefaultColor(newCurrentPlayerSlot).toVec3());
+}
+
 void GameView::draw(PlayerSlot perspective, const Shader& shader, float currentTime) {
     for (const auto& row : displayedBoard)
         for (const auto& dcell : row)
@@ -193,6 +202,8 @@ void GameView::draw(PlayerSlot perspective, const Shader& shader, float currentT
         if (!ref->isOnBoard() && !ref->isInTrayOf(perspective)) continue;
         drawShape(dchecker.shape.get(), shader, currentTime);
     }
+    turnIdentifier.shape->setModel(glm::rotate(turnIdentifier.shape->getBaseModel(), currentTime, glm::vec3(0.3f, 1.0f, 0.0f)));
+    drawShape(turnIdentifier.shape.get(), shader, currentTime);
 }
 
 GameView::SelectableView GameView::getHoveredShape(const SessionKey& key, const Ray& ray) {

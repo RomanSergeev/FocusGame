@@ -116,6 +116,7 @@ public:
     GameView(const GameView& gv) = delete;
     GameView& operator = (const GameView& gv) = delete;
 
+    void updateOnCurrentPlayerChange(PlayerSlot newCurrentPlayerSlot);
     void draw(PlayerSlot perspective, const Shader& shader, float currentTime);
     SelectableView getHoveredShape(const SessionKey& key, const Ray& ray);
     void updatePlayerColors(const SessionKey& key, const std::unordered_map<PlayerSlot, Color>& colors) { displayedPlayerColors = colors; }

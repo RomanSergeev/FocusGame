@@ -11,7 +11,7 @@ enum class PlayerType {
 };
 
 class Player {
-    friend class GameModel;
+    friend class GameModel; // only GameModel can set player.defeated = true
 
     std::optional<User> userRef;
     std::string name;

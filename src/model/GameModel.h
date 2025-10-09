@@ -28,7 +28,8 @@ class GameModel {
     std::map<PlayerSlot, std::vector<Checker>> trays;
     GameRules rules;
     int activePlayerIndex;
-    
+    bool gameInProgress; // transferMove should be the only place where this changes
+
     const Player* getPlayerBySlot(PlayerSlot slot) const;
     bool hasActiveAlly(const Player& player) const;
     bool isPlayerDefeated(const Player& player) const;
@@ -38,13 +39,13 @@ class GameModel {
     bool canPlaceReserve(const Coord& cd, const Player& ofPlayer, int amount) const;
     bool canTransferCheckers(const Player& toPlayer, int amount) const;
     int getTraySize(PlayerSlot ownedByPlayer, PlayerSlot ofPlayer) const;
-    //bool hasJumpableLineBetween(const Coord& from, const Coord& to, bool vertically = true) const;
 
+    void updateDefeatedPlayers(); // can be public, but doesn't need to be
     void putExcessToTray(const SessionKey& key, const Coord& from);
     bool move(const SessionKey& key, const Coord& from, const Coord& to);
     bool placeReserve(const SessionKey& key, const Coord& cd, const Player& ofPlayer, int amount);
     bool transferCheckers(const SessionKey& key, const Player& toPlayer, int amount);
-    void transferMove();
+    void transferMove(const SessionKey& key);
 public:
     struct Turn {
         TurnType type; // Move, Place, Transfer
@@ -73,8 +74,8 @@ public:
     int canMove(const Coord& cFrom, const Coord& cTo) const; // shortest possible path length between the cells, or CANNOT_MOVE otherwise. Used in GameSession - made public
     void TEMPputCheckerIntoTray(const EditorKey& key, const Player& p, Checker&& c);
     const Player& TEMPgetPlayer(int index) const { return players.at(index); }
-    void updateDefeatedPlayers();
+    void start(const SessionKey& key);
     bool makeTurn(const SessionKey& key, const Turn& turn);
-    bool isGameOver() const;
+    bool isGameOver() const { return !gameInProgress; }
     MovePossibility getPossibleMovesFor(const Coord& cd) const;
 };

@@ -20,13 +20,15 @@ void GameSession::calculatePossibleMoves() {
         }
 }
 
-GameSession::GameSession(GameModel&& model, GameView::BoardShapeType type) :
-model(std::move(model)),
-view(this->model, type) {
+GameSession::GameSession(GameModel&& _model, GameView::BoardShapeType type) :
+model(std::move(_model)),
+view(model, type) {
     for (idxtype i = 0; i < model.getRows(); ++i)
         for (idxtype j = 0; j < model.getColumns(); ++j) {
             allPossibleMoves.try_emplace({i, j}); // create default entries for each coordinate
         }
+    model.start(key);
+    view.updateOnCurrentPlayerChange(model.getCurrentPlayer().getSlot());
 }
 
 void GameSession::hoverShapeByCameraRay(const Ray& ray) {
