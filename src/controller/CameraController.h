@@ -69,3 +69,22 @@ private:
     void addPitch(float pitchDelta);
     void clampDistance();
 };
+
+namespace Defaults {
+    using CamSettings = CameraController::CameraSettings;
+    
+    const CamSettings defaultCameraSettings;
+    const std::unordered_map<std::string, float CamSettings::*> configNamesCameraFloat {
+        { "sensitivity"           , &CamSettings::sensitivity      },
+        { "zoomStep"              , &CamSettings::zoomStep         },
+        { "zoomSmoothFactor"      , &CamSettings::zoomSmoothFactor },
+        { "rotationSlowdownFactor", &CamSettings::rotateSlowdown   }
+    };
+    const std::unordered_map<std::string, bool CamSettings::*> configNamesCameraBool {
+        { "smoothRotation"       , &CamSettings::smoothRotation          },
+        { "smoothZoom"           , &CamSettings::smoothZoom              },
+        { "mouseInvertHorizontal", &CamSettings::invertedHorizontalMouse },
+        { "mouseInvertVertical"  , &CamSettings::invertedVerticalMouse   },
+        { "clampYaw"             , &CamSettings::doClampYaw              }
+    };
+}

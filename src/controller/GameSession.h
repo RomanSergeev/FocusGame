@@ -48,6 +48,7 @@ class GameSession {
     void onHover(const SV& sv);
     void onClick(); // no argument - assuming hoveredShape is clicked (ruled out before the call)
     void lockSelection();
+    SelectionData locateChecker(const Checker& c) const;
 public:
     GameSession(GameModel&& model, GameView::BoardShapeType type);
     void hoverShapeByCameraRay(const Ray& ray);

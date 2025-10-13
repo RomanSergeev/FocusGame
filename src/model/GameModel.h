@@ -78,4 +78,5 @@ public:
     bool makeTurn(const SessionKey& key, const Turn& turn);
     bool isGameOver() const { return !gameInProgress; }
     MovePossibility getPossibleMovesFor(const Coord& cd) const;
+    Coord locateCheckerOnBoard(const Checker& c) const;
 };

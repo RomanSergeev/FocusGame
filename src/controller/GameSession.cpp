@@ -31,7 +31,11 @@ void GameSession::onClick() { // called only when it's our turn
     if (hoveredShape.isEmpty()) return;
     // SelectionData clicked = 
     if (hoveredShape.isCellView()) { // clicking on a cell - something should happen only when we have stuff selected
+        switch (nowSelected) {
+            case SelectedEntity::None:
 
+            break;
+        }
     } else if (hoveredShape.isCheckerView()) { // clicking on a checker - first define where it is
 
     }
@@ -50,6 +54,12 @@ void GameSession::lockSelection() {
     highlightedShapes.clear();
     pressedShape.drop(); // should not be possible to set after the turn, but just in case
     selectionLocked = true;
+}
+
+GameSession::SelectionData GameSession::locateChecker(const Checker& c) const {
+    for (auto slot : allPlayers)
+        if (c.isInTrayOf(slot)) return SelectionData(slot);
+    return SelectionData(model.locateCheckerOnBoard(c));
 }
 
 GameSession::GameSession(GameModel&& _model, GameView::BoardShapeType type) :

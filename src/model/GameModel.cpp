@@ -315,3 +315,16 @@ GameModel::MovePossibility GameModel::getPossibleMovesFor(const Coord& cd) const
         }
     return mp;
 }
+
+Coord GameModel::locateCheckerOnBoard(const Checker& c) const {
+    for (idxtype i = 0; i < board.sizes.x; ++i)
+        for (idxtype j = 0; j < board.sizes.y; ++j) {
+            Coord cd(i, j);
+            const Cell& cell = board[cd];
+            const std::vector<Checker>& checkers = cell.getCheckers();
+            for (const Checker& checker : checkers)
+                if (&c == &checker) // comparing checkers by addresses since they can't be copied
+                    return cd;
+        }
+    return Coord::INVALID_COORD;
+}

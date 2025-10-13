@@ -1,25 +1,6 @@
 #pragma once
 #include "Color.h"
-#include "controller/CameraController.h"
-
-using CamSettings = CameraController::CameraSettings;
-
-const std::string defaultLoggerFilepath = "Errors.log";
-
-const CamSettings defaultCameraSettings;
-const std::unordered_map<std::string, float CamSettings::*> configNamesCameraFloat {
-    { "sensitivity"           , &CamSettings::sensitivity      },
-    { "zoomStep"              , &CamSettings::zoomStep         },
-    { "zoomSmoothFactor"      , &CamSettings::zoomSmoothFactor },
-    { "rotationSlowdownFactor", &CamSettings::rotateSlowdown   }
-};
-const std::unordered_map<std::string, bool CamSettings::*> configNamesCameraBool {
-    { "smoothRotation"       , &CamSettings::smoothRotation          },
-    { "smoothZoom"           , &CamSettings::smoothZoom              },
-    { "mouseInvertHorizontal", &CamSettings::invertedHorizontalMouse },
-    { "mouseInvertVertical"  , &CamSettings::invertedVerticalMouse   },
-    { "clampYaw"             , &CamSettings::doClampYaw              }
-};
+#include "Constants.h"
 
 const std::unordered_map<PlayerSlot, Color> defaultColors {
     { PlayerSlot::Player1, {204, 204, 204} }, // white
