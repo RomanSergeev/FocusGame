@@ -4,16 +4,19 @@
 #include "Constants.h"
 
 class Logger {
-    static Logger* instance;
+    static Logger& instance();
     static const int MAX_BUFFER_SIZE = 10000;
 
     std::string filename;
     std::ostringstream buffer;
     bool logToFile;
     bool exceededBufferSize = false;
+    bool initialized = false;
 
-    Logger(bool logToFile, const std::string& filename) : logToFile(logToFile), filename(filename) {};
+    Logger() = default;
     ~Logger() { flush(); };
+    Logger(const Logger& l) = delete;
+    Logger& operator = (const Logger& l) = delete;
 
     void flush();
 public:
@@ -28,3 +31,7 @@ public:
         log(oss.str());
     }
 };
+
+namespace Defaults {
+    static const std::string loggerDefaultPath = "Errors.log";
+}

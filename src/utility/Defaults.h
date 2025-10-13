@@ -4,6 +4,8 @@
 
 using CamSettings = CameraController::CameraSettings;
 
+const std::string defaultLoggerFilepath = "Errors.log";
+
 const CamSettings defaultCameraSettings;
 const std::unordered_map<std::string, float CamSettings::*> configNamesCameraFloat {
     { "sensitivity"           , &CamSettings::sensitivity      },

@@ -61,6 +61,7 @@ AppController::AppController() :
     gameSession(BoardEditor::createBoard8x8Focus(), GameView::BoardShapeType::Flat) {
 
     registerCallbacks();
+    Logger::instantiate(key, true);
     // std::cout << Checker::getInstancesCount() << '\n';
     // std::cout << Cell::getInstancesCount() << '\n';
 

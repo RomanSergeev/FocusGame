@@ -64,3 +64,6 @@ bool isNull(const Ptr& p, const std::string& nullMessage) {
     }
     return false;
 }
+
+// allow up to N subfolders (e.g., N = 1 means at most "dir/file.txt")
+bool isValidRelativePath(const std::string& pathStr, size_t maxDepth = 1);
