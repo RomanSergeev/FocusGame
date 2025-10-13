@@ -2,6 +2,7 @@
 #include "Constants.h"
 #include "glm/gtc/constants.hpp"
 #include "glm/fwd.hpp"
+#include "glm/mat4x4.hpp"
 
 class Camera {
     static constexpr float PI = glm::pi<float>();

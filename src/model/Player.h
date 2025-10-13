@@ -2,7 +2,6 @@
 #include <optional>
 #include "Constants.h"
 #include "User.h"
-#include "utility/Utils.h"
 
 enum class PlayerType {
     HUMAN_LOCAL,

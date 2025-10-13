@@ -7,6 +7,8 @@
 ## GameModel::GameRules - move to public when used
 <hr>
 
+## Add hotkey Manager And Input Profiles
+
 ## GameView.h - Remove utility/Defaults.h Dependence
 <hr>
 

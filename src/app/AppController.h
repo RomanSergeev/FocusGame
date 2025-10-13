@@ -1,12 +1,10 @@
 #pragma once
 #include <memory>
-#include <vector>
 #include "InputHandler.h"
 #include "controller/CameraController.h"
 #include "controller/GameSession.h"
-#include "model/GameModel.h"
 #include "shapes/Line.h"
-#include "view/GameView.h"
+#include "utility/Utils.h"
 
 class AppController {
     static const int WIDTH = 800;
@@ -23,6 +21,7 @@ class AppController {
     CameraController cameraController;
     ShaderCarousel shaders;
     GameSession gameSession;
+    AppKey key;
 
     bool toggledFullscreenLastFrame = false;
     float currentTime;

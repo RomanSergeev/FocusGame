@@ -1,3 +1,4 @@
+#include <cfloat>
 #include <stdexcept>
 #include "OpenGLShape.h"
 #include "glm/ext/matrix_transform.hpp"

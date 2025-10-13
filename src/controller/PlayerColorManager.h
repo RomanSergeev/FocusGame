@@ -1,5 +1,4 @@
 #pragma once
-#include <string>
 #include <unordered_map>
 #include "model/GameBoard.h"
 #include "model/UserConfiguration.h"

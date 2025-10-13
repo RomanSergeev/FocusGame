@@ -1,7 +1,5 @@
-#include <iostream>
-#include <unordered_map>
 #include "Shader.h"
-#include "RenderEnums.h"
+#include "utility/Logger.h"
 
 std::string replaceAllMap(const std::string& source, const std::unordered_map<std::string, std::string>& replacements) {
     std::string result = source;
@@ -151,13 +149,13 @@ void Shader::checkForCompilationErrors(GLuint objectID, ShaderType type) {
         glGetShaderiv(objectID, GL_COMPILE_STATUS, &success);
         if (!success) {
             glGetShaderInfoLog(objectID, LOG_SIZE, nullptr, infoLog);
-            std::cerr << "ERROR::SHADER_COMPILATION_ERROR of type: " << getShaderTypeString(type) << "\n" << infoLog << "\n";
+            Logger::logs("ERROR::SHADER_COMPILATION_ERROR of type: ", getShaderTypeString(type), "\n", infoLog);
         }
     } else {
         glGetProgramiv(objectID, GL_LINK_STATUS, &success);
         if (!success) {
             glGetProgramInfoLog(objectID, LOG_SIZE, nullptr, infoLog);
-            std::cerr << "ERROR::PROGRAM_LINKING_ERROR\n" << infoLog << "\n";
+            Logger::logs("ERROR::PROGRAM_LINKING_ERROR\n", infoLog);
         }
     }
 }

@@ -1,5 +1,6 @@
 #pragma once
-#include "Utils.h"
+#include "AABB.h"
+#include "glm/geometric.hpp"
 
 class Ray {
     glm::vec3 origin;

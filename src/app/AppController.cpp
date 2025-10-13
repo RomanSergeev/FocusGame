@@ -1,7 +1,7 @@
-#include <iostream>
 #include "AppController.h"
 #include "glfw3.h"
 #include "model/BoardEditor.h"
+#include "utility/Logger.h"
 #include "view/GLWindow.h"
 #define EVERY_N_FRAMES_DO(n, code) do { if ((frameCounter % (n)) == 0) code; } while(0)
 
@@ -92,7 +92,7 @@ std::unique_ptr<AppController> AppController::create() {
         return std::unique_ptr<AppController>(new AppController());
     }
     catch (const std::exception& e) {
-        std::cerr << "Window initialization failed: " << e.what() << std::endl;
+        Logger::logs("Window initialization failed: ", e.what());
         return nullptr;
     }
 }

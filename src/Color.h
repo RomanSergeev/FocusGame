@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <string>
 #include <unordered_map>
-#include "glm/glm.hpp"
+#include "glm/vec3.hpp"
 
 struct Color {
     static const std::unordered_map<std::string, Color> namedColors;

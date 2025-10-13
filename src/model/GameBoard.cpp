@@ -1,6 +1,45 @@
 #include <stdexcept>
 #include "GameBoard.h"
 
+const Coord Coord::INVALID_COORD(-1, -1);
+
+int getDeltaX(JumpDirection jd) {
+    switch (jd) {
+        case JumpDirection::Up   : return -1;
+        case JumpDirection::Down : return  1;
+        case JumpDirection::Left : return  0;
+        case JumpDirection::Right: return  0;
+    }
+    return 0;
+}
+
+int getDeltaY(JumpDirection jd) {
+    switch (jd) {
+        case JumpDirection::Up   : return  0;
+        case JumpDirection::Down : return  0;
+        case JumpDirection::Left : return -1;
+        case JumpDirection::Right: return  1;
+    }
+    return 0;
+}
+
+bool isHorizontal(JumpDirection jd) {
+    return jd == JumpDirection::Left || jd == JumpDirection::Right;
+}
+
+bool isVertical(JumpDirection jd) {
+    return jd == JumpDirection::Down || jd == JumpDirection::Up;
+}
+
+JumpDirection reverseDirection(JumpDirection jd) {
+    switch (jd) {
+        case JumpDirection::Up   : return JumpDirection::Down ;
+        case JumpDirection::Down : return JumpDirection::Up   ;
+        case JumpDirection::Left : return JumpDirection::Right;
+        case JumpDirection::Right: return JumpDirection::Left ;
+    }
+}
+
 void GameBoard::placeChecker(const AccessKey& key, const Coord& cd, Checker&& c) {
     if (!validCoordinate(cd)) throw std::invalid_argument("GameBoard::place: coordinate out of range");
     c.removeFromTray(key);

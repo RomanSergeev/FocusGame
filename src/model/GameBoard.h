@@ -1,6 +1,37 @@
 #pragma once
 #include "Cell.h"
 
+struct Coord { // board coordinates wrapper
+    static const Coord INVALID_COORD;
+
+    idxtype x, y;
+    Coord() = default;
+    Coord(idxtype x, idxtype y) : x(x), y(y) {}
+    Coord(const Coord& c) = default;
+    Coord& operator = (const Coord& c) = default;
+    bool operator == (const Coord& c) const { return x == c.x && y == c.y; }
+    bool operator != (const Coord& c) const { return x != c.x || y != c.y; }
+};
+
+// Coord is used as a key of GameSession::allPossibleMoves map, so it needs its hash defined
+namespace std {
+    template<>
+    struct hash<Coord> {
+        std::size_t operator() (const Coord& c) const noexcept {
+            return std::hash<int>()(c.x ^ (c.y << 16));
+        }
+    };
+}
+
+enum class JumpDirection {
+    Up, Down, Left, Right
+};
+int getDeltaX(JumpDirection jd);
+int getDeltaY(JumpDirection jd);
+bool isHorizontal(JumpDirection jd);
+bool isVertical(JumpDirection jd);
+JumpDirection reverseDirection(JumpDirection jd);
+
 class GameBoard {
     friend class GameModel; // always direct ownership
 

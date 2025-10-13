@@ -1,8 +1,6 @@
 #pragma once
 #include <memory>
-#include "Constants.h"
-#include "graphics/RenderEnums.h"
-#include "model/Checker.h"
+#include "Color.h"
 #include "model/GameModel.h"
 #include "shapes/OpenGLShape.h"
 

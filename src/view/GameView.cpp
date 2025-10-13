@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <cfloat>
 #include <memory>
 #include "GameView.h"
 #include "utility/Defaults.h"

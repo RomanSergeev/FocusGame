@@ -1,8 +1,6 @@
 #pragma once
 #include "Color.h"
-#include "Constants.h"
 #include "controller/CameraController.h"
-#include <unordered_map>
 
 using CamSettings = CameraController::CameraSettings;
 

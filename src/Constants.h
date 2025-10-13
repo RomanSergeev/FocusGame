@@ -1,6 +1,6 @@
 #pragma once
 #include "glm/ext/scalar_constants.hpp"
-#include "glm/glm.hpp"
+#include "glm/vec3.hpp"
 
 using idxtype = unsigned char;
 
@@ -55,4 +55,9 @@ class EditorKey : public AccessKey {
 class SessionKey : public AccessKey {
     friend class GameSession;
     SessionKey() {};
+};
+
+class AppKey : public AccessKey {
+    friend class AppController;
+    AppKey() {};
 };

@@ -1,4 +1,5 @@
 #pragma once
+#include "Color.h"
 #include "controller/CameraController.h"
 
 class UserConfiguration {

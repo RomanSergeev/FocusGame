@@ -1,11 +1,9 @@
 #pragma once
-#include <iostream>
 #include <vector>
 #include "ShapeType.h"
-#include "glew/glew.h"
-#include "graphics/RenderEnums.h"
 #include "graphics/Shader.h"
 #include "utility/Ray.h"
+#include "glm/mat4x4.hpp"
 
 class OpenGLShape {
     std::vector<float> vertices; // list of all shape's points

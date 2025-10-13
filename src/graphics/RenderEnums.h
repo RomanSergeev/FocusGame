@@ -1,7 +1,7 @@
 #pragma once
 #include <unordered_map>
 #include <string>
-#include "glm/glm.hpp"
+#include "glm/vec3.hpp"
 #include "glew/glew.h"
 
 enum class AttributeType {

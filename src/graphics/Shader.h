@@ -1,6 +1,6 @@
 #pragma once
-#include <string>
 #include "RenderEnums.h"
+#include "glm/mat4x4.hpp"
 
 extern const std::string shaderCodeVertices;
 extern const std::string shaderCodeFragments;

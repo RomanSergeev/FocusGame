@@ -1,6 +1,8 @@
 #include <cmath>
 #include <stdexcept>
 #include "CameraController.h"
+#include "glm/matrix.hpp"
+#include "utility/Utils.h"
 
 CameraController::CameraSettings::CameraSettings() {
     zoomMin = Camera::DEFAULT_ZOOM_LIMITS.first;

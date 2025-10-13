@@ -1,12 +1,11 @@
-#include <iostream>
-#include <sstream>
 #include <stdexcept>
 #include "GLWindow.h"
+#include "utility/Logger.h"
 
 void checkGLError(const char* stmt, const char* fname, int line) {
     GLenum err = glGetError();
     while (err != GL_NO_ERROR) {
-        std::cerr << "OpenGL error " << err << " at " << fname << ":" << line << " - for " << stmt << std::endl;
+        Logger::logs("OpenGL error ", err, " at ", fname, ":", line, " - for ", stmt);
         err = glGetError();
     }
 }

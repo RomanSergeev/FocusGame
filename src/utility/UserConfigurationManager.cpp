@@ -52,7 +52,7 @@ UserConfiguration UserConfigurationManager::loadConfiguration(const std::string&
     INIReader reader(filename);
     int error = reader.ParseError();
     if (error < 0) {
-        std::cerr << "UserConfigurationManager::loadConfiguration: can't load file " << filename << ", falling back to defaults." << std::endl;
+        Logger::logs("UserConfigurationManager::loadConfiguration: can't load file ", filename, ", falling back to defaults.");
         return UserConfiguration(defaultColors, defaultCameraSettings);
     }
 
