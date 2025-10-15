@@ -97,6 +97,8 @@ public:
         bool operator == (const SelectableView& sv) const { return cellPtr == sv.cellPtr && checkerPtr == sv.checkerPtr; }
         bool operator != (const SelectableView& sv) const { return !(*this == sv); }
 
+        const Cell* getCellPtr() const { return cellPtr ? cellPtr->cellRef : nullptr; }
+        const Checker* getCheckerPtr() const { return checkerPtr ? checkerPtr->checkerRef : nullptr; }
         bool isEmpty() const { return !isCellView() && !isCheckerView(); }
         bool isCellView() const { return cellPtr != nullptr; }
         bool isCheckerView() const { return checkerPtr != nullptr; }
@@ -117,5 +119,6 @@ public:
     void updateOnCurrentPlayerChange(PlayerSlot newCurrentPlayerSlot);
     void draw(PlayerSlot perspective, const Shader& shader, float currentTime);
     SelectableView getHoveredShape(const SessionKey& key, const Ray& ray);
+    SelectableView getCheckerSV(const SessionKey& key, const Checker* c);
     void updatePlayerColors(const SessionKey& key, const std::unordered_map<PlayerSlot, Color>& colors) { displayedPlayerColors = colors; }
 };

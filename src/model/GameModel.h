@@ -1,5 +1,6 @@
 #pragma once
 #include <map>
+#include "Constants.h"
 #include "GameBoard.h"
 
 class GameModel {
@@ -48,6 +49,10 @@ class GameModel {
     void transferMove(const SessionKey& key);
 public:
     struct Turn {
+        static Turn constructTurnMove(const Coord& from, const Coord& to);
+        static Turn constructTurnPlace(PlayerSlot associatedPlayer, int checkerAmount, const Coord& to);
+        static Turn constructTurnTransfer(PlayerSlot associatedPlayer, int checkerAmount);
+        
         TurnType type; // Move, Place, Transfer
         PlayerSlot assocPlayer; // Place, Transfer
         int checkerAmount; // Place, Transfer
@@ -79,4 +84,6 @@ public:
     bool isGameOver() const { return !gameInProgress; }
     MovePossibility getPossibleMovesFor(const Coord& cd) const;
     Coord locateCheckerOnBoard(const Checker& c) const;
+    Coord getCellCoord(const Cell& c) const;
+    bool isSelectableChecker(const Checker& c) const;
 };

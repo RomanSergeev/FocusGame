@@ -4,6 +4,31 @@
 #include "Player.h"
 #include "utility/Utils.h"
 
+GameModel::Turn GameModel::Turn::constructTurnMove(const Coord& from, const Coord& to) {
+    Turn result;
+    result.type = TurnType::Move;
+    result.from = from;
+    result.to = to;
+    return result;
+}
+
+GameModel::Turn GameModel::Turn::constructTurnPlace(PlayerSlot associatedPlayer, int checkerAmount, const Coord &to) {
+    Turn result;
+    result.type = TurnType::Place;
+    result.assocPlayer = associatedPlayer;
+    result.checkerAmount = checkerAmount;
+    result.to = to;
+    return result;
+}
+
+GameModel::Turn GameModel::Turn::constructTurnTransfer(PlayerSlot associatedPlayer, int checkerAmount) {
+    Turn result;
+    result.type = TurnType::Transfer;
+    result.assocPlayer = associatedPlayer;
+    result.checkerAmount = checkerAmount;
+    return result;
+}
+
 const Player* GameModel::getPlayerBySlot(PlayerSlot slot) const {
     for (const Player& player : players) {
         if (player.slot == slot) return &player;
@@ -323,8 +348,31 @@ Coord GameModel::locateCheckerOnBoard(const Checker& c) const {
             const Cell& cell = board[cd];
             const std::vector<Checker>& checkers = cell.getCheckers();
             for (const Checker& checker : checkers)
-                if (&c == &checker) // comparing checkers by addresses since they can't be copied
+                if (&checker == &c) // comparing checkers by addresses since they can't be copied
                     return cd;
         }
     return Coord::INVALID_COORD;
+}
+
+Coord GameModel::getCellCoord(const Cell& c) const {
+    for (idxtype i = 0; i < board.sizes.x; ++i)
+        for (idxtype j = 0; j < board.sizes.y; ++j) {
+            Coord cd(i, j);
+            const Cell& cell = board[cd];
+            if (&cell == &c) return cd;
+        }
+    return Coord::INVALID_COORD;
+}
+
+bool GameModel::isSelectableChecker(const Checker& c) const {
+    const Player& currentPlayer = getCurrentPlayer();
+    if (!c.isOnBoard()) { // is in someone's tray
+        if (!c.isInTrayOf(currentPlayer.getSlot())) return false;
+        const Player* owner = c.getPlayerReference();
+        if (!owner->sameTeam(currentPlayer)) return false; // cannot operate with captured checkers
+        if (owner == &currentPlayer) return rules.canPlaceReserve();
+        return rules.canPlaceAlliedReserve;
+    }
+    Coord cd = locateCheckerOnBoard(c);
+    return cd != Coord::INVALID_COORD && board[cd].getOwnership() == &currentPlayer;
 }

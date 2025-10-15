@@ -217,3 +217,11 @@ GameView::SelectableView GameView::getHoveredShape(const SessionKey& key, const 
         checkShapeIntersection(ray, dchecker, result, minDist);
     return result;
 }
+
+GameView::SelectableView GameView::getCheckerSV(const SessionKey& key, const Checker* c) {
+    if (c == nullptr) return SelectableView();
+    for (CheckerView& cView : displayedCheckers) 
+        if (cView.checkerRef == c)
+            return SelectableView(cView);
+    return SelectableView();
+}
