@@ -13,6 +13,7 @@ GameModel BoardEditor::createBoard8x8Focus() {
     players.reserve(2);
     players.emplace_back(key, PlayerSlot::Player1, TeamSlot::Team1, PlayerType::HUMAN_LOCAL);
     players.emplace_back(key, PlayerSlot::Player2, TeamSlot::Team2, PlayerType::HUMAN_LOCAL);
+    resultBoard.setupCellCoordinates(key);
 
     resultBoard.markUnplayableByCondition(key, [](unsigned int sizeX, unsigned int sizeY, int i, int j) {
         float distX = sizeX / 2.0 - 0.5 - i;
@@ -43,6 +44,7 @@ GameModel BoardEditor::createBoard8x8Chess() {
     players.reserve(2);
     players.emplace_back(key, PlayerSlot::Player1, TeamSlot::Team1, PlayerType::HUMAN_LOCAL);
     players.emplace_back(key, PlayerSlot::Player2, TeamSlot::Team2, PlayerType::HUMAN_LOCAL);
+    resultBoard.setupCellCoordinates(key);
 
     for (idxtype i = 0; i < 2; ++i)
         for (idxtype j = 0; j < 8; ++j)

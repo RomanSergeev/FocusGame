@@ -95,10 +95,7 @@ void GameSession::onClick() { // called only when it's our turn
             performTurn(turn);
             break;}
         }
-    } else if (hoveredShape.isCheckerView()) { // clicking on a checker - first define where it is
-        /*SelectionData whatsClicked = locateChecker(hoveredShape.getCheckerPtr());
-        if (whatsClicked.isEmpty()) return; // shouldn't be, but for a safety check
-        const Checker* c = whatsClicked.getCheckers().front().getCheckerPtr(); // should have a single checker in it*/
+    } else if (hoveredShape.isCheckerView()) { // clicking on a checker
         // regardless of where it is, we should first check that it's a selectable distinct checker / part of a tower
         const Checker* c = hoveredShape.getCheckerPtr();
         if (c == nullptr || !model.isSelectableChecker(*c)) return;
@@ -108,7 +105,7 @@ void GameSession::onClick() { // called only when it's our turn
             initSelection();
             break;
             case SE::Tower:
-            if (!boardClicked || model.locateCheckerOnBoard(*c) != storedSelection.getCoordinate())
+            if (!boardClicked || c->getPositionOnBoard() != storedSelection.getCoordinate())
                 initSelection(); // for a tower already selected and clicked once again, do nothing
             break;
             case SE::Reserve:
@@ -150,7 +147,7 @@ void GameSession::initSelection() {
     storedSelection.drop();
     SV sv = view.getCheckerSV(key, c);
     if (c->isOnBoard()) {
-        Coord cd = model.locateCheckerOnBoard(*c);
+        Coord cd = c->getPositionOnBoard();
         storedSelection.set(cd);
         const Cell& cell = model.getCellAt(cd);
         const std::vector<Checker>& checkers = cell.getCheckers(); // all checkers, including clicked-on
@@ -163,13 +160,6 @@ void GameSession::initSelection() {
     }
 }
 
-/*GameSession::SelectionData GameSession::locateChecker(const Checker* c) const {
-    if (c == nullptr) return SelectionData();
-    for (auto slot : allPlayers)
-        if (c->isInTrayOf(slot)) return SelectionData(model.getCurrentPlayer().getSlot(), slot);
-    return SelectionData(model.locateCheckerOnBoard(*c));
-}*/
-
 bool GameSession::performTurn(const GameModel::Turn& turn) {
     bool result = model.makeTurn(key, turn);
     if (!result) return false;
@@ -177,6 +167,7 @@ bool GameSession::performTurn(const GameModel::Turn& turn) {
     bool gameOver = model.isGameOver();
     if (gameOver) lockSelection();
     const Player& currentPlayer = model.getCurrentPlayer();
+    view.updateCheckerPositions();
     view.updateOnCurrentPlayerChange(currentPlayer.getSlot());
     calculatePossibleMoves();
     return true;

@@ -1,4 +1,5 @@
 #include <iterator>
+#include <vector>
 #include "Constants.h"
 #include "GameModel.h"
 #include "Player.h"
@@ -160,25 +161,35 @@ void GameModel::updateDefeatedPlayers() {
     }
 }
 
-void GameModel::putExcessToTray(const SessionKey& key, const Coord& from) {
-    std::vector<Checker>& stack = board.at(from).getCheckers(key);
-    if (stack.size() <= rules.maxTowerHeight) return;
-    const Player& currentPlayer = getCurrentPlayer();
-    auto start = stack.begin();
-    auto end = stack.begin() + (stack.size() - rules.maxTowerHeight);
-    for (auto iter = start; iter != end; ++iter) { // mark the chunk for display
-        iter->putInTrayOf(key, currentPlayer.slot);
+void GameModel::moveAndAppendCheckers(const SessionKey& key, const Coord& from, const Coord& to, int srcStart, int srcEnd) {
+    std::vector<Checker>& source = board.at(from).getCheckers(key);
+    if (srcStart < 0 || srcEnd < 0 || srcStart > source.size() || srcEnd > source.size() || srcStart > srcEnd) return;
+    std::vector<Checker>* destination;
+    auto start = source.begin() + srcStart;
+    auto end = source.begin() + srcEnd;
+    if (to == Coord::INVALID_COORD) {
+        const Player& currentPlayer = getCurrentPlayer();
+        destination = &trays.at(currentPlayer.slot);
+        for (auto iter = start; iter != end; ++iter)
+            iter->putInTrayOf(key, currentPlayer.slot);
+    } else {
+        destination = &board.at(to).getCheckers(key);
+        for (auto iter = start; iter != end; ++iter)
+            iter->putOnBoard(key, to);
     }
-    std::vector<Checker>& tray = trays.at(getCurrentPlayer().slot);
-    moveAndAppend(stack, tray, start, end);
+    moveAndAppend(source, *destination, start, end);
+}
+
+void GameModel::putExcessToTray(const SessionKey& key, const Coord& from) {
+    int height = board[from].getTowerHeight();
+    moveAndAppendCheckers(key, from, Coord::INVALID_COORD, 0, height - rules.maxTowerHeight);
 }
 
 bool GameModel::move(const SessionKey& key, const Coord& from, const Coord& to) {
     int amount = canMove(from, to);
     if (amount == CANNOT_MOVE) return false;
-    std::vector<Checker>& vFrom = board.at(from).getCheckers(key);
-    std::vector<Checker>& vTo = board.at(to).getCheckers(key);
-    moveAndAppend(vFrom, vTo, vFrom.end() - amount, vFrom.end());
+    int height = board[from].getTowerHeight();
+    moveAndAppendCheckers(key, from, to, height - amount, height);
     putExcessToTray(key, to);
     return true;
 }
@@ -208,6 +219,7 @@ bool GameModel::transferCheckers(const SessionKey& key, const Player& toPlayer, 
     std::vector<Checker>& tray = trays.at(currentPlayer.slot);
     for (auto iter = tray.begin(); toPlace > 0 && iter != tray.end(); ) {
         if (iter->getPlayerReference() == &toPlayer) {
+            iter->putInTrayOf(key, toPlayer.slot);
             trays.at(toPlayer.slot).push_back(std::move(*iter));
             iter = tray.erase(iter);
             --toPlace;
@@ -341,19 +353,6 @@ GameModel::MovePossibility GameModel::getPossibleMovesFor(const Coord& cd) const
     return mp;
 }
 
-Coord GameModel::locateCheckerOnBoard(const Checker& c) const {
-    for (idxtype i = 0; i < board.sizes.x; ++i)
-        for (idxtype j = 0; j < board.sizes.y; ++j) {
-            Coord cd(i, j);
-            const Cell& cell = board[cd];
-            const std::vector<Checker>& checkers = cell.getCheckers();
-            for (const Checker& checker : checkers)
-                if (&checker == &c) // comparing checkers by addresses since they can't be copied
-                    return cd;
-        }
-    return Coord::INVALID_COORD;
-}
-
 Coord GameModel::getCellCoord(const Cell& c) const {
     for (idxtype i = 0; i < board.sizes.x; ++i)
         for (idxtype j = 0; j < board.sizes.y; ++j) {
@@ -366,13 +365,11 @@ Coord GameModel::getCellCoord(const Cell& c) const {
 
 bool GameModel::isSelectableChecker(const Checker& c) const {
     const Player& currentPlayer = getCurrentPlayer();
-    if (!c.isOnBoard()) { // is in someone's tray
-        if (!c.isInTrayOf(currentPlayer.getSlot())) return false;
-        const Player* owner = c.getPlayerReference();
-        if (!owner->sameTeam(currentPlayer)) return false; // cannot operate with captured checkers
-        if (owner == &currentPlayer) return rules.canPlaceReserve();
-        return rules.canPlaceAlliedReserve;
-    }
-    Coord cd = locateCheckerOnBoard(c);
-    return cd != Coord::INVALID_COORD && board[cd].getOwnership() == &currentPlayer;
+    if (c.isOnBoard()) return board[c.getPositionOnBoard()].getOwnership() == &currentPlayer;
+    
+    if (!c.isInTrayOf(currentPlayer.getSlot())) return false;
+    const Player* owner = c.getPlayerReference();
+    if (!owner->sameTeam(currentPlayer)) return false; // cannot operate with captured checkers
+    if (owner == &currentPlayer) return rules.canPlaceReserve();
+    return rules.canPlaceAlliedReserve;
 }

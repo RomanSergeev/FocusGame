@@ -1,5 +1,6 @@
 #include <stdexcept>
 #include "GameBoard.h"
+#include "Constants.h"
 
 const Coord Coord::INVALID_COORD(-1, -1);
 
@@ -42,7 +43,7 @@ JumpDirection reverseDirection(JumpDirection jd) {
 
 void GameBoard::placeChecker(const AccessKey& key, const Coord& cd, Checker&& c) {
     if (!validCoordinate(cd)) throw std::invalid_argument("GameBoard::place: coordinate out of range");
-    c.removeFromTray(key);
+    c.putOnBoard(key, cd);
     at(cd).append(std::move(c));
 }
 
@@ -116,4 +117,10 @@ void GameBoard::markCell(const EditorKey& key, const Coord& cd, bool flagPlayabl
     if (!validCoordinate(cd)) throw std::invalid_argument("GameBoard::markCell: coordinate out of range");
     at(cd).setPlayable(key, flagPlayable);
     at(cd).setJumpable(key, flagJumpable);
+}
+
+void GameBoard::setupCellCoordinates(const EditorKey& key) {
+    for (idxtype i = 0; i < sizes.x; ++i)
+        for (idxtype j = 0; j < sizes.y; ++j)
+            board[i][j].setCoordinate(key, {i, j});
 }

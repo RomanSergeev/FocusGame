@@ -183,6 +183,16 @@ GameView::GameView(const GameModel& gm, BoardShapeType shapeType) : model(gm), t
     createTrays();
 }
 
+void GameView::updateCheckerPositions() {
+    idxtype rows = model.getRows(),
+            cols = model.getColumns();
+    for (idxtype i = 0; i < rows; ++i)
+        for (idxtype j = 0; j < cols; ++j) {
+            const Cell& cell = model.getCellAt({i, j});
+            // TODO continue
+        }
+}
+
 void GameView::updateOnCurrentPlayerChange(PlayerSlot newCurrentPlayerSlot) {
     if (turnIdentifier.shape == nullptr) return;
     turnIdentifier.shape->setColor(getDefaultColor(newCurrentPlayerSlot).toVec3());

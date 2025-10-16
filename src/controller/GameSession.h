@@ -59,7 +59,6 @@ class GameSession {
     void clearAllSelection();
     void lockSelection();
     void initSelection(); // fills up storedSelection based on the current checker clicked, being the first such checker
-    // SelectionData locateChecker(const Checker* c) const;
     bool performTurn(const GameModel::Turn& turn);
 public:
     GameSession(GameModel&& model, GameView::BoardShapeType type);

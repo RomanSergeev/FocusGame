@@ -42,6 +42,8 @@ class GameModel {
     int getTraySize(PlayerSlot ownedByPlayer, PlayerSlot ofPlayer) const;
 
     void updateDefeatedPlayers(); // can be public, but doesn't need to be
+    // either to current player's tray (to == INVALID_COORD), or a cell (to is valid)
+    void moveAndAppendCheckers(const SessionKey& key, const Coord& from, const Coord& to, int srcStart, int srcEnd);
     void putExcessToTray(const SessionKey& key, const Coord& from);
     bool move(const SessionKey& key, const Coord& from, const Coord& to);
     bool placeReserve(const SessionKey& key, const Coord& cd, const Player& ofPlayer, int amount);
@@ -83,7 +85,6 @@ public:
     bool makeTurn(const SessionKey& key, const Turn& turn);
     bool isGameOver() const { return !gameInProgress; }
     MovePossibility getPossibleMovesFor(const Coord& cd) const;
-    Coord locateCheckerOnBoard(const Checker& c) const;
     Coord getCellCoord(const Cell& c) const;
     bool isSelectableChecker(const Checker& c) const;
 };
