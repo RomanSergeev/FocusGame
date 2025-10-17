@@ -2,6 +2,7 @@
 #include <algorithm>
 #include <iomanip>
 #include <iterator>
+#include <list>
 #include <utility>
 #include "Logger.h"
 #include "graphics/Shader.h"
@@ -18,6 +19,10 @@ template<typename Container>
 void moveAndAppend(Container& src, Container& dest, typename Container::iterator srcFrom, typename Container::iterator srcTo) {
     dest.insert(dest.end(), std::make_move_iterator(srcFrom), std::make_move_iterator(srcTo));
     src.erase(srcFrom, srcTo);
+}
+template<typename T>
+void moveAndAppend(std::list<T>& src, std::list<T>& dest, typename std::list<T>::iterator srcFrom, typename std::list<T>::iterator srcTo) {
+    dest.splice(dest.end(), src, srcFrom, srcTo);
 }
 
 class ShaderCarousel {

@@ -1,6 +1,7 @@
 #include <cfloat>
 #include <stdexcept>
 #include "OpenGLShape.h"
+#include "Constants.h"
 #include "glm/ext/matrix_transform.hpp"
 
 /********** private **********/
@@ -68,12 +69,12 @@ std::pair<int, int> OpenGLShape::locatePositionWithOffset() const {
         if (pair.first == AttributeType::Position) return { offset, pair.second };
         offset += pair.second;
     }
-    return { -1, -1 };
+    return { INVALID_INDEX, INVALID_INDEX };
 }
 
 bool OpenGLShape::getVertexBoundaries(glm::vec3& minPoint, glm::vec3& maxPoint) const {
     std::pair<int, int> position = locatePositionWithOffset();
-    if (position.first == -1) return false;
+    if (position.first == INVALID_INDEX) return false;
 
     minPoint = glm::vec3( FLT_MAX);
     maxPoint = glm::vec3(-FLT_MAX);

@@ -13,7 +13,7 @@ struct Coord { // board coordinates wrapper
     bool operator != (const Coord& c) const { return x != c.x || y != c.y; }
 };
 
-// Coord is used as a key of GameSession::allPossibleMoves map, so it needs its hash defined
+// Coord is used as a key of GameSession::allPossibleMoves map, as well as GameView::displayedBoard so it needs its hash defined
 namespace std {
     template<>
     struct hash<Coord> {
@@ -39,7 +39,9 @@ public:
     Checker& operator = (const Checker& c) = delete;
     Checker(Checker&& c);
     Checker& operator = (Checker&& c);
-    ~Checker() { --count; }
+    ~Checker() {
+        --count;
+    }
 
     const Player* getPlayerReference() const { return playerRef; }
     Coord getPositionOnBoard() const { return positionOnBoard; }

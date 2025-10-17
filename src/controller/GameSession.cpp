@@ -80,7 +80,7 @@ void GameSession::onClick() { // called only when it's our turn
     const Player& currentPlayer = model.getCurrentPlayer();
     if (hoveredShape.isCellView()) { // clicking on a cell - something should happen only when we have stuff selected
         const Cell* cellTo = hoveredShape.getCellPtr();
-        Coord to = model.getCellCoord(*cellTo);
+        Coord to = cellTo->getCoordinate();
         switch (whatsAlreadySelected) {
             case SE::None: // nothing is selected and we're clicking on a cell - nothing happens
             break;
@@ -150,9 +150,10 @@ void GameSession::initSelection() {
         Coord cd = c->getPositionOnBoard();
         storedSelection.set(cd);
         const Cell& cell = model.getCellAt(cd);
-        const std::vector<Checker>& checkers = cell.getCheckers(); // all checkers, including clicked-on
-        for (int i = 0; i < checkers.size(); ++i)
-            storedSelection.add(view.getCheckerSV(key, &checkers.at(i)));
+        const CheckerContainer& checkers = cell.getCheckers(); // all checkers, including clicked-on
+        int i = 0;
+        for (auto iter = cell.getStartIterator(); iter != cell.getEnd(); ++iter, ++i)
+            storedSelection.add(view.getCheckerSV(key, &(*iter)));
     } else {
         PlayerSlot owner = c->getPlayerReference()->getSlot();
         storedSelection.set(owner);
@@ -167,7 +168,7 @@ bool GameSession::performTurn(const GameModel::Turn& turn) {
     bool gameOver = model.isGameOver();
     if (gameOver) lockSelection();
     const Player& currentPlayer = model.getCurrentPlayer();
-    view.updateCheckerPositions();
+    view.updateCheckerPositions(currentPlayer.getSlot());
     view.updateOnCurrentPlayerChange(currentPlayer.getSlot());
     calculatePossibleMoves();
     return true;

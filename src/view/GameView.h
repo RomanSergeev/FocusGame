@@ -1,5 +1,6 @@
 #pragma once
 #include <memory>
+#include <unordered_map>
 #include "Color.h"
 #include "model/GameModel.h"
 #include "shapes/OpenGLShape.h"
@@ -12,7 +13,7 @@ public:
         Sphere
     };
 private:
-    struct CellView {
+    struct CellView { // TODO unite under shape+anchor+up base class
         std::unique_ptr<OpenGLShape> shape;
         glm::vec3 anchorPoint;
         glm::vec3 upVector;
@@ -41,6 +42,7 @@ private:
         CheckerView& operator = (CheckerView&& dc) noexcept = default;
 
         void select(SelectionType type);
+        void reposition(const glm::vec3& newPosition);
     };
 
     struct TrayView {
@@ -57,6 +59,8 @@ private:
         TrayView& operator = (const TrayView& dc) = delete;
         TrayView(TrayView&& dc) noexcept = default;
         TrayView& operator = (TrayView&& dc) noexcept = delete; // only move assignment
+
+        void reposition(const glm::vec3& newPosition);
     };
 
     static constexpr float FB_CELL_WIDTH = 2; // flat board
@@ -73,9 +77,12 @@ private:
     static CellView createCellView(const Cell& c, const glm::vec3& position, const glm::vec3& dimensions, const Color& color);
     static CheckerView createCheckerView(const Checker& c, const glm::vec3& position);
     static TrayView createTrayView(PlayerSlot owner, PlayerSlot ofPlayer, const glm::vec3& position);
+    glm::vec3 calculateCheckerPosition(const glm::vec3& anchor, const glm::vec3& up, int index) const;
+    glm::vec3 calculateCheckerViewBoardPosition(const CheckerView& cv) const;
+    glm::vec3 calculateCheckerViewTrayPosition(const CheckerView& cv, PlayerSlot perspective, int index) const;
     
     const GameModel& model;
-    std::vector<std::vector<CellView>> displayedBoard;
+    std::unordered_map<Coord, CellView> displayedBoard;
     std::vector<CheckerView> displayedCheckers;
     std::map<PlayerSlot, std::vector<TrayView>> displayedTrays;
     std::unordered_map<PlayerSlot, Color> displayedPlayerColors;
@@ -116,7 +123,7 @@ public:
     GameView(const GameView& gv) = delete;
     GameView& operator = (const GameView& gv) = delete;
 
-    void updateCheckerPositions();
+    void updateCheckerPositions(PlayerSlot perspective);
     void updateOnCurrentPlayerChange(PlayerSlot newCurrentPlayerSlot);
     void draw(PlayerSlot perspective, const Shader& shader, float currentTime);
     SelectableView getHoveredShape(const SessionKey& key, const Ray& ray);

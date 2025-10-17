@@ -8,6 +8,7 @@ inline const glm::vec3 SPACE_ORIGIN(0.0f);
 inline const float PI = glm::pi<float>();
 const float TRACE_PRECISION = 1e-6f;
 
+const int INVALID_INDEX = -1; // for all vector searches
 const int MAX_BOARD_SIZE = 100;
 const int OVERLIMIT_SIZE = 101; // anything >= MAX_BOARD_SIZE
 

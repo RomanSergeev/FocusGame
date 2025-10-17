@@ -1,5 +1,6 @@
 #pragma once
 #include <map>
+#include "Cell.h"
 #include "Constants.h"
 #include "GameBoard.h"
 
@@ -26,7 +27,7 @@ class GameModel {
 
     GameBoard board;
     std::vector<Player> players;
-    std::map<PlayerSlot, std::vector<Checker>> trays;
+    std::map<PlayerSlot, CheckerContainer> trays;
     GameRules rules;
     int activePlayerIndex;
     bool gameInProgress; // transferMove should be the only place where this changes
@@ -85,6 +86,5 @@ public:
     bool makeTurn(const SessionKey& key, const Turn& turn);
     bool isGameOver() const { return !gameInProgress; }
     MovePossibility getPossibleMovesFor(const Coord& cd) const;
-    Coord getCellCoord(const Cell& c) const;
     bool isSelectableChecker(const Checker& c) const;
 };

@@ -1,5 +1,6 @@
 #include <iterator>
 #include <vector>
+#include "Cell.h"
 #include "Constants.h"
 #include "GameModel.h"
 #include "Player.h"
@@ -65,7 +66,7 @@ bool GameModel::canPerformAnyMove(const Player& player) const {
 
 bool GameModel::canPlaceAnywhere(const Player& player) const {
     bool anyReserve = false;
-    const std::vector<Checker>& tray = trays.at(player.slot);
+    const CheckerContainer& tray = trays.at(player.slot);
     for (const Checker& c : tray) {
         const Player* p = c.getPlayerReference();
         if (isNull(p, "GameModel::canPlaceAnywhere: found Cell's null Player reference")) continue;
@@ -98,7 +99,7 @@ bool GameModel::canPlaceAnywhere(const Player& player) const {
 
 bool GameModel::canTransferAnything(const Player& player) const {
     if (!rules.canTransferToAlly()) return false;
-    const std::vector<Checker>& tray = trays.at(player.slot);
+    const CheckerContainer& tray = trays.at(player.slot);
     for (const Checker& c : tray) {
         const Player* p = c.getPlayerReference();
         if (isNull(p, "GameModel::canTransferAnything: found Cell's null Player reference")) continue;
@@ -162,11 +163,12 @@ void GameModel::updateDefeatedPlayers() {
 }
 
 void GameModel::moveAndAppendCheckers(const SessionKey& key, const Coord& from, const Coord& to, int srcStart, int srcEnd) {
-    std::vector<Checker>& source = board.at(from).getCheckers(key);
+    CheckerContainer& source = board.at(from).getCheckers(key);
     if (srcStart < 0 || srcEnd < 0 || srcStart > source.size() || srcEnd > source.size() || srcStart > srcEnd) return;
-    std::vector<Checker>* destination;
-    auto start = source.begin() + srcStart;
-    auto end = source.begin() + srcEnd;
+    CheckerContainer* destination;
+    auto start = source.begin(), end = source.begin();
+    std::advance(start, srcStart);
+    std::advance(end, srcEnd);
     if (to == Coord::INVALID_COORD) {
         const Player& currentPlayer = getCurrentPlayer();
         destination = &trays.at(currentPlayer.slot);
@@ -198,7 +200,7 @@ bool GameModel::placeReserve(const SessionKey& key, const Coord& cd, const Playe
     if (!canPlaceReserve(cd, ofPlayer, amount)) return false;
     int toPlace = amount;
     const Player& currentPlayer = getCurrentPlayer();
-    std::vector<Checker>& tray = trays.at(currentPlayer.slot);
+    CheckerContainer& tray = trays.at(currentPlayer.slot);
     for (auto iter = tray.begin(); toPlace > 0 && iter != tray.end(); ) {
         if (iter->getPlayerReference() == &ofPlayer) {
             board.place(key, cd, std::move(*iter));
@@ -216,7 +218,7 @@ bool GameModel::transferCheckers(const SessionKey& key, const Player& toPlayer, 
     if (!canTransferCheckers(toPlayer, amount)) return false;
     int toPlace = amount;
     const Player& currentPlayer = getCurrentPlayer();
-    std::vector<Checker>& tray = trays.at(currentPlayer.slot);
+    CheckerContainer& tray = trays.at(currentPlayer.slot);
     for (auto iter = tray.begin(); toPlace > 0 && iter != tray.end(); ) {
         if (iter->getPlayerReference() == &toPlayer) {
             iter->putInTrayOf(key, toPlayer.slot);
@@ -265,7 +267,7 @@ gameInProgress(false),
 activePlayerIndex(players.size() - 1) { // set active index to the last player before the game start
     for (const Player& player : players) {
         if (player.isSpectator()) continue;
-        trays.insert({ player.slot, std::vector<Checker>{} });
+        trays.insert({ player.slot, CheckerContainer{} });
     }
 }
 
@@ -351,16 +353,6 @@ GameModel::MovePossibility GameModel::getPossibleMovesFor(const Coord& cd) const
             mp.canGoTo.push_back({ &board[dest], minDistance });
         }
     return mp;
-}
-
-Coord GameModel::getCellCoord(const Cell& c) const {
-    for (idxtype i = 0; i < board.sizes.x; ++i)
-        for (idxtype j = 0; j < board.sizes.y; ++j) {
-            Coord cd(i, j);
-            const Cell& cell = board[cd];
-            if (&cell == &c) return cd;
-        }
-    return Coord::INVALID_COORD;
 }
 
 bool GameModel::isSelectableChecker(const Checker& c) const {

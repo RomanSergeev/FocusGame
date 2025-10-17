@@ -43,6 +43,18 @@ void GameView::SelectableView::select(SelectionType type) {
     else if (checkerPtr) checkerPtr->select(type);
 }
 
+void GameView::CheckerView::reposition(const glm::vec3& newPosition) {
+    position = newPosition;
+    if (shape != nullptr)
+        shape->translate(newPosition);
+}
+
+void GameView::TrayView::reposition(const glm::vec3& newPosition) {
+    position = newPosition;
+    if (shape != nullptr)
+        shape->translate(newPosition);
+}
+
 glm::vec3 GameView::calculateTrayPosition(const Coord& boardSizes, int totalTrays, int trayIndex) {
     float CW = FB_CELL_WIDTH; // cell width
     float TW = TRAY_DIMENSIONS[0]; // tray width
@@ -79,11 +91,10 @@ GameView::CellView GameView::createCellView(const Cell& c, const glm::vec3& posi
 GameView::CheckerView GameView::createCheckerView(const Checker& c, const glm::vec3& position) {
     CheckerView dChecker;
     dChecker.checkerRef = &c;
-    dChecker.position = position;
     std::unique_ptr<OpenGLShape> shape = std::make_unique<Cylinder>(CHECKER_HALF_WIDTH, CHECKER_HALF_WIDTH, CHECKER_HALF_HEIGHT, 32);
     shape->setColor(getDefaultColor(c.getPlayerReference()->getSlot()).toVec3());
-    shape->translate(dChecker.position);
     dChecker.shape = std::move(shape);
+    dChecker.reposition(position);
     return dChecker;
 }
 
@@ -91,22 +102,51 @@ GameView::TrayView GameView::createTrayView(PlayerSlot owner, PlayerSlot ofPlaye
     TrayView dTray(owner, ofPlayer);
     dTray.upVector = axisToVec3(Axis::Z);
     dTray.anchorPoint = position + dTray.upVector * (TRAY_DIMENSIONS[2] / 2);
-    dTray.position = position;
     std::unique_ptr<OpenGLShape> shape = std::make_unique<Cuboid>(TRAY_DIMENSIONS[0], TRAY_DIMENSIONS[1], TRAY_DIMENSIONS[2]);
     shape->setColor(getDefaultColor(ofPlayer).toVec3());
-    shape->translate(dTray.position);
     dTray.shape = std::move(shape);
+    dTray.reposition(position);
     return dTray;
+}
+
+glm::vec3 GameView::calculateCheckerPosition(const glm::vec3& anchor, const glm::vec3& up, int index) const {
+    return anchor + up * (CHECKER_HALF_HEIGHT * (2*index + 1));
+}
+
+glm::vec3 GameView::calculateCheckerViewBoardPosition(const CheckerView& cv) const {
+    const Checker* c = cv.checkerRef;
+    Coord cd = c->getPositionOnBoard();
+    int index = model.getCellAt(cd).getCheckerPosition(c);
+    if (index == INVALID_INDEX) return glm::vec3();
+    const CellView& clv = displayedBoard.at(cd);
+    glm::vec3 anchor = clv.anchorPoint, dir = clv.upVector;
+    return calculateCheckerPosition(anchor, dir, index);
+}
+
+glm::vec3 GameView::calculateCheckerViewTrayPosition(const CheckerView& cv, PlayerSlot perspective, int index) const {
+    const Checker* c = cv.checkerRef;
+    PlayerSlot owner = c->getPlayerReference()->getSlot();
+    // const TrayView& tv = displayedTrays.at(perspective); // TODO continue
+}
+
+void GameView::updateCheckerPositions(PlayerSlot perspective) { // TODO move down
+    for (CheckerView& cv : displayedCheckers) {
+        const Checker* c = cv.checkerRef;
+        if (c == nullptr) continue;
+        if (c->isOnBoard()) {
+            cv.reposition(calculateCheckerViewBoardPosition(cv));
+        } else if (!c->isInTrayOf(perspective)) continue;
+        // TODO continue
+    }
 }
 
 void GameView::createDisplayedBoard() {
     idxtype rows = model.getRows(),
             cols = model.getColumns();
-    displayedBoard.resize(rows);
-    for (idxtype i = 0; i < rows; ++i) {
-        displayedBoard[i].reserve(cols);
+    for (idxtype i = 0; i < rows; ++i)
         for (idxtype j = 0; j < cols; ++j) {
-            const Cell& cell = model.getCellAt({i, j});
+            Coord cd(i, j);
+            const Cell& cell = model.getCellAt(cd);
             bool playable = cell.isPlayable();
             if (!playable) continue;
             bool jumpable = cell.isJumpableOver();
@@ -120,23 +160,23 @@ void GameView::createDisplayedBoard() {
 
             // board
             CellView dCell = createCellView(cell, cellPosition, cellDimensions, cellColor);
-            displayedBoard[i].push_back(std::move(dCell));
+            displayedBoard.emplace(cd, std::move(dCell));
 
             // checkers
-            const std::vector<Checker>& checkers = cell.getCheckers();
-            const CellView& dCellNew = displayedBoard[i].back(); // cannot reference dCell anymore
-            for (int k = 0; k < checkers.size(); ++k) {
-                const Checker& checker = checkers.at(k);
-                CheckerView dChecker = createCheckerView(checker, dCellNew.anchorPoint + dCellNew.upVector * (CHECKER_HALF_HEIGHT * (2*k + 1)));
+            const CellView& dCellNew = displayedBoard.at(cd); // cannot reference dCell anymore
+            int k = 0;
+            for (auto iter = cell.getStartIterator(); iter != cell.getEnd(); ++iter, ++k) {
+                const Checker& checker = *iter;
+                glm::vec3 position = calculateCheckerPosition(dCellNew.anchorPoint, dCellNew.upVector, k);
+                CheckerView dChecker = createCheckerView(checker, position);
                 displayedCheckers.push_back(std::move(dChecker));
             }
         }
-    }
     // create turn identifier - rotating pseudo-checker
-    turnIdentifier.position = { 0, (rows*0.25 + 0.5) * (FB_CELL_WIDTH), FB_CELL_HEIGHT_NJ / 2 };
+    glm::vec3 position = { 0, (rows*0.25 + 0.5) * (FB_CELL_WIDTH), FB_CELL_HEIGHT_NJ / 2 };
     std::unique_ptr<OpenGLShape> shape = std::make_unique<Cylinder>(CHECKER_HALF_WIDTH, CHECKER_HALF_WIDTH, CHECKER_HALF_HEIGHT, 32);
-    shape->translate(turnIdentifier.position);
     turnIdentifier.shape = std::move(shape);
+    turnIdentifier.reposition(position);
 }
 
 void GameView::createTrays() {
@@ -171,7 +211,8 @@ void GameView::createTrays() {
             int k = amounts[ofPlayer]++; // creates map entry if not exists; takes non-incremented value; increments it then
             for (auto iter = trays.begin(); iter != trays.end(); ++iter) {
                 if (iter->ofPlayer != ofPlayer) continue;
-                CheckerView dchecker = createCheckerView(checker, iter->anchorPoint + iter->upVector * (CHECKER_HALF_HEIGHT * (2*k + 1)));
+                glm::vec3 position = calculateCheckerPosition(iter->anchorPoint, iter->upVector, k);
+                CheckerView dchecker = createCheckerView(checker, position);
                 displayedCheckers.push_back(std::move(dchecker));
             }
         }
@@ -183,25 +224,14 @@ GameView::GameView(const GameModel& gm, BoardShapeType shapeType) : model(gm), t
     createTrays();
 }
 
-void GameView::updateCheckerPositions() {
-    idxtype rows = model.getRows(),
-            cols = model.getColumns();
-    for (idxtype i = 0; i < rows; ++i)
-        for (idxtype j = 0; j < cols; ++j) {
-            const Cell& cell = model.getCellAt({i, j});
-            // TODO continue
-        }
-}
-
 void GameView::updateOnCurrentPlayerChange(PlayerSlot newCurrentPlayerSlot) {
     if (turnIdentifier.shape == nullptr) return;
     turnIdentifier.shape->setColor(getDefaultColor(newCurrentPlayerSlot).toVec3());
 }
 
 void GameView::draw(PlayerSlot perspective, const Shader& shader, float currentTime) {
-    for (const auto& row : displayedBoard)
-        for (const auto& dcell : row)
-            drawShape(dcell.shape.get(), shader, currentTime);
+    for (const auto& dcell : displayedBoard)
+        drawShape(dcell.second.shape.get(), shader, currentTime);
     for (const auto& trayEntry : displayedTrays) {
         if (trayEntry.first != perspective) continue;
         for (const auto& dtray : trayEntry.second)
@@ -220,15 +250,14 @@ void GameView::draw(PlayerSlot perspective, const Shader& shader, float currentT
 GameView::SelectableView GameView::getHoveredShape(const SessionKey& key, const Ray& ray) {
     float minDist = FLT_MAX;
     SelectableView result;
-    for (std::vector<CellView>& row : displayedBoard)
-        for (CellView& dcell : row)
-            checkShapeIntersection(ray, dcell, result, minDist);
+    for (auto& dcell : displayedBoard)
+        checkShapeIntersection(ray, dcell.second, result, minDist);
     for (CheckerView& dchecker : displayedCheckers)
         checkShapeIntersection(ray, dchecker, result, minDist);
     return result;
 }
 
-GameView::SelectableView GameView::getCheckerSV(const SessionKey& key, const Checker* c) {
+GameView::SelectableView GameView::getCheckerSV(const SessionKey& key, const Checker* c) { // TODO O(n)
     if (c == nullptr) return SelectableView();
     for (CheckerView& cView : displayedCheckers) 
         if (cView.checkerRef == c)

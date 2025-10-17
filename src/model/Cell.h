@@ -1,12 +1,14 @@
 #pragma once
-#include <vector>
+#include <list>
 #include "Checker.h"
 #include "Constants.h"
+
+using CheckerContainer = std::list<Checker>;
 
 class Cell {
     static int count;
 
-    std::vector<Checker> checkers; // begin == bottom checker, end-1 == top checker
+    CheckerContainer checkers; // begin == bottom checker, end-1 == top checker
     bool playable = true;
     bool jumpableOver = true;
     bool pole = false; // for spherical board in the future
@@ -26,13 +28,16 @@ public:
     bool isJumpableOver() const { return jumpableOver; }
     bool isPole() const { return pole; }
     Coord getCoordinate() const { return coordinate; }
-    const std::vector<Checker>& getCheckers() const { return checkers; }
-    std::vector<Checker>& getCheckers(const SessionKey& key) { return checkers; }
+    const CheckerContainer& getCheckers() const { return checkers; }
+    CheckerContainer& getCheckers(const SessionKey& key) { return checkers; }
     int getTowerHeight() const { return checkers.size(); }
+    CheckerContainer::const_iterator getStartIterator() const { return checkers.begin(); }
+    CheckerContainer::const_iterator getEnd() const { return checkers.end(); }
     
     void setCoordinate(const EditorKey& key, const Coord& cd) { coordinate = cd; }
     void setPlayable(const EditorKey& key, bool isPlayable) { playable = isPlayable; }
     void setJumpable(const EditorKey& key, bool isJumpable) { jumpableOver = isJumpable; }
+    int getCheckerPosition(const Checker* c) const;
 
     void append(Checker&& c) { checkers.push_back(std::move(c)); };
     const Player* getOwnership() const;

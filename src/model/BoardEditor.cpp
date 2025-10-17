@@ -2,6 +2,7 @@
 #include "Checker.h"
 #include "Constants.h"
 #include "GameModel.h"
+#include "model/GameBoard.h"
 #include "model/Player.h"
 
 GameModel BoardEditor::createBoard8x8Focus() {
@@ -53,6 +54,23 @@ GameModel BoardEditor::createBoard8x8Chess() {
     for (idxtype i = 6; i < 8; ++i)
         for (idxtype j = 0; j < 8; ++j)
             resultBoard.place(key, {j, i}, Checker(players.at(1)));
+
+    GameModel result(std::move(resultBoard), std::move(players));
+    return result;
+}
+
+GameModel BoardEditor::createBoard2x2Debug() {
+    GameBoard resultBoard({2, 2});
+    BoardEditor instance(resultBoard);
+    EditorKey key = instance.key;
+    std::vector<Player> players;
+    players.reserve(2);
+    players.emplace_back(key, PlayerSlot::Player1, TeamSlot::Team1, PlayerType::HUMAN_LOCAL);
+    players.emplace_back(key, PlayerSlot::Player2, TeamSlot::Team2, PlayerType::HUMAN_LOCAL);
+    resultBoard.setupCellCoordinates(key);
+
+    resultBoard.place(key, {1, 1}, Checker(players.at(0)));
+    resultBoard.place(key, {0, 0}, Checker(players.at(1)));
 
     GameModel result(std::move(resultBoard), std::move(players));
     return result;
