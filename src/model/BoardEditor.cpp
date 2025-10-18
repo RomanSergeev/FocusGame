@@ -60,7 +60,7 @@ GameModel BoardEditor::createBoard8x8Chess() {
 }
 
 GameModel BoardEditor::createBoard2x2Debug() {
-    GameBoard resultBoard({2, 2});
+    GameBoard resultBoard({6, 2});
     BoardEditor instance(resultBoard);
     EditorKey key = instance.key;
     std::vector<Player> players;

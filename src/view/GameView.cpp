@@ -62,10 +62,10 @@ glm::vec3 GameView::calculateTrayPosition(const Coord& boardSizes, int totalTray
     float TW = TRAY_DIMENSIONS[0]; // tray width
     float TH = TRAY_DIMENSIONS[1]; // tray height
     float TG = TRAY_GAP; // tray gap
-    float AW = boardSizes.y * CW; // available (board) width
+    float AW = boardSizes.x * CW; // available (board) width
 
     int M = floor((AW + TG) / (TW + TG)); // maximum trays in one row
-    float y0 = -boardSizes.x * CW / 2; // y bottom line of the board
+    float y0 = -boardSizes.y * CW / 2; // y bottom line of the board
 
     // positioning math
     int r = trayIndex / M; // tray row
