@@ -2,6 +2,7 @@
 #include <memory>
 #include <unordered_map>
 #include "Color.h"
+#include "Constants.h"
 #include "model/GameModel.h"
 #include "shapes/OpenGLShape.h"
 
@@ -77,6 +78,7 @@ private:
     static CellView createCellView(const Cell& c, const glm::vec3& position, const glm::vec3& dimensions, const Color& color);
     static CheckerView createCheckerView(const Checker& c, const glm::vec3& position);
     static TrayView createTrayView(PlayerSlot owner, PlayerSlot ofPlayer, const glm::vec3& position);
+    const TrayView* findTrayView(PlayerSlot owner, PlayerSlot ofPlayer) const;
     glm::vec3 calculateCheckerPosition(const glm::vec3& anchor, const glm::vec3& up, int index) const;
     glm::vec3 calculateCheckerViewBoardPosition(const CheckerView& cv) const;
     glm::vec3 calculateCheckerViewTrayPosition(const CheckerView& cv, PlayerSlot perspective, int index) const;
@@ -84,7 +86,7 @@ private:
     const GameModel& model;
     std::unordered_map<Coord, CellView> displayedBoard;
     std::vector<CheckerView> displayedCheckers;
-    std::map<PlayerSlot, std::vector<TrayView>> displayedTrays;
+    std::map<PlayerSlot, std::vector<TrayView>> displayedTrays; // TODO leave fixed amount of trays - just change their ownership every turn
     std::unordered_map<PlayerSlot, Color> displayedPlayerColors;
     CheckerView turnIdentifier;
     BoardShapeType type;

@@ -24,6 +24,10 @@ template<typename T>
 void moveAndAppend(std::list<T>& src, std::list<T>& dest, typename std::list<T>::iterator srcFrom, typename std::list<T>::iterator srcTo) {
     dest.splice(dest.end(), src, srcFrom, srcTo);
 }
+template<typename T>
+void moveAndAppend(std::list<T>& src, std::list<T>& dest, typename std::list<T>::iterator srcIter) {
+    moveAndAppend<T>(src, dest, srcIter, std::next(srcIter));
+}
 
 class ShaderCarousel {
     int currentIndex = 0;

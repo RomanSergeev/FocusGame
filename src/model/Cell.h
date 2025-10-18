@@ -1,7 +1,7 @@
 #pragma once
 #include <list>
 #include "Checker.h"
-#include "Constants.h"
+#include "utility/Utils.h"
 
 using CheckerContainer = std::list<Checker>;
 
@@ -39,6 +39,8 @@ public:
     void setJumpable(const EditorKey& key, bool isJumpable) { jumpableOver = isJumpable; }
     int getCheckerPosition(const Checker* c) const;
 
-    void append(Checker&& c) { checkers.push_back(std::move(c)); };
+    void create(Checker&& c) { checkers.push_back(std::move(c)); };
+    void transfer(CheckerContainer& cc, CheckerContainer::iterator srcFrom, CheckerContainer::iterator srcTo) { moveAndAppend(cc, checkers, srcFrom, srcTo); }
+    void transfer(CheckerContainer& cc, CheckerContainer::iterator iter) { moveAndAppend(cc, checkers, iter); }
     const Player* getOwnership() const;
 };

@@ -202,13 +202,10 @@ bool GameModel::placeReserve(const SessionKey& key, const Coord& cd, const Playe
     const Player& currentPlayer = getCurrentPlayer();
     CheckerContainer& tray = trays.at(currentPlayer.slot);
     for (auto iter = tray.begin(); toPlace > 0 && iter != tray.end(); ) {
-        if (iter->getPlayerReference() == &ofPlayer) {
-            board.place(key, cd, std::move(*iter));
-            iter = tray.erase(iter);
-            --toPlace;
-        } else {
-            ++iter;
-        }
+        if (iter->getPlayerReference() != &ofPlayer) { ++iter; continue; }
+        auto toMove = iter++;
+        board.moveCheckerToCoord(key, cd, tray, toMove);
+        --toPlace;
     }
     putExcessToTray(key, cd);
     return true;
@@ -218,16 +215,14 @@ bool GameModel::transferCheckers(const SessionKey& key, const Player& toPlayer, 
     if (!canTransferCheckers(toPlayer, amount)) return false;
     int toPlace = amount;
     const Player& currentPlayer = getCurrentPlayer();
-    CheckerContainer& tray = trays.at(currentPlayer.slot);
-    for (auto iter = tray.begin(); toPlace > 0 && iter != tray.end(); ) {
-        if (iter->getPlayerReference() == &toPlayer) {
-            iter->putInTrayOf(key, toPlayer.slot);
-            trays.at(toPlayer.slot).push_back(std::move(*iter));
-            iter = tray.erase(iter);
-            --toPlace;
-        } else {
-            ++iter;
-        }
+    CheckerContainer& trayFrom = trays.at(currentPlayer.slot);
+    CheckerContainer& trayTo = trays.at(toPlayer.slot);
+    for (auto iter = trayFrom.begin(); toPlace > 0 && iter != trayFrom.end(); ) {
+        if (iter->getPlayerReference() != &toPlayer) { ++iter; continue; }
+        iter->putInTrayOf(key, toPlayer.slot);
+        auto toMove = iter++;
+        trayTo.splice(trayTo.end(), trayFrom, toMove);
+        --toPlace;
     }
     return true;
 }

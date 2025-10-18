@@ -1,7 +1,9 @@
 #include <algorithm>
 #include <cfloat>
 #include <memory>
+#include <unordered_map>
 #include "GameView.h"
+#include "Constants.h"
 #include "utility/Defaults.h"
 #include "shapes/Cuboid.h"
 #include "shapes/Cylinder.h"
@@ -123,20 +125,37 @@ glm::vec3 GameView::calculateCheckerViewBoardPosition(const CheckerView& cv) con
     return calculateCheckerPosition(anchor, dir, index);
 }
 
-glm::vec3 GameView::calculateCheckerViewTrayPosition(const CheckerView& cv, PlayerSlot perspective, int index) const {
-    const Checker* c = cv.checkerRef;
-    PlayerSlot owner = c->getPlayerReference()->getSlot();
-    // const TrayView& tv = displayedTrays.at(perspective); // TODO continue
+const GameView::TrayView* GameView::findTrayView(PlayerSlot owner, PlayerSlot ofPlayer) const {
+    auto iter = displayedTrays.find(owner); // TODO O(n)
+    if (iter == displayedTrays.end()) return nullptr;
+    for (const TrayView& tv : iter->second)
+        if (tv.ofPlayer == ofPlayer)
+            return &tv;
+    return nullptr;
 }
 
-void GameView::updateCheckerPositions(PlayerSlot perspective) { // TODO move down
+glm::vec3 GameView::calculateCheckerViewTrayPosition(const CheckerView& cv, PlayerSlot perspective, int index) const {
+    const Checker* c = cv.checkerRef;
+    const TrayView* tv = findTrayView(perspective, c->getPlayerReference()->getSlot());
+    if (tv == nullptr) return glm::vec3();
+    return calculateCheckerPosition(tv->anchorPoint, tv->upVector, index);
+}
+
+void GameView::updateCheckerPositions(PlayerSlot perspective) {
+    std::unordered_map<PlayerSlot, int> trayAmounts; // TODO this is junk
+    for (PlayerSlot slot : allPlayers)
+        trayAmounts[slot] = 0;
     for (CheckerView& cv : displayedCheckers) {
         const Checker* c = cv.checkerRef;
         if (c == nullptr) continue;
         if (c->isOnBoard()) {
             cv.reposition(calculateCheckerViewBoardPosition(cv));
-        } else if (!c->isInTrayOf(perspective)) continue;
-        // TODO continue
+            continue;
+        }
+        if (!c->isInTrayOf(perspective)) continue;
+        PlayerSlot owner = c->getPlayerReference()->getSlot();
+        glm::vec3 position = calculateCheckerViewTrayPosition(cv, perspective, trayAmounts[owner]++);
+        cv.reposition(position);
     }
 }
 

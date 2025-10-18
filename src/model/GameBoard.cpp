@@ -1,5 +1,6 @@
 #include <stdexcept>
 #include "GameBoard.h"
+#include "Cell.h"
 #include "Constants.h"
 
 const Coord Coord::INVALID_COORD(-1, -1);
@@ -41,10 +42,23 @@ JumpDirection reverseDirection(JumpDirection jd) {
     }
 }
 
-void GameBoard::placeChecker(const AccessKey& key, const Coord& cd, Checker&& c) {
-    if (!validCoordinate(cd)) throw std::invalid_argument("GameBoard::place: coordinate out of range");
+void GameBoard::createCheckerOnCoord(const EditorKey& key, const Coord& cd, Checker&& c) {
+    if (!validCoordinate(cd)) throw std::invalid_argument("GameBoard::createChecker: coordinate out of range");
     c.putOnBoard(key, cd);
-    at(cd).append(std::move(c));
+    at(cd).create(std::move(c));
+}
+
+void GameBoard::moveCheckerToCoord(const SessionKey& key, const Coord& cd, CheckerContainer& ccFrom, CheckerContainer::iterator iter) {
+    if (!validCoordinate(cd)) throw std::invalid_argument("GameBoard::moveChecker: coordinate out of range");
+    iter->putOnBoard(key, cd);
+    at(cd).transfer(ccFrom, iter);
+}
+
+void GameBoard::moveCheckersToCoord(const SessionKey& key, const Coord& cd, CheckerContainer& ccFrom, CheckerContainer::iterator start, CheckerContainer::iterator end) {
+    if (!validCoordinate(cd)) throw std::invalid_argument("GameBoard::moveCheckers: coordinate out of range");
+    for (auto iter = start; iter != end; ++iter) // TODO can this duplication be avoided?
+        iter->putOnBoard(key, cd);
+    at(cd).transfer(ccFrom, start, end);
 }
 
 GameBoard::GameBoard(const Coord& dimensions, bool loopedRows, bool loopedCols) :
@@ -111,6 +125,10 @@ int GameBoard::testMovementInDirectionWithTether(const Coord& cFrom, const Coord
         if (at(c).isPole()) jd = reverseDirection(jd);
     }
     return OVERLIMIT_SIZE;
+}
+
+void GameBoard::placeExisting(const SessionKey& key, const Coord& cd, CheckerContainer& cc, CheckerContainer::iterator start, CheckerContainer::iterator end) {
+    moveCheckersToCoord(key, cd, cc, start, end);
 }
 
 void GameBoard::markCell(const EditorKey& key, const Coord& cd, bool flagPlayable, bool flagJumpable) {

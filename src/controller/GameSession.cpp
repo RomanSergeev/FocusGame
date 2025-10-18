@@ -121,14 +121,6 @@ void GameSession::onClick() { // called only when it's our turn
             break;
         }
     }
-    /*auto iter = std::find(selectedShapes.begin(), selectedShapes.end(), hoveredShape);
-    if (iter == selectedShapes.end()) {
-        selectedShapes.push_back(hoveredShape);
-        hoveredShape.select(SelectionType::Selected);
-    } else {
-        selectedShapes.erase(iter);
-        hoveredShape.select(SelectionType::ForSelection);
-    }*/
 }
 
 void GameSession::clearAllSelection() {

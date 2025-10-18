@@ -18,7 +18,9 @@ class GameBoard {
     bool loopedHorizontally = false;
     bool loopedVertically = false;
     std::vector<std::vector<Cell>> board;
-    void placeChecker(const AccessKey& key, const Coord& cd, Checker&& c);
+    void createCheckerOnCoord(const EditorKey& key, const Coord& cd, Checker&& c);
+    void moveCheckerToCoord(const SessionKey& key, const Coord& cd, CheckerContainer& ccFrom, CheckerContainer::iterator iter);
+    void moveCheckersToCoord(const SessionKey& key, const Coord& cd, CheckerContainer& ccFrom, CheckerContainer::iterator start, CheckerContainer::iterator end);
     const Cell& at(const Coord& cd) const { return operator[](cd); }
     Cell& at(const Coord& cd) { return board[cd.x][cd.y]; }
 public:
@@ -39,7 +41,8 @@ public:
     bool nextCoordinate(Coord& cd, JumpDirection jd, idxtype tetheredColumn = OVERLIMIT_SIZE) const; // returns false if cannot advance
     bool getCappedJumpDistanceInDirection(const Coord& cFrom, const Coord& cTo, JumpDirection jd, int& maxDistance) const;
     int testMovementInDirectionWithTether(const Coord& cFrom, const Coord& cTo, JumpDirection jd, int maxDistance, idxtype tether) const;
-    void place(const AccessKey& key, const Coord& cd, Checker&& c) { placeChecker(key, cd, std::move(c)); }
+    void placeNew(const EditorKey& key, const Coord& cd, Checker&& c) { createCheckerOnCoord(key, cd, std::move(c)); }
+    void placeExisting(const SessionKey& key, const Coord& cd, CheckerContainer& cc, CheckerContainer::iterator start, CheckerContainer::iterator end);
     void markCell(const EditorKey& key, const Coord& cd, bool flagPlayable, bool flagJumpable);
     template<typename Condition>
     void markUnplayableByCondition(const EditorKey& key, Condition c) {
