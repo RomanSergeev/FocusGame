@@ -58,7 +58,7 @@ AppController::AppController() :
     cameraController(WIDTH, HEIGHT),
     shaders(createShaders()),
     rayLine(SPACE_ORIGIN, SPACE_ORIGIN),
-    gameSession(BoardEditor::createBoard2x2Debug(), GameView::BoardShapeType::Flat) {
+    gameSession(BoardEditor::createBoard8x8Focus(), GameView::BoardShapeType::Flat) {
 
     registerCallbacks();
     Logger::instantiate(key, true);
@@ -129,6 +129,8 @@ void AppController::handleInputKey() {
         if (toggledFullscreenLastFrame) return;
         toggledFullscreenLastFrame = true;
         window.toggleFullscreenMode();
+        if (window.isFullscreen()) cameraController.setRotationFactor(FULLSCREEN_ROTATION_SLOWDOWN_FACTOR);
+        else cameraController.setRotationFactor(1);
     }
 }
 

@@ -7,6 +7,7 @@ using idxtype = unsigned char;
 inline const glm::vec3 SPACE_ORIGIN(0.0f);
 inline const float PI = glm::pi<float>();
 const float TRACE_PRECISION = 1e-6f;
+const float FULLSCREEN_ROTATION_SLOWDOWN_FACTOR = 0.15f; // slow down camera rotation when in fullscreen (bug)
 
 const int INVALID_INDEX = -1; // for all vector searches
 const int MAX_BOARD_SIZE = 100;

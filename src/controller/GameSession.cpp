@@ -29,6 +29,7 @@ void GameSession::SelectionData::toggle(GameView::SelectableView sv) {
 
 void GameSession::SelectionData::add(GameView::SelectableView sv) {
     selectedCheckers.push_back(sv);
+    sv.select(SelectionType::Selected);
 }
 
 void GameSession::SelectionData::selectTowerTop(int amount) {

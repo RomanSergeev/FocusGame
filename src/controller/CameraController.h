@@ -11,12 +11,14 @@ public:
         static constexpr std::pair<float, float> LIMIT_ZOOM_SMOOTH = { 0.0f, 1.0f };
         static constexpr std::pair<float, float> LIMIT_ROTATE_SLOWDOWN = { 0.1f, 100.0f };
         static constexpr std::pair<float, float> LIMIT_YAW = { -PI2 + 0.1f, PI2 - 0.1f };
+        static constexpr std::pair<float, float> LIMIT_ROTATE_SPEEDX = { 0.05f, 20.0f };
         static constexpr float ROTATE_STOP_EPSILON = 0.0001f;
 
         float sensitivity = 0.005f;
         float zoomStep = 0.5f;
         float zoomSmoothFactor = 0.1f;
         float rotateSlowdown = 6.0f;
+        float rotateSpeedFactor = 1.0f;
         // smooth rotation/zoom variables:
         bool smoothRotation = false;
         bool smoothZoom = false;
@@ -39,6 +41,7 @@ public:
 
     const Ray& getMouseRay() const { return ray; }
     void setRotating(bool newRotating) { rotating = newRotating; }
+    void setRotationFactor(float newFactor);
 
     const glm::mat4& getProjectionMatrix() const { return camera.getProjectionMatrix(); }
     glm::vec3 getCameraPosition() const { return camera.getPosition(); }

@@ -30,6 +30,7 @@ void CameraController::CameraSettings::sanitize() {
     clampValue(zoomStep, LIMIT_ZOOM_STEP);
     clampValue(zoomSmoothFactor, LIMIT_ZOOM_SMOOTH);
     clampValue(rotateSlowdown, LIMIT_ROTATE_SLOWDOWN);
+    clampValue(rotateSpeedFactor, LIMIT_ROTATE_SPEEDX);
 }
 
 CameraController::CameraController(int winWidth, int winHeight) :
@@ -39,6 +40,11 @@ ray(SPACE_ORIGIN, SPACE_ORIGIN, false)
 
     handleWindowResize(winWidth, winHeight);
     clampDistance();
+}
+
+void CameraController::setRotationFactor(float newFactor) {
+    clampValue(newFactor, CameraSettings::LIMIT_ROTATE_SPEEDX);
+    settings.rotateSpeedFactor = newFactor;
 }
 
 void CameraController::updateSettings(CameraSettings&& settings) {
@@ -63,7 +69,7 @@ void CameraController::handleMousePosition(int winWidth, int winHeight, double x
     float invertedMultYaw = settings.invertedHorizontalMouse ? -1 : 1;
     float invertedMultPitch = settings.invertedVerticalMouse ? -1 : 1;
 
-    float sens = settings.sensitivity;
+    float sens = settings.sensitivity * settings.rotateSpeedFactor;
     float deltaX = invertedMultYaw   * dx * scaleX * sens;
     float deltaY = invertedMultPitch * dy * scaleY * sens;
 
