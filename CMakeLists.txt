@@ -1,26 +1,25 @@
 cmake_minimum_required(VERSION 3.20)
-
-# Project name and language settings
 project(FocusGame LANGUAGES C CXX)
-
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
-# Force Clang to use lld.exe instead of lld-link.exe
-set(CMAKE_LINKER "${CLANG_ROOT}/lld.exe" CACHE STRING "Force use of lld.exe" FORCE)
 
 # Set correct compiler
 set(CMAKE_C_COMPILER "${CLANG_ROOT}/clang.exe" CACHE STRING "C compiler path" FORCE)
 set(CMAKE_CXX_COMPILER "${CLANG_ROOT}/clang++.exe" CACHE STRING "C++ compiler path" FORCE)
 
+# NEW iostream issue: flags
+# this setup is extremely tight on all the library paths. Might move all the settings to clang++.cfg, but keep it here for one commit for reference.
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -nostdinc -isystem${MINGW_ROOT}/include -isystem${MINGW_ROOT}/x86_64-w64-mingw32/include")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -nostdinc++ -isystem${MINGW_CPP} -isystem${MINGW_CPP}/x86_64-w64-mingw32 -isystem${MINGW_ROOT}/x86_64-w64-mingw32/include")
+
 # Set proper linker flags
-set(CMAKE_EXE_LINKER_FLAGS_INIT "-fuse-ld=${CLANG_ROOT}/ld.lld.exe" CACHE STRING "" FORCE)
-set(CMAKE_MODULE_LINKER_FLAGS_INIT "-fuse-ld=${CLANG_ROOT}/ld.lld.exe" CACHE STRING "" FORCE)
-set(CMAKE_SHARED_LINKER_FLAGS_INIT "-fuse-ld=${CLANG_ROOT}/ld.lld.exe" CACHE STRING "" FORCE)
+set(CMAKE_EXE_LINKER_FLAGS "-fuse-ld=${CMAKE_LINKER}" CACHE STRING "" FORCE)
+set(CMAKE_MODULE_LINKER_FLAGS "-fuse-ld=${CMAKE_LINKER}" CACHE STRING "" FORCE)
+set(CMAKE_SHARED_LINKER_FLAGS "-fuse-ld=${CMAKE_LINKER}" CACHE STRING "" FORCE)
 
 # Override CMake's default linking behavior
-set(CMAKE_CXX_LINK_EXECUTABLE "<CMAKE_CXX_COMPILER> -o <TARGET> <OBJECTS> ${CMAKE_EXE_LINKER_FLAGS_INIT} <LINK_LIBRARIES>")
-set(CMAKE_C_LINK_EXECUTABLE "<CMAKE_C_COMPILER> -o <TARGET> <OBJECTS> ${CMAKE_EXE_LINKER_FLAGS_INIT} <LINK_LIBRARIES>")
+set(CMAKE_C_LINK_EXECUTABLE "<CMAKE_C_COMPILER> -o <TARGET> <OBJECTS> ${CMAKE_EXE_LINKER_FLAGS} <LINK_LIBRARIES>")
+set(CMAKE_CXX_LINK_EXECUTABLE "<CMAKE_CXX_COMPILER> -o <TARGET> <OBJECTS> ${CMAKE_EXE_LINKER_FLAGS} <LINK_LIBRARIES>")
 
 set(CMAKE_BUILD_TYPE Debug)
 
@@ -46,11 +45,6 @@ link_directories(
     lib/glfw-mingw-w64
     lib/glew
 )
-
-# NEW iostream issue: flags
-# this setup is extremely tight on all the library paths. Might move all the settings to clang++.cfg, but keep it here for one commit for reference.
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -nostdinc -isystem${MINGW_ROOT}/include -isystem${MINGW_ROOT}/x86_64-w64-mingw32/include")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -nostdinc++ -isystem${MINGW_CPP} -isystem${MINGW_CPP}/x86_64-w64-mingw32 -isystem${MINGW_ROOT}/x86_64-w64-mingw32/include")
 
 # Add source files
 file(GLOB_RECURSE SRC_FILES CONFIGURE_DEPENDS "src/*.cpp")
