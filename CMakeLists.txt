@@ -2,17 +2,17 @@ cmake_minimum_required(VERSION 3.20)
 project(FocusGame LANGUAGES C CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
 set(CMAKE_BUILD_TYPE Debug)
 
-# NEW iostream issue: explicit paths
 include_directories(
-    ${MINGW_ROOT}/include
-    ${MINGW_ROOT}/x86_64-w64-mingw32/include
-    ${MINGW_LIBS}/include
-    ${MINGW_LIBS}/include-fixed
     include/glfw
     include/glew
+)
+
+# OpenGL links:
+link_directories(
+    lib/glfw-mingw-w64
+    lib/glew
 )
 
 # inih extension for reading ini files:
@@ -21,12 +21,6 @@ add_library(inih
     include/ini/INIReader.cpp
 )
 target_include_directories(inih PUBLIC include/ini)
-
-# OpenGL links:
-link_directories(
-    lib/glfw-mingw-w64
-    lib/glew
-)
 
 # Add source files recursively - still need to clean rebuild if any new cpp are added
 file(GLOB_RECURSE SRC_FILES CONFIGURE_DEPENDS "src/*.cpp")
@@ -44,8 +38,7 @@ target_include_directories(FocusGame
         ${CMAKE_SOURCE_DIR}/include
 )
 
-target_link_libraries(
-    FocusGame
+target_link_libraries(FocusGame
     glfw3
     glew32
     opengl32
