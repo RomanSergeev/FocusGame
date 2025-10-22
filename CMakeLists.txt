@@ -7,16 +7,16 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Force Clang to use lld.exe instead of lld-link.exe
-set(CMAKE_LINKER "E:/Programs/CLang/bin/lld.exe" CACHE STRING "Force use of lld.exe" FORCE)
+set(CMAKE_LINKER "${CLANG_ROOT}/lld.exe" CACHE STRING "Force use of lld.exe" FORCE)
 
 # Set correct compiler
-set(CMAKE_C_COMPILER "E:/Programs/CLang/bin/clang.exe" CACHE STRING "" FORCE)
-set(CMAKE_CXX_COMPILER "clang++" CACHE STRING "" FORCE)
+set(CMAKE_C_COMPILER "${CLANG_ROOT}/clang.exe" CACHE STRING "C compiler path" FORCE)
+set(CMAKE_CXX_COMPILER "${CLANG_ROOT}/clang++.exe" CACHE STRING "C++ compiler path" FORCE)
 
 # Set proper linker flags
-set(CMAKE_EXE_LINKER_FLAGS_INIT "-fuse-ld=E:/Programs/CLang/bin/ld.lld.exe" CACHE STRING "" FORCE)
-set(CMAKE_MODULE_LINKER_FLAGS_INIT "-fuse-ld=E:/Programs/CLang/bin/ld.lld.exe" CACHE STRING "" FORCE)
-set(CMAKE_SHARED_LINKER_FLAGS_INIT "-fuse-ld=E:/Programs/CLang/bin/ld.lld.exe" CACHE STRING "" FORCE)
+set(CMAKE_EXE_LINKER_FLAGS_INIT "-fuse-ld=${CLANG_ROOT}/ld.lld.exe" CACHE STRING "" FORCE)
+set(CMAKE_MODULE_LINKER_FLAGS_INIT "-fuse-ld=${CLANG_ROOT}/ld.lld.exe" CACHE STRING "" FORCE)
+set(CMAKE_SHARED_LINKER_FLAGS_INIT "-fuse-ld=${CLANG_ROOT}/ld.lld.exe" CACHE STRING "" FORCE)
 
 # Override CMake's default linking behavior
 set(CMAKE_CXX_LINK_EXECUTABLE "<CMAKE_CXX_COMPILER> -o <TARGET> <OBJECTS> ${CMAKE_EXE_LINKER_FLAGS_INIT} <LINK_LIBRARIES>")
@@ -26,10 +26,10 @@ set(CMAKE_BUILD_TYPE Debug)
 
 # NEW iostream issue: explicit paths
 include_directories(
-    E:/Programs/CMinGW/include
-    E:/Programs/CMinGW/x86_64-w64-mingw32/include
-    E:/Programs/CMinGW/lib/gcc/x86_64-w64-mingw32/14.2.0/include
-    E:/Programs/CMinGW/lib/gcc/x86_64-w64-mingw32/14.2.0/include-fixed
+    ${MINGW_ROOT}/include
+    ${MINGW_ROOT}/x86_64-w64-mingw32/include
+    ${MINGW_LIBS}/include
+    ${MINGW_LIBS}/include-fixed
     include/glfw
     include/glew
 )
@@ -49,8 +49,8 @@ link_directories(
 
 # NEW iostream issue: flags
 # this setup is extremely tight on all the library paths. Might move all the settings to clang++.cfg, but keep it here for one commit for reference.
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -nostdinc -isystem E:/Programs/CMinGW/include -isystem E:/Programs/CMinGW/x86_64-w64-mingw32/include")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -nostdinc++ -isystem E:/Programs/CMinGW/include/c++/14.2.0 -isystem E:/Programs/CMinGW/include/c++/14.2.0/x86_64-w64-mingw32 -isystem E:/Programs/CMinGW/x86_64-w64-mingw32/include")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -nostdinc -isystem${MINGW_ROOT}/include -isystem${MINGW_ROOT}/x86_64-w64-mingw32/include")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -nostdinc++ -isystem${MINGW_CPP} -isystem${MINGW_CPP}/x86_64-w64-mingw32 -isystem${MINGW_ROOT}/x86_64-w64-mingw32/include")
 
 # Add source files
 file(GLOB_RECURSE SRC_FILES CONFIGURE_DEPENDS "src/*.cpp")
