@@ -38,7 +38,6 @@ class GameModel {
     bool canPerformAnyMove(const Player& player) const;
     bool canPlaceAnywhere(const Player& player) const;
     bool canTransferAnything(const Player& player) const;
-    bool canPlaceReserve(const Coord& cd, const Player& ofPlayer, int amount) const;
     bool canTransferCheckers(const Player& toPlayer, int amount) const;
     int getTraySize(PlayerSlot ownedByPlayer, PlayerSlot ofPlayer) const;
 
@@ -64,7 +63,7 @@ public:
     };
 
     struct MovePossibility {
-        std::vector<std::pair<const Cell*, int>> canGoTo; // cell references and corresponding distances
+        std::vector<std::pair<Coord, int>> canGoTo; // cell references and corresponding distances
         int maxReservePlaced;
         MovePossibility() = default;
         void clear() { canGoTo.clear(); maxReservePlaced = 0; }
@@ -78,7 +77,10 @@ public:
     const Cell& getCellAt(const Coord& cd) const { return board[cd]; }
     const auto& getTrayData() const { return trays; }
     const Player& getCurrentPlayer() const { return players.at(activePlayerIndex); }
+    int getMaximumPlacedReserve() const { return rules.maxReservePlaced; }
+    int getCheckersTransferLimit() const { return rules.allyReserveTransferLimit; }
 
+    bool canPlaceReserve(const Coord& cd, const Player& ofPlayer, int amount) const;
     int canMove(const Coord& cFrom, const Coord& cTo) const; // shortest possible path length between the cells, or CANNOT_MOVE otherwise. Used in GameSession - made public
     void TEMPputCheckerIntoTray(const EditorKey& key, const Player& p, Checker&& c);
     const Player& TEMPgetPlayer(int index) const { return players.at(index); }
@@ -87,4 +89,5 @@ public:
     bool isGameOver() const { return !gameInProgress; }
     MovePossibility getPossibleMovesFor(const Coord& cd) const;
     bool isSelectableChecker(const Checker& c) const;
+    bool canSelectNCheckersOfPlayer(int amount, const Player& ofPlayer) const;
 };

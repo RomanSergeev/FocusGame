@@ -14,10 +14,10 @@ const float GameView::TRAY_DIMENSIONS[3] = { CHECKER_HALF_WIDTH * 5, CHECKER_HAL
 const float GameView::FB_CELL_HEIGHT[2] = { FB_CELL_HEIGHT_NJ, FB_CELL_HEIGHT_J };
 const float GameView::FB_CELL_ORIGIN[2] = { (FB_CELL_HEIGHT[0] - FB_CELL_HEIGHT[1]) / 2, 0 };
 
-void selectShape(OpenGLShape* shape, SelectionType type) {
+void selectShape(OpenGLShape* shape, HighlightState type) {
     if (shape == nullptr) return;
-    shape->setBlinkColor(selectionColors.at(type));
-    if (type == SelectionType::NoSelection) shape->deselect();
+    shape->setBlinkColor(highlightColors.at(type));
+    if (type == HighlightState::None) shape->deselect();
     else shape->select();
 }
 
@@ -38,9 +38,9 @@ void checkShapeIntersection(const Ray& ray, const GameView::SelectableView& comp
     recordedView = comparedView;
 }
 
-void GameView::CellView::select(SelectionType type) { selectShape(shape.get(), type); }
-void GameView::CheckerView::select(SelectionType type) { selectShape(shape.get(), type); }
-void GameView::SelectableView::select(SelectionType type) {
+void GameView::CellView::select(HighlightState type) { selectShape(shape.get(), type); }
+void GameView::CheckerView::select(HighlightState type) { selectShape(shape.get(), type); }
+void GameView::SelectableView::select(HighlightState type) {
     if (cellPtr) cellPtr->select(type);
     else if (checkerPtr) checkerPtr->select(type);
 }
@@ -282,4 +282,8 @@ GameView::SelectableView GameView::getCheckerSV(const SessionKey& key, const Che
         if (cView.checkerRef == c)
             return SelectableView(cView);
     return SelectableView();
+}
+
+GameView::SelectableView GameView::getCellSV(const SessionKey& key, const Coord& cd) {
+    return SelectableView(displayedBoard.at(cd));
 }

@@ -26,7 +26,7 @@ private:
         CellView(CellView&& dc) noexcept = default;
         CellView& operator = (CellView&& dc) noexcept = default;
 
-        void select(SelectionType type);
+        void select(HighlightState type);
     };
 
     struct CheckerView {
@@ -42,7 +42,7 @@ private:
         CheckerView(CheckerView&& dc) noexcept = default;
         CheckerView& operator = (CheckerView&& dc) noexcept = default;
 
-        void select(SelectionType type);
+        void select(HighlightState type);
         void reposition(const glm::vec3& newPosition);
     };
 
@@ -116,7 +116,7 @@ public:
         void drop() { cellPtr = nullptr; checkerPtr = nullptr; }
         OpenGLShape* getShapePtr() { return cellPtr ? cellPtr->shape.get() : checkerPtr ? checkerPtr->shape.get() : nullptr; }
         const OpenGLShape* getShapePtr() const { return cellPtr ? cellPtr->shape.get() : checkerPtr ? checkerPtr->shape.get() : nullptr; }
-        void select(SelectionType type);
+        void select(HighlightState type);
     private:
         CellView* cellPtr = nullptr;
         CheckerView* checkerPtr = nullptr;
@@ -130,5 +130,6 @@ public:
     void draw(PlayerSlot perspective, const Shader& shader, float currentTime);
     SelectableView getHoveredShape(const SessionKey& key, const Ray& ray);
     SelectableView getCheckerSV(const SessionKey& key, const Checker* c);
+    SelectableView getCellSV(const SessionKey& key, const Coord& cd);
     void updatePlayerColors(const SessionKey& key, const std::unordered_map<PlayerSlot, Color>& colors) { displayedPlayerColors = colors; }
 };

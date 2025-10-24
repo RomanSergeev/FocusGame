@@ -26,6 +26,7 @@ class GameSession {
         Coord getCoordinate() const { return towerCoord; }
         PlayerSlot getAssociatedPlayer() const { return whoseReserveSelected; }
         const std::vector<SV>& getCheckers() const { return selectedCheckers; }
+        int getSize() const { return selectedCheckers.size(); }
         bool isEmpty() const { return whatsSelected == SelectedEntity::None; }
 
         void set(const Coord& cd);
@@ -45,19 +46,23 @@ class GameSession {
     GameView view;
     SV hoveredShape;
     SV pressedShape; // its only purpose is to check that mousedown shape == mouseup shape
-    std::vector<SV> highlightedShapes = {};
+    std::vector<SV> alwaysHighlightedShapes = {};
     std::unordered_map<Coord, GameModel::MovePossibility> allPossibleMoves;
     SessionKey key;
-    HighlightLogic howToHighlight = HighlightLogic::PossibleOnHover;
+    HighlightLogic howToHighlight = HighlightLogic::AllPossible;
     SelectionData storedSelection;
     bool selectionLocked = false; // when it's not our turn - all selection is cleared, and none can be added
 
     void clearPossibleMoves();
     void calculatePossibleMoves();
+    int getCachedMoveDistance(const Coord& from, const Coord& to) const;
+    HighlightState getRetainedState() const;
+    std::pair<bool, int> actionAvailable(); // whether to highlight a hovered cell/checker. If so, how many tower checkers to select when a cell is hovered for a move
     void onHover(const SV& sv);
     void onClick(); // no argument - assuming hoveredShape is clicked (ruled out before the call)
     void clearAllSelection();
     void lockSelection();
+    void updateHighlightedShapes();
     void initSelection(); // fills up storedSelection based on the current checker clicked, being the first such checker
     bool performTurn(const GameModel::Turn& turn);
 public:

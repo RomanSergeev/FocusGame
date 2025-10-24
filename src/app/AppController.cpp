@@ -58,7 +58,7 @@ AppController::AppController() :
     cameraController(WIDTH, HEIGHT),
     shaders(createShaders()),
     rayLine(SPACE_ORIGIN, SPACE_ORIGIN),
-    gameSession(BoardEditor::createBoard2x2Debug(), GameView::BoardShapeType::Flat) {
+    gameSession(BoardEditor::createBoard8x8Focus(), GameView::BoardShapeType::Flat) {
 
     registerCallbacks();
     Logger::instantiate(key, true);
@@ -146,11 +146,6 @@ void AppController::render() {
     window.clearBuffer();
 
     gameSession.drawBoard(shader, currentTime);
-
-    // rotation:
-    //turnIdentifier.setModel(glm::rotate(turnIdentifier.getBaseModel(), currentTime, glm::vec3(0.3f, 1.0f, 0.0f)));
-    //turnIdentifier.setUniforms(shader, currentTime);
-    // turnIdentifier.draw();
 
     /*EVERY_N_FRAMES_DO(60, {
         std::cout << "RAY:\n" << rayLine;

@@ -109,35 +109,6 @@ bool GameModel::canTransferAnything(const Player& player) const {
     return false;
 }
 
-bool GameModel::canPlaceReserve(const Coord& cd, const Player& ofPlayer, int amount) const {
-    if (ofPlayer.isSpectator()) return false;
-    if (amount < 1 || amount > rules.maxReservePlaced) return false;
-    if (!board.validCoordinate(cd)) return false;
-    
-    const Player& currentPlayer = getCurrentPlayer();
-    if (!ofPlayer.sameTeam(currentPlayer)) return false;
-    if (!rules.canPlaceAlliedReserve && ofPlayer != currentPlayer) return false;
-
-    const Cell& cell = board[cd];
-    if (!cell.isPlayable()) return false;
-    if (cell.isPole() && !rules.canPlaceOnPoles) return false;
-    const Player* owner = cell.getOwnership();
-    if (!( // can place vs cell owner
-        owner == nullptr ||
-        (owner == &currentPlayer && rules.canPlaceOnOwnTowers) ||
-        ( currentPlayer.sameTeam(*owner) && rules.canPlaceOnAllyTowers) ||
-        (!currentPlayer.sameTeam(*owner) && rules.canPlaceOnEnemyTowers) 
-    )) return false;
-    if (!( // can place vs cell tower height
-        rules.canExceedByPlacing ||
-        amount <= (rules.maxTowerHeight - cell.getTowerHeight()) 
-    )) return false;
-    if ( // can place vs own reserve size
-        getTraySize(currentPlayer.slot, ofPlayer.slot) < amount
-    ) return false;
-    return true;
-}
-
 bool GameModel::canTransferCheckers(const Player& toPlayer, int amount) const {
     const Player& currentPlayer = getCurrentPlayer();
     if (amount < 1 || amount > rules.allyReserveTransferLimit) return false;
@@ -266,6 +237,35 @@ activePlayerIndex(players.size() - 1) { // set active index to the last player b
     }
 }
 
+bool GameModel::canPlaceReserve(const Coord& cd, const Player& ofPlayer, int amount) const {
+    if (ofPlayer.isSpectator()) return false;
+    if (amount < 1 || amount > rules.maxReservePlaced) return false;
+    if (!board.validCoordinate(cd)) return false;
+    
+    const Player& currentPlayer = getCurrentPlayer();
+    if (!ofPlayer.sameTeam(currentPlayer)) return false;
+    if (!rules.canPlaceAlliedReserve && ofPlayer != currentPlayer) return false;
+
+    const Cell& cell = board[cd];
+    if (!cell.isPlayable()) return false;
+    if (cell.isPole() && !rules.canPlaceOnPoles) return false;
+    const Player* owner = cell.getOwnership();
+    if (!( // can place vs cell owner
+        owner == nullptr ||
+        (owner == &currentPlayer && rules.canPlaceOnOwnTowers) ||
+        ( currentPlayer.sameTeam(*owner) && rules.canPlaceOnAllyTowers) ||
+        (!currentPlayer.sameTeam(*owner) && rules.canPlaceOnEnemyTowers) 
+    )) return false;
+    if (!( // can place vs cell tower height
+        rules.canExceedByPlacing ||
+        amount <= (rules.maxTowerHeight - cell.getTowerHeight()) 
+    )) return false;
+    if ( // can place vs own reserve size
+        getTraySize(currentPlayer.slot, ofPlayer.slot) < amount
+    ) return false;
+    return true;
+}
+
 int GameModel::canMove(const Coord& cFrom, const Coord& cTo) const {
     if (!board.validCoordinate(cFrom) || !board.validCoordinate(cTo)) return CANNOT_MOVE;
     if (cFrom == cTo) return CANNOT_MOVE;
@@ -345,7 +345,7 @@ GameModel::MovePossibility GameModel::getPossibleMovesFor(const Coord& cd) const
             Coord dest(i, j);
             int minDistance = canMove(cd, dest);
             if (minDistance == CANNOT_MOVE) continue;
-            mp.canGoTo.push_back({ &board[dest], minDistance });
+            mp.canGoTo.push_back({ dest, minDistance });
         }
     return mp;
 }
@@ -359,4 +359,8 @@ bool GameModel::isSelectableChecker(const Checker& c) const {
     if (!owner->sameTeam(currentPlayer)) return false; // cannot operate with captured checkers
     if (owner == &currentPlayer) return rules.canPlaceReserve();
     return rules.canPlaceAlliedReserve;
+}
+
+bool GameModel::canSelectNCheckersOfPlayer(int amount, const Player& player) const {
+    return false;
 }
