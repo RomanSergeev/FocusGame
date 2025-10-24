@@ -59,6 +59,7 @@ AppController::AppController() :
     shaders(createShaders()),
     rayLine(SPACE_ORIGIN, SPACE_ORIGIN),
     gameSession(BoardEditor::createBoard8x8Focus(), GameView::BoardShapeType::Flat) {
+    // gameSession(BoardEditor::createBoard2x2Debug(), GameView::BoardShapeType::Flat) {
 
     registerCallbacks();
     Logger::instantiate(key, true);

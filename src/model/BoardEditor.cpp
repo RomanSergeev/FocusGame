@@ -90,12 +90,13 @@ GameModel BoardEditor::createBoard2x2Debug() {
     CC(5, 0, 0);
 
     GameModel result(std::move(resultBoard), std::move(players));
-    /*const Player& p = result.TEMPgetPlayer(0);
+    const Player& p = result.TEMPgetPlayer(0);
     const Player& q = result.TEMPgetPlayer(1);
     result.TEMPputCheckerIntoTray(key, p, Checker(p)); // should not be displayed at game start
-    result.TEMPputCheckerIntoTray(key, p, Checker(p)); // should not be displayed at game start
-    result.TEMPputCheckerIntoTray(key, p, Checker(p)); // should not be displayed at game start
-    result.TEMPputCheckerIntoTray(key, p, Checker(p)); // should not be displayed at game start
-    result.TEMPputCheckerIntoTray(key, p, Checker(p)); // should not be displayed at game start*/
+    result.TEMPputCheckerIntoTray(key, p, Checker(p));
+    result.TEMPputCheckerIntoTray(key, p, Checker(p));
+    result.TEMPputCheckerIntoTray(key, p, Checker(p));
+    result.TEMPputCheckerIntoTray(key, p, Checker(p));
+    result.TEMPputCheckerIntoTray(key, q, Checker(q));
     return result;
 }

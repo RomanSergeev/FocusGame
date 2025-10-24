@@ -100,8 +100,8 @@ GameView::CheckerView GameView::createCheckerView(const Checker& c, const glm::v
     return dChecker;
 }
 
-GameView::TrayView GameView::createTrayView(PlayerSlot owner, PlayerSlot ofPlayer, const glm::vec3& position) {
-    TrayView dTray(owner, ofPlayer);
+GameView::TrayView GameView::createTrayView(PlayerSlot ofPlayer, const glm::vec3& position) {
+    TrayView dTray(ofPlayer);
     dTray.upVector = axisToVec3(Axis::Z);
     dTray.anchorPoint = position + dTray.upVector * (TRAY_DIMENSIONS[2] / 2);
     std::unique_ptr<OpenGLShape> shape = std::make_unique<Cuboid>(TRAY_DIMENSIONS[0], TRAY_DIMENSIONS[1], TRAY_DIMENSIONS[2]);
@@ -125,18 +125,16 @@ glm::vec3 GameView::calculateCheckerViewBoardPosition(const CheckerView& cv) con
     return calculateCheckerPosition(anchor, dir, index);
 }
 
-const GameView::TrayView* GameView::findTrayView(PlayerSlot owner, PlayerSlot ofPlayer) const {
-    auto iter = displayedTrays.find(owner); // TODO O(n)
-    if (iter == displayedTrays.end()) return nullptr;
-    for (const TrayView& tv : iter->second)
+const GameView::TrayView* GameView::findTrayView(PlayerSlot ofPlayer) const {
+    for (const TrayView& tv : displayedTrays)
         if (tv.ofPlayer == ofPlayer)
             return &tv;
     return nullptr;
 }
 
-glm::vec3 GameView::calculateCheckerViewTrayPosition(const CheckerView& cv, PlayerSlot perspective, int index) const {
+glm::vec3 GameView::calculateCheckerViewTrayPosition(const CheckerView& cv, int index) const {
     const Checker* c = cv.checkerRef;
-    const TrayView* tv = findTrayView(perspective, c->getPlayerReference()->getSlot());
+    const TrayView* tv = findTrayView(c->getPlayerReference()->getSlot());
     if (tv == nullptr) return glm::vec3();
     return calculateCheckerPosition(tv->anchorPoint, tv->upVector, index);
 }
@@ -154,7 +152,7 @@ void GameView::updateCheckerPositions(PlayerSlot perspective) {
         }
         if (!c->isInTrayOf(perspective)) continue;
         PlayerSlot owner = c->getPlayerReference()->getSlot();
-        glm::vec3 position = calculateCheckerViewTrayPosition(cv, perspective, trayAmounts[owner]++);
+        glm::vec3 position = calculateCheckerViewTrayPosition(cv, trayAmounts[owner]++);
         cv.reposition(position);
     }
 }
@@ -203,38 +201,25 @@ void GameView::createTrays() {
     const auto& gameTrays = model.getTrayData();
     const Coord& sizes = model.getSizes();
     int totalTrays = gameTrays.size();
+    // create and fill all of the trays
+    int i = 0;
     for (const auto& playerTray : gameTrays) {
-        // create all trays for current tray owner
-        int i = 0;
         PlayerSlot owner = playerTray.first;
-        displayedTrays.try_emplace(owner); // creates an empty entry
-        for (const auto& trayOfPlayer : gameTrays) {
-            PlayerSlot ofPlayer = trayOfPlayer.first;
-            glm::vec3 position = calculateTrayPosition(sizes, totalTrays, i);
-            // C++17 Return Value Optimization prevents assignment operator from invoking, instead, it is a copy initialization
-            TrayView dTray = createTrayView(owner, ofPlayer, position);
-            displayedTrays.at(owner).push_back(std::move(dTray));
-            ++i;
-        }
-    }
-
-    // fill trays
-    for (const auto& entry : gameTrays) {
+        glm::vec3 position = calculateTrayPosition(sizes, totalTrays, i);
+        // C++17 Return Value Optimization prevents assignment operator from invoking, instead, it is a copy initialization
+        TrayView dTray = createTrayView(owner, position);
         std::map<PlayerSlot, int> amounts;
-        PlayerSlot owner = entry.first;
-        const auto& trays = displayedTrays.at(owner);
-        for (const Checker& checker : entry.second) {
+        for (const Checker& checker : playerTray.second) {
             const Player* player = checker.getPlayerReference();
             if (isNull(player, "GameView::createTrays: found null checker's player reference.")) continue;
             PlayerSlot ofPlayer = player->getSlot();
             int k = amounts[ofPlayer]++; // creates map entry if not exists; takes non-incremented value; increments it then
-            for (auto iter = trays.begin(); iter != trays.end(); ++iter) {
-                if (iter->ofPlayer != ofPlayer) continue;
-                glm::vec3 position = calculateCheckerPosition(iter->anchorPoint, iter->upVector, k);
-                CheckerView dchecker = createCheckerView(checker, position);
-                displayedCheckers.push_back(std::move(dchecker));
-            }
+            glm::vec3 position = calculateCheckerPosition(dTray.anchorPoint, dTray.upVector, k);
+            CheckerView dchecker = createCheckerView(checker, position);
+            displayedCheckers.push_back(std::move(dchecker));
         }
+        displayedTrays.push_back(std::move(dTray));
+        ++i;
     }
 }
 
@@ -251,11 +236,8 @@ void GameView::updateOnCurrentPlayerChange(PlayerSlot newCurrentPlayerSlot) {
 void GameView::draw(PlayerSlot perspective, const Shader& shader, float currentTime) {
     for (const auto& dcell : displayedBoard)
         drawShape(dcell.second.shape.get(), shader, currentTime);
-    for (const auto& trayEntry : displayedTrays) {
-        if (trayEntry.first != perspective) continue;
-        for (const auto& dtray : trayEntry.second)
-            drawShape(dtray.shape.get(), shader, currentTime);
-    }
+    for (const TrayView& dtray : displayedTrays)
+        drawShape(dtray.shape.get(), shader, currentTime);
     for (const auto& dchecker : displayedCheckers) {
         const Checker* ref = dchecker.checkerRef;
         if (isNull(ref, "GameView::draw: found dangling checker")) continue;
