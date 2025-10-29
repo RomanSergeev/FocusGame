@@ -6,6 +6,8 @@
 #include "utility/Utils.h"
 #include "view/GameView.h"
 
+const GameSession::AssumedAction GameSession::AssumedAction::NONE = GameSession::AssumedAction();
+
 void GameSession::SelectionData::drop() {
     towerCoord = Coord::INVALID_COORD;
     whoseReserveSelected = PlayerSlot::Spectator;
@@ -16,7 +18,7 @@ void GameSession::SelectionData::drop() {
     selectedCheckers.clear();
 }
 
-void GameSession::SelectionData::toggle(GameView::SelectableView sv) {
+void GameSession::SelectionData::toggle(SV sv) {
     auto iter = std::find(selectedCheckers.begin(), selectedCheckers.end(), sv);
     if (iter == selectedCheckers.end()) {
         selectedCheckers.push_back(sv);
@@ -24,10 +26,11 @@ void GameSession::SelectionData::toggle(GameView::SelectableView sv) {
     } else {
         iter->select(HighlightState::None);
         selectedCheckers.erase(iter);
+        if (selectedCheckers.empty()) whatsSelected = SelectedEntity::None;
     }
 }
 
-void GameSession::SelectionData::add(GameView::SelectableView sv) {
+void GameSession::SelectionData::add(SV sv) {
     selectedCheckers.push_back(sv);
     sv.select(HighlightState::Selected);
 }
@@ -40,6 +43,8 @@ void GameSession::SelectionData::selectTowerTop(int amount) {
     for (; i >= 0; --i)
         selectedCheckers[i].select(HighlightState::None);
 }
+
+void GameSession::SelectionData::selectTowerAll() { selectTowerTop(selectedCheckers.size()); }
 
 void GameSession::SelectionData::set(const Coord& cd) {
     towerCoord = cd;
@@ -84,180 +89,186 @@ HighlightState GameSession::getRetainedState() const {
     return HighlightState::None;
 }
 
-std::pair<bool, int> GameSession::actionAvailable() {
-    static const std::pair<bool, int> NO(false, 0);
-    if (hoveredShape.isEmpty()) return NO;
+GameSession::AssumedAction GameSession::assumeAction() const {
+    using AA = AssumedAction;
+    if (hoveredShape.isEmpty()) return AA::NONE;
     using SE = SelectionData::SelectedEntity;
     SE whatsAlreadySelected = storedSelection.getSelectedEntity();
     if (vectorContains(storedSelection.getCheckers(), hoveredShape)) {
-        return { whatsAlreadySelected == SE::Reserve, 0 }; // can deselect reserve, not tower checkers currently highlighted
+        return whatsAlreadySelected == SE::Reserve ? Action::Select : Action::Impossible; // can deselect reserve, not tower checkers currently highlighted
     }
 
     if (hoveredShape.isCellView()) {
         Coord cd = hoveredShape.getCellPtr()->getCoordinate();
         switch (whatsAlreadySelected) {
-            case SE::None: return NO;
+            case SE::None: return AA::NONE;
             case SE::Tower: {
                 int distance = getCachedMoveDistance(storedSelection.getCoordinate(), cd);
-                if (distance == INVALID_INDEX) return NO;
-                return { true, distance };
+                if (distance == INVALID_INDEX) return AA::NONE;
+                return AA(Action::Move, distance);
             }
             case SE::Reserve: {
                 int maxPlaced = allPossibleMoves.at(cd).maxReservePlaced; // considering TO cell
-                return { storedSelection.getSize() <= maxPlaced, 0 }; // what we've selected so far doesn't exceed what can be placed
+                bool canPlace = storedSelection.getSize() <= maxPlaced;
+                return canPlace ? Action::Place : Action::Impossible; // what we've selected so far doesn't exceed what can be placed
             }
         }
-        return NO;
+        return AA::NONE;
     }
-
+    
     // now for the checker view
     const Checker* c = hoveredShape.getCheckerPtr();
-    if (c == nullptr) return NO;
+    if (c == nullptr) return AA::NONE;
     bool boardHovered = c->isOnBoard();
     const Player& currentPlayer = model.getCurrentPlayer();
-    const Player* owner = c->getPlayerReference();
-    switch (whatsAlreadySelected) {
-        case SE::None: {
-            if (boardHovered) {
-                Coord cd = c->getPositionOnBoard();
-                return { model.getCellAt(cd).getOwnership() == &currentPlayer, 0 };
-            } else {
-                if (!owner->sameTeam(currentPlayer)) return NO; // cannot interact with enemies' beaten checkers
-                if (owner == &currentPlayer) {
-                    return { model.getMaximumPlacedReserve() > 0, 0 };
-                }
-                return { model.getCheckersTransferLimit() > 0, 0 };
+    const Player* hoveredOwner = c->getPlayerReference();
+    const Player* whoseReserveSelected = nullptr;
+    if (whatsAlreadySelected == SE::Reserve) whoseReserveSelected = storedSelection.getCheckers().front().getCheckerPtr()->getPlayerReference(); // cringe
+    if (c->isOnBoard()) {
+        Coord cd = c->getPositionOnBoard();
+        const Player* towerOwner = model.getCellAt(cd).getOwnership();
+        bool isOwnTower = towerOwner == &currentPlayer;
+        if (isOwnTower) return Action::Select;
+        switch (whatsAlreadySelected) {
+            case SE::None: {
+                return isOwnTower ? Action::Select : Action::Impossible;
             }
-        }
-        case SE::Tower: {
-            if (boardHovered) {
-                Coord cd = c->getPositionOnBoard();
-                if (model.getCellAt(cd).getOwnership() == &currentPlayer) return { true, 0 }; // hovering our other tower
+            case SE::Tower: {
+                if (isOwnTower) return Action::Select; // hovering our other tower
                 // now hovering someone else's tower - treated as a move attempt
                 int distance = getCachedMoveDistance(storedSelection.getCoordinate(), cd);
-                if (distance == INVALID_INDEX) return NO;
-                return { true, distance };
-            } else {
-                if (!owner->sameTeam(currentPlayer)) return NO; // cannot interact with enemies' beaten checkers
-                if (owner == &currentPlayer) {
-                    return { model.getMaximumPlacedReserve() > 0, 0 };
-                }
-                return { model.getCheckersTransferLimit() > 0, 0 };
+                if (distance == INVALID_INDEX) return AA::NONE;
+                return { Action::Move, distance };
+            }
+            case SE::Reserve: {
+                if (isOwnTower) return Action::Select;
+                bool canPlace = model.canPlaceReserve(cd, *whoseReserveSelected, storedSelection.getSize());
+                return canPlace ? Action::Place : Action::Impossible;
             }
         }
-        case SE::Reserve: {
-            const Player* whoseReserveSelected = storedSelection.getCheckers().front().getCheckerPtr()->getPlayerReference(); // cringe
-            if (boardHovered) {
-                Coord cd = c->getPositionOnBoard();
-                const Player* towerOwner = model.getCellAt(cd).getOwnership();
-                if (towerOwner == &currentPlayer) return { true, 0 };
-                return { model.canPlaceReserve(cd, *whoseReserveSelected, storedSelection.getSize()), 0 };
-            } else {
-                if (!owner->sameTeam(currentPlayer)) return NO;
-                if (owner == whoseReserveSelected) {
-                    return { storedSelection.getSize() < model.getMaximumPlacedReserve(), 0 };
+    } else { // is in tray of currentPlayer
+        if (!hoveredOwner->sameTeam(currentPlayer)) return AA::NONE; // cannot interact with enemies' beaten checkers
+        bool ownHovered = hoveredOwner == &currentPlayer;
+
+        switch (whatsAlreadySelected) {
+            case SE::None:
+            case SE::Tower: {
+                bool canSelect = ownHovered ? (model.getMaximumPlacedReserve() > 0) : (model.getCheckersTransferLimit() > 0);
+                return canSelect ? Action::Select : Action::Impossible;
+            }
+            case SE::Reserve: {
+                if (hoveredOwner == whoseReserveSelected) {
+                    bool canSelectMore = storedSelection.getSize() < model.getMaximumPlacedReserve();
+                    return canSelectMore ? Action::Select : Action::Impossible;
                 }
-                if (owner == &currentPlayer) return { model.getMaximumPlacedReserve() > 0, 0 };
-                return { model.getCheckersTransferLimit() > 0, 0 };
-                // non-selected reserve checker is hovered, reserve is selected
-                // can select if it's ours and we don't exceed model.getMaximumPlacedReserve()
-                // or if it's allied and we don't exceed model.getCheckersTransferLimit()
+                bool canSelect = ownHovered ? (model.getMaximumPlacedReserve() > 0) : (model.getCheckersTransferLimit() > 0);
+                return canSelect ? Action::Select : Action::Impossible;
             }
         }
     }
-    return NO;
 }
 
 void GameSession::onHover(const SV& sv) {
+    if (sv == hoveredShape) return; // don't calculate over the same shape
     hoveredShape.select(getRetainedState());
     hoveredShape = sv;
-    auto actionInfo = actionAvailable();
-    bool canMove = actionInfo.first;
+    assumedAction = assumeAction();
+    Action action = assumedAction.action;
+    using HM = HighlightMethod;
     using HS = HighlightState;
-    using HL = HighlightLogic;
     HS howToHighlightHovered = HS::None;
-    if (howToHighlight == HL::AllOnHover && canMove) howToHighlightHovered = HS::Hovered;
-    if (canMove && (howToHighlight == HL::PossibleOnHover || howToHighlight == HL::AllOnHover)) howToHighlightHovered = HS::CanAct;
-    if (!canMove && howToHighlight == HL::AllOnHover) howToHighlightHovered = HS::CannotAct;
+    if (vectorContains(storedSelection.getCheckers(), hoveredShape))
+        storedSelection.selectTowerAll();
+        // howToHighlightHovered = action == Action::Impossible ? HS::Selected : HS::Hovered;
+    else switch (action) {
+        case Action::Impossible: {
+            if (highlightMethod == HM::AllOnHover && !storedSelection.isEmpty()) howToHighlightHovered = HS::CannotAct;
+            else howToHighlightHovered = HS::None;
+            break;
+        }
+        case Action::Move:
+        case Action::Place: {
+            if (highlightMethod == HM::Minimal) howToHighlightHovered = HS::None;
+            else howToHighlightHovered = HS::CanAct;
+            break;
+        }
+        case Action::Select: {
+            howToHighlightHovered = HS::Selected;
+            break;
+        }
+    }
     hoveredShape.select(howToHighlightHovered);
-    if (actionInfo.second > 0)
-        storedSelection.selectTowerTop(actionInfo.second);
+    if (assumedAction.checkersUsed > 0)
+        storedSelection.selectTowerTop(assumedAction.checkersUsed);
+    
 }
 
 void GameSession::onClick() { // called only when it's our turn
     if (hoveredShape.isEmpty()) return;
     using SE = SelectionData::SelectedEntity;
     SE whatsAlreadySelected = storedSelection.getSelectedEntity();
-    // const Player& currentPlayer = model.getCurrentPlayer();
-    if (hoveredShape.isCellView()) { // clicking on a cell - something should happen only when we have stuff selected
-        const Cell* cellTo = hoveredShape.getCellPtr();
-        Coord to = cellTo->getCoordinate();
-        switch (whatsAlreadySelected) {
-            case SE::None: // nothing is selected and we're clicking on a cell - nothing happens
+    Coord to = hoveredShape.isCellView() ? hoveredShape.getCellPtr()->getCoordinate() : hoveredShape.getCheckerPtr()->getPositionOnBoard();
+    switch (assumedAction.action) {
+        case Action::Impossible: return;
+        case Action::Select: {
+            if (whatsAlreadySelected == SE::Reserve &&
+                hoveredShape.isCheckerView() &&
+                !hoveredShape.getCheckerPtr()->isOnBoard() &&
+                hoveredShape.getCheckerPtr()->getPlayerReference()->getSlot() == storedSelection.getAssociatedPlayer()) {
+                storedSelection.toggle(hoveredShape);
+                updateAlwaysHighlightedShapes();
+            } else initSelection();
             break;
-            case SE::Tower: {// our tower is selected - perform a move if possible
+        }
+        case Action::Move: {
             Coord from = storedSelection.getCoordinate();
             GameModel::Turn turn = GameModel::Turn::constructTurnMove(from, to);
             performTurn(turn);
-            break;}
-            case SE::Reserve: {
+            break;
+        }
+        case Action::Place: {
             int size = storedSelection.getSize();
             GameModel::Turn turn = GameModel::Turn::constructTurnPlace(storedSelection.getAssociatedPlayer(), size, to);
             performTurn(turn);
-            break;}
-        }
-    } else { // clicking on a checker
-        // regardless of where it is, we should first check that it's a selectable distinct checker / part of a tower
-        const Checker* c = hoveredShape.getCheckerPtr();
-        if (c == nullptr || !model.isSelectableChecker(*c)) return;
-        bool boardClicked = c->isOnBoard();
-        switch (whatsAlreadySelected) {
-            case SE::None:
-            initSelection();
-            break;
-            case SE::Tower:
-            if (!boardClicked || c->getPositionOnBoard() != storedSelection.getCoordinate())
-                initSelection(); // for a tower already selected and clicked once again, do nothing
-            break;
-            case SE::Reserve:
-            if (boardClicked) {
-                initSelection();
-                break;
-            }
-            // reserve is clicked - is it the same owner (then toggle), or another (then reselect)?
-            if (c->getPlayerReference()->getSlot() == storedSelection.getAssociatedPlayer()) {
-                storedSelection.toggle(hoveredShape); // TODO not just toggle - check for max reserve placed
-                updateHighlightedShapes();
-            }
-            else
-                initSelection();
             break;
         }
     }
 }
 
 void GameSession::clearAllSelection() {
-    alwaysHighlightedShapes.clear();
+    clearAlwaysHighlightedCells();
     storedSelection.drop();
     pressedShape.drop(); // should not be possible to set after the turn, but just in case
+    assumedAction.clear();
 }
 
 void GameSession::lockSelection() {
     selectionLocked = true;
 }
 
-void GameSession::updateHighlightedShapes() {
-    if (storedSelection.isEmpty() || howToHighlight != HighlightLogic::AllPossible) return;
+void GameSession::addAlwaysHighlightedCell(SV sv) {
+    sv.select(HighlightState::CanAct);
+    alwaysHighlightedShapes.push_back(sv);
+}
+
+void GameSession::clearAlwaysHighlightedCells() {
+    for (SV& cellView : alwaysHighlightedShapes) {
+        cellView.select(HighlightState::None);
+    }
+    alwaysHighlightedShapes.clear();
+}
+
+void GameSession::updateAlwaysHighlightedShapes() {
+    if (storedSelection.isEmpty() || highlightMethod != HighlightMethod::AllPossible) return;
     const Checker* c = storedSelection.getCheckers().front().getCheckerPtr();
     if (c == nullptr) return;
-    alwaysHighlightedShapes.clear();
+    clearAlwaysHighlightedCells();
     if (c->isOnBoard()) {
         Coord cd = c->getPositionOnBoard();
         const auto& possibleMoves = allPossibleMoves.at(cd);
         for (auto iter = possibleMoves.canGoTo.cbegin(); iter != possibleMoves.canGoTo.cend(); ++iter) {
-            SV cellSV = view.getCellSV(key, cd);
-            cellSV.select(HighlightState::CanAct);
-            alwaysHighlightedShapes.push_back(cellSV);
+            SV cellSV = view.getCellSV(key, iter->first);
+            addAlwaysHighlightedCell(cellSV);
         }
     } else { // in reserve
         int selectedSize = storedSelection.getSize();
@@ -266,8 +277,7 @@ void GameSession::updateHighlightedShapes() {
             int maxToPlace = iter.second.maxReservePlaced;
             if (maxToPlace >= selectedSize) {
                 SV cellSV = view.getCellSV(key, cd);
-                cellSV.select(HighlightState::CanAct);
-                alwaysHighlightedShapes.push_back(cellSV);
+                addAlwaysHighlightedCell(cellSV);
             }
         }
     }
@@ -277,8 +287,7 @@ void GameSession::initSelection() {
     const Checker* c = hoveredShape.getCheckerPtr();
     if (c == nullptr) return; // shouldn't be
     storedSelection.drop();
-    if (howToHighlight == HighlightLogic::AllPossible) alwaysHighlightedShapes.clear();
-    // SV sv = view.getCheckerSV(key, c);
+    if (highlightMethod == HighlightMethod::AllPossible) clearAlwaysHighlightedCells();
     if (c->isOnBoard()) {
         Coord cd = c->getPositionOnBoard();
         storedSelection.set(cd);
@@ -292,7 +301,7 @@ void GameSession::initSelection() {
         storedSelection.set(owner);
         storedSelection.add(hoveredShape); // just the selected shape
     }
-    updateHighlightedShapes();
+    updateAlwaysHighlightedShapes();
 }
 
 bool GameSession::performTurn(const GameModel::Turn& turn) {
@@ -316,6 +325,7 @@ view(model, type) {
             allPossibleMoves.try_emplace({i, j}); // create default entries for each coordinate
         }
     model.start(key);
+    calculatePossibleMoves();
     view.updateOnCurrentPlayerChange(model.getCurrentPlayer().getSlot());
 }
 
