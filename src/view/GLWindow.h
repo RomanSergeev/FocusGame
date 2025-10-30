@@ -15,6 +15,8 @@ class GLWindow {
     GLFWmonitor* monitor;
     int winX, winY, winW = DEFAULT_WIDTH, winH = DEFAULT_HEIGHT;
     bool inFullscreen = false;
+    
+    void loadWindowIcon();
 public:
     GLWindow(int width, int height, const std::string& title);
     ~GLWindow();

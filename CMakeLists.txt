@@ -23,7 +23,7 @@ add_library(inih
 target_include_directories(inih PUBLIC include/ini)
 
 if (WIN32)
-    set(APP_ICON_RESOURCE "${CMAKE_CURRENT_SOURCE_DIR}/appIcon.rc")
+    set(APP_ICON_RESOURCE "${CMAKE_CURRENT_SOURCE_DIR}/resources/resources.rc")
 ENDIF()
 
 # Add source files recursively - still need to clean rebuild if any new cpp are added

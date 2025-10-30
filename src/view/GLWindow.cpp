@@ -1,6 +1,11 @@
 #include <stdexcept>
+#include <windows.h>
 #include "GLWindow.h"
 #include "utility/Logger.h"
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb/stb_image.h"
+
+constexpr int IDR_ICON_PNG = 101; // see resources/resources.rc (constants must be equal)
 
 void checkGLError(const char* stmt, const char* fname, int line) {
     GLenum err = glGetError();
@@ -8,6 +13,27 @@ void checkGLError(const char* stmt, const char* fname, int line) {
         Logger::logs("OpenGL error ", err, " at ", fname, ":", line, " - for ", stmt);
         err = glGetError();
     }
+}
+
+void GLWindow::loadWindowIcon() {
+    HRSRC hRes = FindResource(nullptr, MAKEINTRESOURCE(IDR_ICON_PNG), "PNG");
+    HGLOBAL hData = LoadResource(nullptr, hRes);
+    void* pData = LockResource(hData);
+    DWORD size = SizeofResource(nullptr, hRes);
+    int width, height, channels;
+    unsigned char* imageData = stbi_load_from_memory(
+        static_cast<unsigned char*>(pData),
+        size,
+        &width, &height, &channels,
+        4 // force RGBA
+    );
+    GLFWimage image;
+    image.width = width;
+    image.height = height;
+    image.pixels = imageData;
+
+    glfwSetWindowIcon(window, 1, &image);
+    stbi_image_free(imageData);
 }
 
 GLWindow::GLWindow(int width, int height, const std::string& title) {
@@ -23,6 +49,8 @@ GLWindow::GLWindow(int width, int height, const std::string& title) {
         glfwTerminate();
     }
     
+    loadWindowIcon();
+
     glfwMakeContextCurrent(window); // Set OpenGL context BEFORE initializing GLEW
 
     glfwSwapInterval(1); // Enable V-Sync - cap the framerate to the monitor current framerate - prevents 100% CPU usage for infinite draw loop
