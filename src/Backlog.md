@@ -1,4 +1,10 @@
-## Add Highlight System
+## Add Replay Option
+<hr>
+
+## Add an Icon - both console window and GLFW window
+<hr>
+
+## Split GameSession -> +GameSessionAux
 <hr>
 
 ## Fix Cylinder Ray Tracing
@@ -8,6 +14,7 @@
 <hr>
 
 ## Add hotkey Manager And Input Profiles
+<hr>
 
 ## GameView.h - Remove utility/Defaults.h Dependence
 <hr>
