@@ -1,6 +1,7 @@
 #include <stdexcept>
 #include <windows.h>
 #include "GLWindow.h"
+#include "glfw3.h"
 #include "utility/Logger.h"
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb/stb_image.h"
@@ -75,11 +76,21 @@ GLWindow::GLWindow(int width, int height, const std::string& title) {
     glfwGetWindowPos(window, &winX, &winY);
     glClearColor(0.01f, 0.03f, 0.025f, 1.0f); // Set a dark greenish background
     glLineWidth(1.0f); // 1 through 31 is available
+
+    inputStorage.registerKeyGroup("Alt", { GLFW_KEY_LEFT_ALT, GLFW_KEY_RIGHT_ALT } );
+    inputStorage.registerKeyGroup("Ctrl", { GLFW_KEY_LEFT_CONTROL, GLFW_KEY_RIGHT_CONTROL } );
+    inputStorage.registerKeyGroup("Shift", { GLFW_KEY_LEFT_SHIFT, GLFW_KEY_RIGHT_SHIFT } );
+    inputStorage.registerKeyGroup("Enter", { GLFW_KEY_ENTER, GLFW_KEY_KP_ENTER } );
+    inputStorage.registerKey(GLFW_KEY_R);
 }
 
 GLWindow::~GLWindow() {
     if (window) glfwDestroyWindow(window);
     glfwTerminate();
+}
+
+void GLWindow::updateInput() {
+    inputStorage.update(window);
 }
 
 void GLWindow::clearBuffer() {
@@ -100,26 +111,6 @@ bool GLWindow::shouldClose() const {
 
 GLFWwindow* GLWindow::getHandle() const {
     return window;
-}
-
-bool GLWindow::isPressedAlt() const {
-    return isPressedKey(GLFW_KEY_LEFT_ALT) || isPressedKey(GLFW_KEY_RIGHT_ALT);
-}
-
-bool GLWindow::isPressedCtrl() const {
-    return isPressedKey(GLFW_KEY_LEFT_CONTROL) || isPressedKey(GLFW_KEY_RIGHT_CONTROL);
-}
-
-bool GLWindow::isPressedShift() const {
-    return isPressedKey(GLFW_KEY_LEFT_SHIFT) || isPressedKey(GLFW_KEY_RIGHT_SHIFT);
-}
-
-bool GLWindow::isPressedEnter() const {
-    return isPressedKey(GLFW_KEY_ENTER) || isPressedKey(GLFW_KEY_KP_ENTER);
-}
-
-bool GLWindow::isPressedKey(int keyCode) const {
-    return glfwGetKey(window, keyCode) == GLFW_PRESS;
 }
 
 void GLWindow::goFullscreenMode() {

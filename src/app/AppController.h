@@ -1,10 +1,11 @@
 #pragma once
 #include <memory>
-#include "InputHandler.h"
 #include "controller/CameraController.h"
 #include "controller/GameSession.h"
+#include "InputHandler.h"
 #include "shapes/Line.h"
 #include "utility/Utils.h"
+#include "view/GLWindow.h"
 
 class AppController {
     static const int WIDTH = 800;

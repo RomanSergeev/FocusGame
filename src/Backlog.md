@@ -1,10 +1,10 @@
-## Add Replay Option
+## Add Replay Option (Start the Game Over)
 <hr>
 
 ## Add an Icon - both console window and GLFW window
 <hr>
 
-## Split GameSession -> +GameSessionAux
+## Split GameSession -> +GameSessionAux (structures+enums)
 <hr>
 
 ## Fix Cylinder Ray Tracing
@@ -33,6 +33,9 @@
 
 ## Add App Icon
 > Both .ico and .png, bake into the executable
+<hr>
+
+## Add Replay System
 <hr>
 
 ## Create Menu

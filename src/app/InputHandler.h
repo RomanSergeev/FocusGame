@@ -1,15 +1,16 @@
 #include <optional>
-#include "view/GLWindow.h"
+#include "utility/InputStorage.h"
 
 class InputHandler {
 public:
     enum class InputAction {
         ToggleFullScreen,
+        RestartGame,
         Exit,
         CameraForward,
         CameraBackward,
         CameraLeft,
         CameraRight
     };
-    std::optional<InputAction> handleKeyPress(const GLWindow& window) const;
+    std::optional<InputAction> handleKeyPress(const InputStorage& storage) const;
 };

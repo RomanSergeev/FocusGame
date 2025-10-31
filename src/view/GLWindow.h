@@ -2,6 +2,7 @@
 #include <string>
 #include "glew/glew.h"
 #include "glfw/glfw3.h"
+#include "utility/InputStorage.h"
 #define GL_CHECK(stmt) do { stmt; checkGLError(#stmt, __FILE__, __LINE__); } while (0)
 
 // Usage: GL_CHECK(glFunctionCall(args...));
@@ -13,6 +14,7 @@ class GLWindow {
 
     GLFWwindow* window;
     GLFWmonitor* monitor;
+    InputStorage inputStorage;
     int winX, winY, winW = DEFAULT_WIDTH, winH = DEFAULT_HEIGHT;
     bool inFullscreen = false;
     
@@ -20,16 +22,15 @@ class GLWindow {
 public:
     GLWindow(int width, int height, const std::string& title);
     ~GLWindow();
+    
+    const InputStorage& getInputStorage() const { return inputStorage; }
+
+    void updateInput();
     void clearBuffer();
     void pollEvents();
     void swapBuffers();
     bool shouldClose() const;
     GLFWwindow* getHandle() const;
-    bool isPressedAlt() const;
-    bool isPressedCtrl() const;
-    bool isPressedShift() const;
-    bool isPressedEnter() const;
-    bool isPressedKey(int keyCode) const;
     bool isFullscreen() const { return inFullscreen; }
     int getWindowWidth() const { return winW; }
     int getWindowHeight() const { return winH; }

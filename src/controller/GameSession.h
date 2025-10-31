@@ -1,7 +1,5 @@
 #pragma once
 #include <unordered_map>
-#include "Constants.h"
-#include "graphics/RenderEnums.h"
 #include "view/GameView.h"
 
 class GameSession {
@@ -95,4 +93,5 @@ public:
     void drawBoard(const Shader& shader, float currentTime);
     void handleMouseDown(const Ray& ray);
     void handleMouseUp(const Ray& ray);
+    void restart();
 };

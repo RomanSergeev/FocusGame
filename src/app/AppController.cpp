@@ -2,7 +2,6 @@
 #include "glfw3.h"
 #include "model/BoardEditor.h"
 #include "utility/Logger.h"
-#include "view/GLWindow.h"
 #define EVERY_N_FRAMES_DO(n, code) do { if ((frameCounter % (n)) == 0) code; } while(0)
 
 // these identical callbacks cannot be generalized because of the way GLFW (in C) obtains function pointers
@@ -123,7 +122,8 @@ void AppController::handleInputMouse() {
 }
 
 void AppController::handleInputKey() {
-    auto action = inputHandler.handleKeyPress(window);
+    window.updateInput();
+    auto action = inputHandler.handleKeyPress(window.getInputStorage());
     if (action != InputHandler::InputAction::ToggleFullScreen) {
         toggledFullscreenLastFrame = false;
     } else {
@@ -132,6 +132,9 @@ void AppController::handleInputKey() {
         window.toggleFullscreenMode();
         if (window.isFullscreen()) cameraController.setRotationFactor(FULLSCREEN_ROTATION_SLOWDOWN_FACTOR);
         else cameraController.setRotationFactor(1);
+    }
+    if (action == InputHandler::InputAction::RestartGame) {
+        gameSession.restart();
     }
 }
 

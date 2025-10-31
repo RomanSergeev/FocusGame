@@ -3,6 +3,7 @@
 #include "Constants.h"
 #include "graphics/RenderEnums.h"
 #include "model/GameModel.h"
+#include "utility/Logger.h"
 #include "utility/Utils.h"
 #include "view/GameView.h"
 
@@ -351,4 +352,8 @@ void GameSession::handleMouseUp(const Ray& ray) {
     pressedShape.drop();
     if (hoveredShape != copy) return; // we should release mouse hovering the same shape we pressed on
     onClick();
+}
+
+void GameSession::restart() {
+    Logger::log("Restart!");
 }
