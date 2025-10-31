@@ -4,7 +4,7 @@
 class User {
     unsigned int id; // taken from the database
     std::string name;
-    unsigned int mmr;
+    // unsigned int mmr;
 public:
     bool operator == (const User& user) const { return id == user.id; }
 };

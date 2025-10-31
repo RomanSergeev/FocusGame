@@ -85,7 +85,7 @@ void CameraController::handleMousePosition(int winWidth, int winHeight, double x
 void CameraController::handleMouseScroll(double xOffset, double yOffset) {
     targetDistance -= yOffset * settings.zoomStep;
     clampDistance();
-    float oldDistance = camera.getDistance();
+    // float oldDistance = camera.getDistance();
     if (!settings.smoothZoom) camera.setDistance(targetDistance);
 }
 
@@ -106,7 +106,7 @@ void CameraController::updateRayFromCursor(int winWidth, int winHeight, double x
     // 2. Convert mouse position from screen space to Normalized Device Coordinates (NDC)
     float x = 2.0f * xpos / winWidth - 1.0f;
     float y = 1.0f - 2.0f * ypos / winHeight;
-    float z = 1.0f;
+    // float z = 1.0f;
 
     glm::vec4 rayNDC(x, y, -1.0f, 1.0f); // Normalized Device Coordinates, z = -1 for near plane
     glm::vec4 rayClip(rayNDC);

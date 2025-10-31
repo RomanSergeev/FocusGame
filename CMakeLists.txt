@@ -4,6 +4,11 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_BUILD_TYPE Debug)
 
+set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g3 -Wall")
+set(CMAKE_CXX_FLAGS_RELEASE "-O2 -DNDEBUG")
+set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O2 -g -DNDEBUG")
+# set(CMAKE_CXX_LINKER_FLAGS_RELEASE "-s")
+
 include_directories(
     include/glfw
     include/glew
@@ -38,11 +43,16 @@ set_target_properties(FocusGame PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/../app"
 )
 
-# To avoid warnings and usage of relative paths (../) - warnings still remain
+# To avoid warnings and usage of relative paths (../)
 target_include_directories(FocusGame
     PRIVATE
         ${CMAKE_SOURCE_DIR}/src
         ${CMAKE_SOURCE_DIR}/include
+)
+
+# Reduce the release executable size by symbol stripping (-s)
+target_link_options(FocusGame PRIVATE
+    $<$<CONFIG:Release>:-s>
 )
 
 target_link_libraries(FocusGame

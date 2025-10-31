@@ -20,7 +20,6 @@ glm::vec3 axisToVec3(Axis axis) {
 }
 
 GLenum getGLDrawMode(DrawMode mode) {
-    GLenum result;
     switch (mode) {
         case DrawMode::Triangles: return GL_TRIANGLES;
         case DrawMode::Lines: return GL_LINES;

@@ -144,9 +144,9 @@ void OpenGLShape::addFacePoly(const std::vector<glm::vec3>& verticeList) {
 /********** public **********/
 
 OpenGLShape::OpenGLShape(unsigned int fpa) :
-    floatsPerAttribute(fpa),
+    vertices(),
     pointsPerAttribute(1, { AttributeType::Position, fpa }),
-    vertices() {}
+    floatsPerAttribute(fpa) {}
 
 std::ostream& operator << (std::ostream& out, const OpenGLShape& shape) {
     shape.print(out);

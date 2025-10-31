@@ -59,8 +59,8 @@ bool Cylinder::intersectsMathModel(const Ray& ray, float& distance) const {
     return true;
 }
 
-Cylinder::Cylinder(float sizex, float sizey, float sizez, unsigned int facets, bool altering) :
-    OpenGLShape(6), wx(sizex), wy(sizey), wz(sizez), facets(facets), isAltering(altering) {
+Cylinder::Cylinder(float sizex, float sizey, float sizez, unsigned int _facets, bool altering) :
+    OpenGLShape(6), wx(sizex), wy(sizey), wz(sizez), facets(_facets), isAltering(altering) {
 
     pointsPerAttribute = {
         { AttributeType::Position, 3 },
@@ -68,7 +68,7 @@ Cylinder::Cylinder(float sizex, float sizey, float sizez, unsigned int facets, b
     };
 
     std::vector<glm::vec3> ptsBottom, ptsTop;
-    float angleShift = altering ? (PI / facets) : 0;
+    float angleShift = isAltering ? (PI / facets) : 0;
     for (int i = 0; i < facets; ++i) {
         float ab = 2*PI*i / facets, // angle bottom
               at = ab + angleShift; // angle top
@@ -81,7 +81,7 @@ Cylinder::Cylinder(float sizex, float sizey, float sizez, unsigned int facets, b
 
     for (int i = 0; i < facets; ++i) {
         int j = (i + 1) % facets;
-        if (altering) {
+        if (isAltering) {
             addFace(ptsBottom[i], ptsBottom[j], ptsTop[i]);
             addFace(ptsBottom[j], ptsTop[j], ptsTop[i]);
         } else {

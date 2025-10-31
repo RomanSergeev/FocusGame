@@ -120,7 +120,6 @@ GameSession::AssumedAction GameSession::assumeAction() const {
     // now for the checker view
     const Checker* c = hoveredShape.getCheckerPtr();
     if (c == nullptr) return AA::NONE;
-    bool boardHovered = c->isOnBoard();
     const Player& currentPlayer = model.getCurrentPlayer();
     const Player* hoveredOwner = c->getPlayerReference();
     const Player* whoseReserveSelected = nullptr;
@@ -293,7 +292,6 @@ void GameSession::initSelection() {
         Coord cd = c->getPositionOnBoard();
         storedSelection.set(cd);
         const Cell& cell = model.getCellAt(cd);
-        const CheckerContainer& checkers = cell.getCheckers(); // all checkers, including clicked-on
         int i = 0;
         for (auto iter = cell.getStartIterator(); iter != cell.getEnd(); ++iter, ++i)
             storedSelection.add(view.getCheckerSV(key, &(*iter)));

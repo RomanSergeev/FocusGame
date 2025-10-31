@@ -229,8 +229,8 @@ void GameModel::transferMove(const SessionKey& key) {
 GameModel::GameModel(GameBoard&& _board, std::vector<Player> _players) :
 board(std::move(_board)),
 players(std::move(_players)),
-gameInProgress(false),
-activePlayerIndex(players.size() - 1) { // set active index to the last player before the game start
+activePlayerIndex(players.size() - 1), // set active index to the last player before the game start
+gameInProgress(false) {
     for (const Player& player : players) {
         if (player.isSpectator()) continue;
         trays.insert({ player.slot, CheckerContainer{} });
@@ -330,9 +330,9 @@ GameModel::MovePossibility GameModel::getPossibleMovesFor(const Coord& cd) const
         enemy = !owner->sameTeam(currentPlayer);
         allied = (!own && !enemy);
     };
-    if (own && !rules.canPlaceOnOwnTowers ||
-        enemy && !rules.canPlaceOnEnemyTowers ||
-        allied && !rules.canPlaceOnAllyTowers) {
+    if ((own    && !rules.canPlaceOnOwnTowers) ||
+        (enemy  && !rules.canPlaceOnEnemyTowers) ||
+        (allied && !rules.canPlaceOnAllyTowers)) {
         mp.maxReservePlaced = 0;
     } else {
         mp.maxReservePlaced = rules.canExceedByPlacing ? rules.maxTowerHeight : rules.maxTowerHeight - height;
