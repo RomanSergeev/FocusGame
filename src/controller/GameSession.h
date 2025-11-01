@@ -93,5 +93,4 @@ public:
     void drawBoard(const Shader& shader, float currentTime);
     void handleMouseDown(const Ray& ray);
     void handleMouseUp(const Ray& ray);
-    void restart();
 };

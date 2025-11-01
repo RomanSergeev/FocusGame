@@ -85,7 +85,7 @@ private:
     const GameModel& model;
     std::unordered_map<Coord, CellView> displayedBoard;
     std::vector<CheckerView> displayedCheckers;
-    std::vector<TrayView> displayedTrays; // TODO leave fixed amount of trays - just change their ownership every turn
+    std::vector<TrayView> displayedTrays;
     std::unordered_map<PlayerSlot, Color> displayedPlayerColors;
     CheckerView turnIdentifier;
     BoardShapeType type;

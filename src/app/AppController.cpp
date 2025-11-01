@@ -15,8 +15,8 @@ void AppController::mouseButtonCallback(GLFWwindow* window, int button, int acti
     else if (button == GLFW_MOUSE_BUTTON_LEFT) {
         const Ray& ray = controller->cameraController.getMouseRay();
         if (!ray.isActive()) return;
-        if (action == GLFW_PRESS) controller->gameSession.handleMouseDown(ray);
-        else if (action == GLFW_RELEASE) controller->gameSession.handleMouseUp(ray);
+        if (action == GLFW_PRESS) controller->gameSession->handleMouseDown(ray);
+        else if (action == GLFW_RELEASE) controller->gameSession->handleMouseUp(ray);
     }
 }
 
@@ -56,9 +56,8 @@ AppController::AppController() :
     inputHandler(),
     cameraController(WIDTH, HEIGHT),
     shaders(createShaders()),
-    gameSession(BoardEditor::createBoard8x8Focus(), GameView::BoardShapeType::Flat),
     rayLine(SPACE_ORIGIN, SPACE_ORIGIN) {
-    // gameSession(BoardEditor::createBoard2x2Debug(), GameView::BoardShapeType::Flat) {
+    gameSession = std::make_unique<GameSession>(BoardEditor::createBoard8x8Focus(), GameView::BoardShapeType::Flat);
 
     registerCallbacks();
     Logger::instantiate(key, true);
@@ -118,7 +117,7 @@ void AppController::updateTime() {
 void AppController::handleInputMouse() {
     const Ray& ray = cameraController.getMouseRay();
     if (!ray.isActive()) return;
-    gameSession.hoverShapeByCameraRay(ray);
+    gameSession->hoverShapeByCameraRay(ray);
 }
 
 void AppController::handleInputKey() {
@@ -134,7 +133,7 @@ void AppController::handleInputKey() {
         else cameraController.setRotationFactor(1);
     }
     if (action == InputHandler::InputAction::RestartGame) {
-        gameSession.restart();
+        gameSession = std::make_unique<GameSession>(BoardEditor::createBoard8x8Focus(), GameView::BoardShapeType::Flat);
     }
 }
 
@@ -149,7 +148,7 @@ void AppController::render() {
 
     window.clearBuffer();
 
-    gameSession.drawBoard(shader, currentTime);
+    gameSession->drawBoard(shader, currentTime);
 
     /*EVERY_N_FRAMES_DO(60, {
         std::cout << "RAY:\n" << rayLine;

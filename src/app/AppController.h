@@ -21,7 +21,7 @@ class AppController {
     InputHandler inputHandler;
     CameraController cameraController;
     ShaderCarousel shaders;
-    GameSession gameSession;
+    std::unique_ptr<GameSession> gameSession;
     AppKey key;
 
     bool toggledFullscreenLastFrame = false;

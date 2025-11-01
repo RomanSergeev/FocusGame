@@ -1,7 +1,4 @@
-## Add Replay Option (Start the Game Over)
-<hr>
-
-## Add an Icon - both console window and GLFW window
+## Replay (Start Over): Release VAO/VBO Memory on gameSession Recreation
 <hr>
 
 ## Split GameSession -> +GameSessionAux (structures+enums)
@@ -19,8 +16,6 @@
 ## GameView.h - Remove utility/Defaults.h Dependence
 <hr>
 
-> Maybe change GameModel::MovePossibility::canGoTo storage from const Cell* to Coord
-
 ## Add Checks
 > Cell::append  
 > GameBoard::placeChecker  
@@ -29,10 +24,6 @@
 
 ## Transpose coordinates in a single place
 > BoardEditor::createBoard* now uses transposed coordinates
-<hr>
-
-## Add App Icon
-> Both .ico and .png, bake into the executable
 <hr>
 
 ## Add Replay System

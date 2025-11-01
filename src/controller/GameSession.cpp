@@ -351,7 +351,3 @@ void GameSession::handleMouseUp(const Ray& ray) {
     if (hoveredShape != copy) return; // we should release mouse hovering the same shape we pressed on
     onClick();
 }
-
-void GameSession::restart() {
-    Logger::log("Restart!");
-}

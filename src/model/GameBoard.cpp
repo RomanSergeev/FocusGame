@@ -56,7 +56,7 @@ void GameBoard::moveCheckerToCoord(const SessionKey& key, const Coord& cd, Check
 
 void GameBoard::moveCheckersToCoord(const SessionKey& key, const Coord& cd, CheckerContainer& ccFrom, CheckerContainer::iterator start, CheckerContainer::iterator end) {
     if (!validCoordinate(cd)) throw std::invalid_argument("GameBoard::moveCheckers: coordinate out of range");
-    for (auto iter = start; iter != end; ++iter) // TODO can this duplication be avoided?
+    for (auto iter = start; iter != end; ++iter)
         iter->putOnBoard(key, cd);
     at(cd).transfer(ccFrom, start, end);
 }
