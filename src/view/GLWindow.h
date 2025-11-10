@@ -17,6 +17,7 @@ class GLWindow {
     InputStorage inputStorage;
     int winX, winY, winW = DEFAULT_WIDTH, winH = DEFAULT_HEIGHT;
     bool inFullscreen = false;
+    bool exclusiveFullscreen = false;
     
     void loadWindowIcon();
 public:
@@ -32,6 +33,7 @@ public:
     bool shouldClose() const;
     GLFWwindow* getHandle() const;
     bool isFullscreen() const { return inFullscreen; }
+    bool isFullscreenExclusive() const { return exclusiveFullscreen; }
     int getWindowWidth() const { return winW; }
     int getWindowHeight() const { return winH; }
     void goFullscreenMode();

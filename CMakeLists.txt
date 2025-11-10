@@ -9,6 +9,12 @@ set(CMAKE_CXX_FLAGS_RELEASE "-O2 -DNDEBUG")
 set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O2 -g -DNDEBUG")
 # set(CMAKE_CXX_LINKER_FLAGS_RELEASE "-s")
 
+# Bake MinGW necessary dlls (libstdc++, libgcc_s_seh, libwinpthread) into the executable
+set(CMAKE_EXE_LINKER_FLAGS_RELEASE "-static -static-libgcc -static-libstdc++")
+# Bake Threads::Threads later into the target specifically (may fail on previous step)
+set(THREADS_PREFER_PTHREAD_FLAG ON)
+find_package(Threads REQUIRED)
+
 include_directories(
     include/glfw
     include/glew
@@ -40,7 +46,7 @@ add_executable(FocusGame
 
 # Change created executable location
 set_target_properties(FocusGame PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/../app"
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/app"
 )
 
 # To avoid warnings and usage of relative paths (../)
@@ -56,6 +62,7 @@ target_link_options(FocusGame PRIVATE
 )
 
 target_link_libraries(FocusGame
+    Threads::Threads
     glfw3
     glew32
     opengl32

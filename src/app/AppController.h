@@ -24,7 +24,6 @@ class AppController {
     std::unique_ptr<GameSession> gameSession;
     AppKey key;
 
-    bool toggledFullscreenLastFrame = false;
     float currentTime;
     float timeDelta;
     float TEMPhitDistance = 0;

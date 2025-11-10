@@ -116,15 +116,23 @@ GLFWwindow* GLWindow::getHandle() const {
 void GLWindow::goFullscreenMode() {
     if (inFullscreen) return;
     inFullscreen = true;
-    const GLFWvidmode* mode = glfwGetVideoMode(monitor);
     glfwGetWindowPos(window, &winX, &winY);
     glfwGetWindowSize(window, &winW, &winH);
-    glfwSetWindowMonitor(window, monitor, 0, 0, mode->width, mode->height, mode->refreshRate);
+    const GLFWvidmode* mode = glfwGetVideoMode(monitor);
+
+    if (exclusiveFullscreen) {
+        glfwSetWindowMonitor(window, monitor, 0, 0, mode->width, mode->height, mode->refreshRate);
+    } else {
+        glfwSetWindowAttrib(window, GLFW_DECORATED, GLFW_FALSE);
+        glfwSetWindowPos(window, 0, 0);
+        glfwSetWindowSize(window, mode->width, mode->height);
+    }
 }
 
 void GLWindow::goWindowedMode() {
     if (!inFullscreen) return;
     inFullscreen = false;
+    if (!exclusiveFullscreen) glfwSetWindowAttrib(window, GLFW_DECORATED, GLFW_TRUE);
     glfwSetWindowMonitor(window, nullptr, winX, winY, winW, winH, 0);
 }
 

@@ -123,13 +123,9 @@ void AppController::handleInputMouse() {
 void AppController::handleInputKey() {
     window.updateInput();
     auto action = inputHandler.handleKeyPress(window.getInputStorage());
-    if (action != InputHandler::InputAction::ToggleFullScreen) {
-        toggledFullscreenLastFrame = false;
-    } else {
-        if (toggledFullscreenLastFrame) return;
-        toggledFullscreenLastFrame = true;
+    if (action == InputHandler::InputAction::ToggleFullScreen) {
         window.toggleFullscreenMode();
-        if (window.isFullscreen()) cameraController.setRotationFactor(FULLSCREEN_ROTATION_SLOWDOWN_FACTOR);
+        if (window.isFullscreen() && window.isFullscreenExclusive()) cameraController.setRotationFactor(FULLSCREEN_ROTATION_SLOWDOWN_FACTOR);
         else cameraController.setRotationFactor(1);
     }
     if (action == InputHandler::InputAction::RestartGame) {
