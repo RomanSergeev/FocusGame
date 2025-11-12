@@ -1,0 +1,31 @@
+name: Deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version tag (e.g. v0.1.1)'
+        required: true
+
+jobs:
+  deploy:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Zip game files
+        run: powershell Compress-Archive -Path app/FocusGame.exe, app/glew32.dll, app/UserSettings.ini -DestinationPath release.zip
+
+      - name: Read changelog
+        id: changelog
+        run: echo "notes=$(Get-Content LatestChanges.txt -Raw)" >> $env:GITHUB_OUTPUT
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event.inputs.version }}
+          name: ${{ github.event.inputs.version }}
+          body: ${{ steps.changelog.outputs.notes }}
+          files: release.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -1,0 +1,25 @@
+v0.1.1
+* Fullscreen toggle now switches to borderless fullscreen, not exclusive fullscreen mode
+! Baked MinGW default libs into the executable, now launches on Windows without prerequisites
++ Added single instance app lock (on Windows)
+* Added console window presence toggle (only affects Windows)
+
+v0.1.0 - First Playable Alpha
++ Hotseat game for two players is implemented
++ Restart on R (now implemented poorly - just recreates the board, taking new memory for OpenGLShapes)
++ Camera rotation and zoom
++ Fullscreen toggle
+- No GUI elements whatsoever
+- No menu system
+- No LAN/Online game mode
+- No user database (remote)
+- No user settings (local)
+- No replay mechanism
+- Ray->Cylinder tracing is slightly bugged
+- No hotkey manager
+
++ Added feature
+- Removed deprecated / lacking feature
+* Changed behavior
+! Fixed bug
+~ Minor tweak

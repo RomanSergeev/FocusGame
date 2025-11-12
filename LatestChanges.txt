@@ -1,0 +1,5 @@
+v0.1.1
+* Fullscreen toggle now switches to borderless fullscreen, not exclusive fullscreen mode
+! Baked MinGW default libs into the executable, now launches on Windows without prerequisites
++ Added single instance app lock (on Windows)
+* Added console window presence toggle (only affects Windows)
