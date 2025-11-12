@@ -4,6 +4,9 @@
 #include "utility/Logger.h"
 #define EVERY_N_FRAMES_DO(n, code) do { if ((frameCounter % (n)) == 0) code; } while(0)
 
+const int AppController::defaultWidth = 800;
+const int AppController::defaultHeight = 600;
+
 // these identical callbacks cannot be generalized because of the way GLFW (in C) obtains function pointers
 void AppController::mouseButtonCallback(GLFWwindow* window, int button, int action, int mods) {
     auto* controller = static_cast<AppController*>(glfwGetWindowUserPointer(window));
@@ -52,12 +55,12 @@ std::vector<Shader> AppController::createShaders() {
 }
 
 AppController::AppController() :
-    window(WIDTH, HEIGHT, "Focus Game"),
+    window(defaultWidth, defaultHeight, "Focus Game"),
     inputHandler(),
-    cameraController(WIDTH, HEIGHT),
+    cameraController(defaultWidth, defaultHeight),
     shaders(createShaders()),
     rayLine(SPACE_ORIGIN, SPACE_ORIGIN) {
-    gameSession = std::make_unique<GameSession>(BoardEditor::createBoard8x8Focus(), GameView::BoardShapeType::Flat);
+    gameSession = std::make_unique<GameSession>(BoardEditor::createBoard8x8Focus1v1(), GameView::BoardShapeType::Flat);
 
     registerCallbacks();
     Logger::instantiate(key, true);
@@ -129,7 +132,7 @@ void AppController::handleInputKey() {
         else cameraController.setRotationFactor(1);
     }
     if (action == InputHandler::InputAction::RestartGame) {
-        gameSession = std::make_unique<GameSession>(BoardEditor::createBoard8x8Focus(), GameView::BoardShapeType::Flat);
+        gameSession = std::make_unique<GameSession>(BoardEditor::createBoard8x8Focus1v1(), GameView::BoardShapeType::Flat);
     }
 }
 

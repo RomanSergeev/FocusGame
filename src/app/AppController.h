@@ -8,8 +8,8 @@
 #include "view/GLWindow.h"
 
 class AppController {
-    static const int WIDTH = 800;
-    static const int HEIGHT = 600;
+    static const int defaultWidth;
+    static const int defaultHeight;
 
     static void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods);
     static void mousePositionCallback(GLFWwindow* window, double xpos, double ypos);

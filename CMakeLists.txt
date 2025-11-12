@@ -35,7 +35,7 @@ target_include_directories(inih PUBLIC include/ini)
 
 if (WIN32)
     set(APP_ICON_RESOURCE "${CMAKE_CURRENT_SOURCE_DIR}/resources/resources.rc")
-ENDIF()
+endif()
 
 # Add source files recursively - still need to clean rebuild if any new cpp are added
 file(GLOB_RECURSE SRC_FILES CONFIGURE_DEPENDS "src/*.cpp")
@@ -43,6 +43,13 @@ add_executable(FocusGame
     ${SRC_FILES}
     ${APP_ICON_RESOURCE}
 )
+
+if (WIN32)
+    option(SHOW_CONSOLE "Show console window at startup" OFF)
+    if(NOT SHOW_CONSOLE)
+        set_target_properties(FocusGame PROPERTIES WIN32_EXECUTABLE TRUE)
+    endif()
+endif()
 
 # Change created executable location
 set_target_properties(FocusGame PROPERTIES
